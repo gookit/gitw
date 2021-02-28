@@ -23,6 +23,33 @@ type GitCmd struct {
 	Stderr *os.File
 }
 
+// New instance
+func New(name string) *GitCmd {
+	return &GitCmd{
+		Name:   name,
+		Args:   []string{},
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+}
+
+// NewGit instance
+func NewGit(args ...string) *GitCmd {
+	return NewWithArgs("git", args)
+}
+
+// NewWithArgs instance
+func NewWithArgs(name string, args []string) *GitCmd {
+	return &GitCmd{
+		Name:   name,
+		Args:   args,
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+}
+
 func (cmd GitCmd) String() string {
 	args := make([]string, len(cmd.Args))
 	for i, a := range cmd.Args {
@@ -134,33 +161,6 @@ func (cmd *GitCmd) Exec() error {
 	args = append(args, cmd.Args...)
 
 	return syscall.Exec(binary, args, os.Environ())
-}
-
-// New instance
-func New(name string) *GitCmd {
-	return &GitCmd{
-		Name:   name,
-		Args:   []string{},
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
-}
-
-// NewGit instance
-func NewGit(args ...string) *GitCmd {
-	return NewWithArgs("git", args)
-}
-
-// NewWithArgs instance
-func NewWithArgs(name string, args []string) *GitCmd {
-	return &GitCmd{
-		Name:   name,
-		Args:   args,
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
 }
 
 func verboseLog(cmd *GitCmd) {
