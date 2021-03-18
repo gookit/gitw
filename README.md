@@ -1,13 +1,13 @@
-# GitCmd
+# GitWrap
 
-Git command wrapper library
+Git commands wrapper tool library
 
 > project is from https://github.com/github/hub
 
 ## Install
 
 ```bash
-go get github.com/gookit/gitcmd
+go get github.com/gookit/gitwrap
 ```
 
 ## Usage

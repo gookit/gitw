@@ -1,4 +1,4 @@
-package gitcmd
+package gitwrap
 
 import (
 	"bufio"
