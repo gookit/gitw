@@ -13,35 +13,27 @@ import (
 
 // from: https://github.com/github/hub/blob/master/cmd/cmd.go
 
-// GitCmd is a project-wide struct that represents a command to be run in the console.
-type GitCmd struct {
-	Name   string
-	Args   []string
+var DefaultBin = "git"
+
+// GitWrap is a project-wide struct that represents a command to be run in the console.
+type GitWrap struct {
+	// Bin git bin name. default is "git"
+	Bin string
+	// Cmd sub command name of git
+	// Cmd  string
+	Args []string
+	// extra
+	WorkDir string
 	Stdin  *os.File
 	Stdout *os.File
 	Stderr *os.File
 }
 
 // New instance
-func New(name string) *GitCmd {
-	return &GitCmd{
-		Name:   name,
-		Args:   []string{},
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
-}
-
-// NewGit instance
-func NewGit(args ...string) *GitCmd {
-	return NewWithArgs("git", args)
-}
-
-// NewWithArgs instance
-func NewWithArgs(name string, args []string) *GitCmd {
-	return &GitCmd{
-		Name:   name,
+func New(args ...string) *GitWrap {
+	return &GitWrap{
+		Bin:    DefaultBin,
+		// Cmd:    cmd,
 		Args:   args,
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
@@ -49,9 +41,9 @@ func NewWithArgs(name string, args []string) *GitCmd {
 	}
 }
 
-func (cmd GitCmd) String() string {
-	args := make([]string, len(cmd.Args))
-	for i, a := range cmd.Args {
+func (gw *GitWrap) String() string {
+	args := make([]string, len(gw.Args))
+	for i, a := range gw.Args {
 		if strings.ContainsRune(a, '"') {
 			args[i] = fmt.Sprintf(`'%s'`, a)
 		} else if a == "" || strings.ContainsRune(a, '\'') || strings.ContainsRune(a, ' ') {
@@ -60,54 +52,101 @@ func (cmd GitCmd) String() string {
 			args[i] = a
 		}
 	}
-	return fmt.Sprintf("%s %s", cmd.Name, strings.Join(args, " "))
+	return fmt.Sprintf("%s %s", gw.Bin, strings.Join(args, " "))
+}
+
+// WithWorkDir returns the current object
+func (gw *GitWrap) WithWorkDir(dir string) *GitWrap {
+	gw.WorkDir = dir
+	return gw
+}
+
+// SubCmd returns the current object
+func (gw *GitWrap) SubCmd(cmd string) *GitWrap {
+	gw.Args = append(gw.Args, cmd)
+	return gw
 }
 
 // WithArg returns the current argument
-func (cmd *GitCmd) WithArg(arg string) *GitCmd {
-	cmd.Args = append(cmd.Args, arg)
-
-	return cmd
+func (gw *GitWrap) WithArg(args ...string) *GitWrap {
+	gw.Args = append(gw.Args, args...)
+	return gw
 }
 
-func (cmd *GitCmd) WithArgs(args ...string) *GitCmd {
-	for _, arg := range args {
-		cmd.WithArg(arg)
-	}
-
-	return cmd
+// WithArgs for the git
+func (gw *GitWrap) WithArgs(args []string) *GitWrap {
+	gw.Args = append(gw.Args, args...)
+	return gw
 }
 
-func (cmd *GitCmd) Output() (string, error) {
-	verboseLog(cmd)
-	c := exec.Command(cmd.Name, cmd.Args...)
-	c.Stderr = cmd.Stderr
+// Output run and return output
+func (gw *GitWrap) Output() (string, error) {
+	verboseLog(gw)
+	c := exec.Command(gw.Bin, gw.Args...)
+	c.Stderr = gw.Stderr
 	output, err := c.Output()
 
 	return string(output), err
 }
 
-func (cmd *GitCmd) CombinedOutput() (string, error) {
-	verboseLog(cmd)
-	output, err := exec.Command(cmd.Name, cmd.Args...).CombinedOutput()
+// CombinedOutput run and return output, will combine stderr and stdout output
+func (gw *GitWrap) CombinedOutput() (string, error) {
+	verboseLog(gw)
+	output, err := exec.Command(gw.Bin, gw.Args...).CombinedOutput()
 
 	return string(output), err
 }
 
 // Success exec
-func (cmd *GitCmd) Success() bool {
-	verboseLog(cmd)
-	err := exec.Command(cmd.Name, cmd.Args...).Run()
+func (gw *GitWrap) Success() bool {
+	verboseLog(gw)
+	err := exec.Command(gw.Bin, gw.Args...).Run()
 	return err == nil
 }
 
 // Run runs command with `Exec` on platforms except Windows
 // which only supports `Spawn`
-func (cmd *GitCmd) Run() error {
+func (gw *GitWrap) Run() error {
 	if isWindows() {
-		return cmd.Spawn()
+		return gw.Spawn()
 	}
-	return cmd.Exec()
+	return gw.Exec()
+}
+
+// Spawn runs command with spawn(3)
+func (gw *GitWrap) Spawn() error {
+	verboseLog(gw)
+	c := exec.Command(gw.Bin, gw.Args...)
+	c.Stdin = gw.Stdin
+	c.Stdout = gw.Stdout
+	c.Stderr = gw.Stderr
+
+	return c.Run()
+}
+
+// Exec runs command with exec(3)
+// Note that Windows doesn't support exec(3): http://golang.org/src/pkg/syscall/exec_windows.go#L339
+func (gw *GitWrap) Exec() error {
+	verboseLog(gw)
+
+	binary, err := exec.LookPath(gw.Bin)
+	if err != nil {
+		return &exec.Error{
+			Name: gw.Bin,
+			Err:  fmt.Errorf("command not found"),
+		}
+	}
+
+	args := []string{binary}
+	args = append(args, gw.Args...)
+
+	return syscall.Exec(binary, args, os.Environ())
+}
+
+func verboseLog(cmd *GitWrap) {
+	if debug {
+		color.Comment.Println("> ", cmd.String())
+	}
 }
 
 func isWindows() bool {
@@ -123,48 +162,11 @@ func detectWSL() bool {
 		b := make([]byte, 1024)
 		f, err := os.Open("/proc/version")
 		if err == nil {
-			_,_ = f.Read(b) // ignore error
+			_, _ = f.Read(b) // ignore error
 			f.Close()
 			detectedWSLContents = string(b)
 		}
 		detectedWSL = true
 	}
 	return strings.Contains(detectedWSLContents, "Microsoft")
-}
-
-// Spawn runs command with spawn(3)
-func (cmd *GitCmd) Spawn() error {
-	verboseLog(cmd)
-	c := exec.Command(cmd.Name, cmd.Args...)
-	c.Stdin = cmd.Stdin
-	c.Stdout = cmd.Stdout
-	c.Stderr = cmd.Stderr
-
-	return c.Run()
-}
-
-// Exec runs command with exec(3)
-// Note that Windows doesn't support exec(3): http://golang.org/src/pkg/syscall/exec_windows.go#L339
-func (cmd *GitCmd) Exec() error {
-	verboseLog(cmd)
-
-	binary, err := exec.LookPath(cmd.Name)
-	if err != nil {
-		return &exec.Error{
-			Name: cmd.Name,
-			Err:  fmt.Errorf("command not found"),
-		}
-	}
-
-	args := []string{binary}
-	args = append(args, cmd.Args...)
-
-	return syscall.Exec(binary, args, os.Environ())
-}
-
-func verboseLog(cmd *GitCmd) {
-	if debug {
-		msg := fmt.Sprintf("> %s", cmd.String())
-		color.Infoln(msg)
-	}
 }

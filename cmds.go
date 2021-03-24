@@ -31,7 +31,7 @@ func Dir() (string, error) {
 	dirCmd.Stderr = nil
 	output, err := dirCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("Not a git repository (or any of the parent directories): .git")
+		return "", fmt.Errorf("not a git repository (or any of the parent directories): .git")
 	}
 
 	var chdir string
@@ -104,17 +104,6 @@ func HasFile(segments ...string) bool {
 	return false
 }
 
-func Editor() (string, error) {
-	varCmd := gitCmd("var", "GIT_EDITOR")
-	varCmd.Stderr = nil
-	output, err := varCmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("can't load git var: GIT_EDITOR")
-	}
-
-	return os.ExpandEnv(firstLine(output)), nil
-}
-
 func Head() (string, error) {
 	return SymbolicRef("HEAD")
 }
@@ -133,7 +122,7 @@ func SymbolicFullName(name string) (string, error) {
 	parseCmd.Stderr = nil
 	output, err := parseCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("Unknown revision or path not in the working tree: %s", name)
+		return "", fmt.Errorf("unknown revision or path not in the working tree: %s", name)
 	}
 
 	return firstLine(output), nil
@@ -144,7 +133,7 @@ func Ref(ref string) (string, error) {
 	parseCmd.Stderr = nil
 	output, err := parseCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("Unknown revision or path not in the working tree: %s", ref)
+		return "", fmt.Errorf("unknown revision or path not in the working tree: %s", ref)
 	}
 
 	return firstLine(output), nil
@@ -172,7 +161,7 @@ func NewRange(a, b string) (*Range, error) {
 
 	lines := outputLines(output)
 	if len(lines) != 2 {
-		return nil, fmt.Errorf("Can't parse range %s..%s", a, b)
+		return nil, fmt.Errorf("can't parse range %s..%s", a, b)
 	}
 	return &Range{lines[0], lines[1]}, nil
 }
@@ -192,10 +181,12 @@ func (r *Range) IsAncestor() bool {
 }
 
 func CommentChar(text string) (string, error) {
-	char, err := Config("core.commentchar")
+	char, err := gitConfigGet("core.commentchar")
 	if err != nil {
 		return "#", nil
-	} else if char == "auto" {
+	}
+
+	if char == "auto" {
 		lines := strings.Split(text, "\n")
 		commentCharCandidates := strings.Split("#;@!$%^&|:", "")
 	candidateLoop:
@@ -208,115 +199,36 @@ func CommentChar(text string) (string, error) {
 			return candidate, nil
 		}
 		return "", fmt.Errorf("unable to select a comment character that is not used in the current message")
-	} else {
-		return char, nil
 	}
+
+	return char, nil
 }
 
 func Show(sha string) (string, error) {
-	cmd := New("git")
-	cmd.Stderr = nil
-	cmd.WithArg("-c").WithArg("log.showSignature=false")
-	cmd.WithArg("show").WithArg("-s").WithArg("--format=%s%n%+b").WithArg(sha)
+	gw := New()
+	gw.Stderr = nil
+	gw.WithArg("-c", "log.showSignature=false")
+	gw.WithArg("show").WithArg("-s").WithArg("--format=%s%n%+b").WithArg(sha)
 
-	output, err := cmd.Output()
+	output, err := gw.Output()
 	return strings.TrimSpace(output), err
 }
 
 func Log(sha1, sha2 string) (string, error) {
-	execCmd := New("git")
-	execCmd.WithArg("-c").WithArg("log.showSignature=false").WithArg("log").WithArg("--no-color")
+	execCmd := New()
+	execCmd.WithArg("-c", "log.showSignature=false").WithArg("log").WithArg("--no-color")
 	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
 	execCmd.WithArg("--cherry")
+
 	shaRange := fmt.Sprintf("%s...%s", sha1, sha2)
 	execCmd.WithArg(shaRange)
 
 	outputs, err := execCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("Can't load git log %s..%s", sha1, sha2)
+		return "", fmt.Errorf("can't load git log %s..%s", sha1, sha2)
 	}
 
 	return outputs, nil
-}
-
-func Remotes() ([]string, error) {
-	remoteCmd := gitCmd("remote", "-v")
-	remoteCmd.Stderr = nil
-	output, err := remoteCmd.Output()
-	return outputLines(output), err
-}
-
-func Config(name string) (string, error) {
-	return gitGetConfig(name)
-}
-
-func ConfigAll(name string) ([]string, error) {
-	mode := "--get-all"
-	if strings.Contains(name, "*") {
-		mode = "--get-regexp"
-	}
-
-	configCmd := gitCmd(gitConfigCommand([]string{mode, name})...)
-	output, err := configCmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("Unknown config %s", name)
-	}
-	return outputLines(output), nil
-}
-
-func GlobalConfig(name string) (string, error) {
-	return gitGetConfig("--global", name)
-}
-
-func SetGlobalConfig(name, value string) error {
-	_, err := gitConfig("--global", name, value)
-	return err
-}
-
-func gitGetConfig(args ...string) (string, error) {
-	configCmd := gitCmd(gitConfigCommand(args)...)
-	output, err := configCmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("Unknown config %s", args[len(args)-1])
-	}
-
-	return firstLine(output), nil
-}
-
-func gitConfig(args ...string) ([]string, error) {
-	configCmd := gitCmd(gitConfigCommand(args)...)
-	output, err := configCmd.Output()
-	return outputLines(output), err
-}
-
-func gitConfigCommand(args []string) []string {
-	cmd := []string{"config"}
-	return append(cmd, args...)
-}
-
-func Alias(name string) (string, error) {
-	return Config(fmt.Sprintf("alias.%s", name))
-}
-
-func Run(args ...string) error {
-	cmd := gitCmd(args...)
-	return cmd.Run()
-}
-
-func Spawn(args ...string) error {
-	cmd := gitCmd(args...)
-	return cmd.Spawn()
-}
-
-func Quiet(args ...string) bool {
-	cmd := gitCmd(args...)
-	return cmd.Success()
-}
-
-func IsGitDir(dir string) bool {
-	cmd := New("git")
-	cmd.WithArgs("--git-dir="+dir, "rev-parse", "--git-dir")
-	return cmd.Success()
 }
 
 func LocalBranches() ([]string, error) {
@@ -333,6 +245,145 @@ func LocalBranches() ([]string, error) {
 	return branches, nil
 }
 
+func Remotes() ([]string, error) {
+	remoteCmd := gitCmd("remote", "-v")
+	remoteCmd.Stderr = nil
+	output, err := remoteCmd.Output()
+	return outputLines(output), err
+}
+
+// -------------------------------------------------
+// git config
+// -------------------------------------------------
+
+// Var get by git var.
+// all: git var -l
+// one: git var GIT_EDITOR
+func Var(name string) string {
+	val, err := New("var", name).Output()
+	if err != nil {
+		return ""
+	}
+	return val
+}
+
+// -------------------------------------------------
+// git config
+// -------------------------------------------------
+
+func Config(name string) string {
+	val, err := gitConfigGet(name)
+	if err != nil {
+		return ""
+	}
+	return val
+}
+
+func ConfigAll(name string) ([]string, error) {
+	mode := "--get-all"
+	if strings.Contains(name, "*") {
+		mode = "--get-regexp"
+	}
+
+	configCmd := gitCmd(gitConfigCommand([]string{mode, name})...)
+	output, err := configCmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("unknown config %s", name)
+	}
+	return outputLines(output), nil
+}
+
+func GlobalConfig(name string) (string, error) {
+	return gitConfigGet("--global", name)
+}
+
+func SetGlobalConfig(name, value string) error {
+	_, err := gitConfig("--global", name, value)
+	return err
+}
+
+func gitConfigGet(args ...string) (string, error) {
+	configCmd := gitCmd(gitConfigCommand(args)...)
+	output, err := configCmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("unknown config %s", args[len(args)-1])
+	}
+
+	return firstLine(output), nil
+}
+
+func gitConfig(args ...string) ([]string, error) {
+	configCmd := gitCmd(gitConfigCommand(args)...)
+	output, err := configCmd.Output()
+	return outputLines(output), err
+}
+
+func gitConfigCommand(args []string) []string {
+	cmd := []string{"config"}
+	return append(cmd, args...)
+}
+
+func Alias(name string) string {
+	return Config("alias." + name)
+}
+
+func Run(args ...string) error {
+	cmd := gitCmd(args...)
+	return cmd.Run()
+}
+
+func Spawn(args ...string) error {
+	cmd := gitCmd(args...)
+	return cmd.Spawn()
+}
+
+func Quiet(args ...string) bool {
+	return New(args...).Success()
+}
+
+func IsGitDir(dir string) bool {
+	cmd := New()
+	cmd.WithArg("--git-dir="+dir, "rev-parse", "--git-dir")
+	return cmd.Success()
+}
+
+func gitCmd(args ...string) *GitWrap {
+	cmd := New()
+
+	// with global flags
+	if len(GlobalFlags) > 0 {
+		cmd.WithArgs(GlobalFlags)
+	}
+
+	return cmd.WithArgs(args)
+}
+
+func IsGitCommand(command string) bool {
+	helpCmd := gitCmd("help", "--no-verbose", "-a")
+	helpCmd.Stderr = nil
+	// run
+	cmdOutput, err := helpCmd.Output()
+	if err != nil {
+		// support git versions that don't recognize --no-verbose
+		helpCommand := gitCmd("help", "-a")
+		cmdOutput, err = helpCommand.Output()
+	}
+	if err != nil {
+		return false
+	}
+
+	for _, helpCommandOutputLine := range outputLines(cmdOutput) {
+		if strings.HasPrefix(helpCommandOutputLine, "  ") {
+			for _, gitCommand := range strings.Split(helpCommandOutputLine, " ") {
+				if gitCommand == command {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func outputLines(output string) []string {
 	output = strings.TrimSuffix(output, "\n")
 	if output == "" {
@@ -346,42 +397,4 @@ func firstLine(output string) string {
 		return output[0:i]
 	}
 	return output
-}
-
-func gitCmd(args ...string) *GitCmd {
-	cmd := New("git")
-
-	for _, v := range GlobalFlags {
-		cmd.WithArg(v)
-	}
-
-	for _, a := range args {
-		cmd.WithArg(a)
-	}
-
-	return cmd
-}
-
-func IsBuiltInGitCommand(command string) bool {
-	helpCommand := gitCmd("help", "--no-verbose", "-a")
-	helpCommand.Stderr = nil
-	helpCommandOutput, err := helpCommand.Output()
-	if err != nil {
-		// support git versions that don't recognize --no-verbose
-		helpCommand := gitCmd("help", "-a")
-		helpCommandOutput, err = helpCommand.Output()
-	}
-	if err != nil {
-		return false
-	}
-	for _, helpCommandOutputLine := range outputLines(helpCommandOutput) {
-		if strings.HasPrefix(helpCommandOutputLine, "  ") {
-			for _, gitCommand := range strings.Split(helpCommandOutputLine, " ") {
-				if gitCommand == command {
-					return true
-				}
-			}
-		}
-	}
-	return false
 }

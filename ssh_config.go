@@ -21,10 +21,11 @@ func newSSHConfigReader() *SSHConfigReader {
 		"/etc/ssh_config",
 		"/etc/ssh/ssh_config",
 	}
-	if homedir, err := homedir.Dir(); err == nil {
-		userConfig := filepath.Join(homedir, ".ssh", "config")
+	if hdir, err := homedir.Dir(); err == nil {
+		userConfig := filepath.Join(hdir, ".ssh", "config")
 		configFiles = append([]string{userConfig}, configFiles...)
 	}
+
 	return &SSHConfigReader{
 		Files: configFiles,
 	}

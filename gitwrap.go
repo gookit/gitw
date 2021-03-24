@@ -19,8 +19,17 @@ type CmdBuilder struct {
 	Dir string
 }
 
+type RepoInfo struct {
+	Name string
+	Path string
+
+	Dir string
+	URL string
+}
+
 // Repo struct
 type Repo struct {
+	gw GitWrap
 	// the repo dir
 	dir string
 }
@@ -29,8 +38,8 @@ func NewRepo(dir string) *Repo {
 	return &Repo{dir: dir}
 }
 
-func (r *Repo) Init() {
-	// TODO
+func (r *Repo) Init() error {
+	return r.gw.SubCmd("init").Run()
 }
 
 func (r *Repo) Info()  {
@@ -39,4 +48,8 @@ func (r *Repo) Info()  {
 
 func (r *Repo) Dir() string {
 	return r.dir
+}
+
+func (r *Repo) Git() *GitWrap {
+	return New().WithWorkDir(r.dir)
 }
