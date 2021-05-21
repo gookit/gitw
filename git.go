@@ -9,11 +9,15 @@ import (
 	"syscall"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/fsutil"
 )
 
 // from: https://github.com/github/hub/blob/master/cmd/cmd.go
 
-var DefaultBin = "git"
+var (
+	DefaultBin = "git"
+	GitDir = ".git"
+)
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.
 type GitWrap struct {
@@ -27,6 +31,8 @@ type GitWrap struct {
 	Stdin  *os.File
 	Stdout *os.File
 	Stderr *os.File
+	// inner
+	gitDir string
 }
 
 // New instance
@@ -58,6 +64,21 @@ func (gw *GitWrap) String() string {
 // WithWorkDir returns the current object
 func (gw *GitWrap) WithWorkDir(dir string) *GitWrap {
 	gw.WorkDir = dir
+	return gw
+}
+
+// WithStdin returns the current argument
+func (gw *GitWrap) WithStdin(in *os.File) *GitWrap {
+	gw.Stdin = in
+	return gw
+}
+
+// WithOutput returns the current argument
+func (gw *GitWrap) WithOutput(out *os.File, errOut *os.File) *GitWrap {
+	gw.Stdout = out
+	if errOut != nil {
+		gw.Stderr = errOut
+	}
 	return gw
 }
 
@@ -97,11 +118,45 @@ func (gw *GitWrap) CombinedOutput() (string, error) {
 	return string(output), err
 }
 
-// Success exec
+// IsGitRepo return the work dir is an git repo.
+func (gw *GitWrap) IsGitRepo() bool {
+	return fsutil.IsDir(gw.WorkDir + "/" + GitDir)
+}
+
+// GitDir return git data dir
+func (gw *GitWrap) GitDir() string {
+	if gw.gitDir != "" {
+		return gw.gitDir
+	}
+
+	if gw.WorkDir != "" {
+		gw.gitDir = gw.WorkDir + "/.git"
+	} else {
+		gw.gitDir = GitDir
+	}
+	return gw.gitDir
+}
+
+// CurrentBranch return current branch name
+func (gw *GitWrap) CurrentBranch() string {
+	// cat .git/HEAD
+	// ref: refs/heads/fea_4_12
+	return ""
+}
+
+// Success run and return whether success
 func (gw *GitWrap) Success() bool {
 	verboseLog(gw)
 	err := exec.Command(gw.Bin, gw.Args...).Run()
 	return err == nil
+}
+
+// NewExecCmd create exec.Cmd from current cmd
+func (gw *GitWrap) NewExecCmd() *exec.Cmd {
+	// gw.parseBinArgs()
+
+	// create exec.Cmd
+	return exec.Command(gw.Bin, gw.Args...)
 }
 
 // Run runs command with `Exec` on platforms except Windows

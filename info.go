@@ -24,8 +24,8 @@ type RemoteInfo struct {
 	Group, Repo string
 	// Type string
 
-	// ProtoType 'ssh' OR 'http'
-	ProtoType string
+	// Proto type 'ssh' OR 'http'
+	Proto string
 }
 
 func NewRemoteInfo(name, url string) *RemoteInfo {
