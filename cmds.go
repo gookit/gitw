@@ -220,7 +220,8 @@ func Log(sha1, sha2 string) (string, error) {
 	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
 	execCmd.WithArg("--cherry")
 
-	shaRange := fmt.Sprintf("%s...%s", sha1, sha2)
+	// shaRange := fmt.Sprintf("%s...%s", sha1, sha2)
+	shaRange := strings.Join([]string{sha1, "...", sha2}, "")
 	execCmd.WithArg(shaRange)
 
 	outputs, err := execCmd.Output()
@@ -342,8 +343,7 @@ func Quiet(args ...string) bool {
 }
 
 func IsGitDir(dir string) bool {
-	cmd := New()
-	cmd.WithArg("--git-dir="+dir, "rev-parse", "--git-dir")
+	cmd := New("--git-dir="+dir, "rev-parse", "--git-dir")
 	return cmd.Success()
 }
 

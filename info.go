@@ -7,6 +7,19 @@ const (
 	DefaultRemoteName = "origin"
 )
 
+// Info struct
+// type Info struct {
+// 	gw *GitWrap
+// }
+
+type RepoInfo struct {
+	Name string
+	Path string
+
+	Dir string
+	URL string
+}
+
 // RemoteInfo struct
 // - http: "https://github.com/gookit/gitwrap.git"
 // - git: "git@github.com:gookit/gitwrap.git"
@@ -45,6 +58,18 @@ func (r *RemoteInfo) Valid() bool {
 
 func (r *RemoteInfo) Invalid() bool {
 	return r.URL == ""
+}
+
+func (r *RemoteInfo) GitUrl() string {
+	return r.Group + "/" + r.Repo
+}
+
+func (r *RemoteInfo) HttpUrl() string {
+	return r.Group + "/" + r.Repo
+}
+
+func (r *RemoteInfo) HttpsUrl() string {
+	return r.Group + "/" + r.Repo
 }
 
 func (r *RemoteInfo) Path() string {
