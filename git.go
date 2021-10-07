@@ -159,6 +159,13 @@ func (gw *GitWrap) NewExecCmd() *exec.Cmd {
 	return exec.Command(gw.Bin, gw.Args...)
 }
 
+// MustRun an command. will panic on error
+func (gw *GitWrap) MustRun()  {
+	if err := gw.Run(); err != nil {
+		panic(err)
+	}
+}
+
 // Run runs command with `Exec` on platforms except Windows
 // which only supports `Spawn`
 func (gw *GitWrap) Run() error {

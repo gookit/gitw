@@ -1,4 +1,4 @@
-package gitwrap
+package gitutil
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
+	"github.com/gookit/goutil/sysutil"
 )
 
 const (
@@ -21,7 +21,7 @@ func newSSHConfigReader() *SSHConfigReader {
 		"/etc/ssh_config",
 		"/etc/ssh/ssh_config",
 	}
-	if hdir, err := homedir.Dir(); err == nil {
+	if hdir := sysutil.HomeDir(); hdir != "" {
 		userConfig := filepath.Join(hdir, ".ssh", "config")
 		configFiles = append([]string{userConfig}, configFiles...)
 	}

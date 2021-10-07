@@ -1,4 +1,4 @@
-package gitwrap
+package gitutil
 
 import (
 	"net/url"
@@ -12,10 +12,12 @@ var (
 	protocolRe = regexp.MustCompile("^[a-zA-Z_+-]+://")
 )
 
+// URLParser struct
 type URLParser struct {
 	SSHConfig SSHConfig
 }
 
+// Parse parse raw url
 func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 	if !protocolRe.MatchString(rawURL) &&
 		strings.Contains(rawURL, ":") &&
@@ -56,6 +58,7 @@ func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 	return
 }
 
+// ParseURL parse raw url
 func ParseURL(rawURL string) (u *url.URL, err error) {
 	if cachedSSHConfig == nil {
 		cachedSSHConfig = newSSHConfigReader().Read()

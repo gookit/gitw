@@ -173,6 +173,20 @@ func parseRemoteUrl(url string, r *RemoteInfo) *RemoteInfo {
 
 	}
 
-
 	return r
+}
+
+func outputLines(output string) []string {
+	output = strings.TrimSuffix(output, "\n")
+	if output == "" {
+		return []string{}
+	}
+	return strings.Split(output, "\n")
+}
+
+func firstLine(output string) string {
+	if i := strings.Index(output, "\n"); i >= 0 {
+		return output[0:i]
+	}
+	return output
 }

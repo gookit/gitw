@@ -9,7 +9,19 @@ import (
 
 // from: https://github.com/github/hub/blob/master/git/git.go
 
+// GlobalFlags for run git command
 var GlobalFlags []string
+
+func gitCmd(args ...string) *GitWrap {
+	cmd := New()
+
+	// with global flags
+	if len(GlobalFlags) > 0 {
+		cmd.WithArgs(GlobalFlags)
+	}
+
+	return cmd.WithArgs(args)
+}
 
 func Version() (string, error) {
 	versionCmd := gitCmd("version")
@@ -347,17 +359,6 @@ func IsGitDir(dir string) bool {
 	return cmd.Success()
 }
 
-func gitCmd(args ...string) *GitWrap {
-	cmd := New()
-
-	// with global flags
-	if len(GlobalFlags) > 0 {
-		cmd.WithArgs(GlobalFlags)
-	}
-
-	return cmd.WithArgs(args)
-}
-
 func IsGitCommand(command string) bool {
 	helpCmd := gitCmd("help", "--no-verbose", "-a")
 	helpCmd.Stderr = nil
@@ -382,19 +383,4 @@ func IsGitCommand(command string) bool {
 		}
 	}
 	return false
-}
-
-func outputLines(output string) []string {
-	output = strings.TrimSuffix(output, "\n")
-	if output == "" {
-		return []string{}
-	}
-	return strings.Split(output, "\n")
-}
-
-func firstLine(output string) string {
-	if i := strings.Index(output, "\n"); i >= 0 {
-		return output[0:i]
-	}
-	return output
 }

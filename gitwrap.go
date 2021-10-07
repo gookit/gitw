@@ -1,4 +1,5 @@
-// Package gitwrap is library warp git commands. code is refer from github/hub
+// Package gitwrap is library warp git commands.
+// some code is refer from github/hub
 package gitwrap
 
 import "os"
@@ -20,7 +21,6 @@ type CmdBuilder struct {
 }
 
 type RepoConfig struct {
-
 	DefaultBranch string
 	DefaultRemote string
 }
@@ -36,6 +36,7 @@ type Repo struct {
 	cache map[string]interface{}
 }
 
+// NewRepo create Repo object
 func NewRepo(dir string) *Repo {
 	return &Repo{
 		dir:   dir,
@@ -43,6 +44,7 @@ func NewRepo(dir string) *Repo {
 	}
 }
 
+// Init run init for the repo dir.
 func (r *Repo) Init() error {
 	return r.gw.SubCmd("init").Run()
 }

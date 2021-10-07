@@ -1,6 +1,6 @@
 module github.com/gookit/gitwrap
 
-go 1.13
+go 1.14
 
 require (
 	github.com/gookit/color v1.4.2
