@@ -2,75 +2,250 @@
 // some code is refer from github/hub
 package gitwrap
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+	"syscall"
 
-var debug = isDebugFromEnv()
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/fsutil"
+)
 
-// SetDebug mode
-func SetDebug() {
-	debug = true
+// from: https://github.com/github/hub/blob/master/cmd/cmd.go
+
+var (
+	DefaultBin = "git"
+	GitDir = ".git"
+)
+
+// GitWrap is a project-wide struct that represents a command to be run in the console.
+type GitWrap struct {
+	// Bin git bin name. default is "git"
+	Bin string
+	// Cmd sub command name of git
+	// Cmd  string
+	Args []string
+	// extra
+	WorkDir string
+	Stdin  *os.File
+	Stdout *os.File
+	Stderr *os.File
+	// inner
+	gitDir string
 }
 
-func isDebugFromEnv() bool {
-	return os.Getenv("GIT_CMD_VERBOSE") != ""
-}
-
-// CmdBuilder struct
-type CmdBuilder struct {
-	Dir string
-}
-
-type RepoConfig struct {
-	DefaultBranch string
-	DefaultRemote string
-}
-
-// Repo struct
-type Repo struct {
-	gw GitWrap
-	// the repo dir
-	dir string
-	// config
-	conf *RepoConfig
-	// data cache
-	cache map[string]interface{}
-}
-
-// NewRepo create Repo object
-func NewRepo(dir string) *Repo {
-	return &Repo{
-		dir:   dir,
-		cache: make(map[string]interface{}, 16),
+// New create instance with args
+func New(args ...string) *GitWrap {
+	return &GitWrap{
+		Bin:    DefaultBin,
+		// Cmd:    cmd,
+		Args:   args,
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
 	}
 }
 
-// Init run init for the repo dir.
-func (r *Repo) Init() error {
-	return r.gw.SubCmd("init").Run()
+// CmdWithArgs create instance with cmd and args
+func CmdWithArgs(cmd string, args ...string) *GitWrap {
+	return New(cmd).WithArgs(args)
 }
 
-func (r *Repo) Info() {
-	// TODO
+func (gw *GitWrap) String() string {
+	args := make([]string, len(gw.Args))
+	for i, a := range gw.Args {
+		if strings.ContainsRune(a, '"') {
+			args[i] = fmt.Sprintf(`'%s'`, a)
+		} else if a == "" || strings.ContainsRune(a, '\'') || strings.ContainsRune(a, ' ') {
+			args[i] = fmt.Sprintf(`"%s"`, a)
+		} else {
+			args[i] = a
+		}
+	}
+	return fmt.Sprintf("%s %s", gw.Bin, strings.Join(args, " "))
 }
 
-func (r *Repo) RemoteInfos() {
-	// TODO
+// WithWorkDir returns the current object
+func (gw *GitWrap) WithWorkDir(dir string) *GitWrap {
+	gw.WorkDir = dir
+	return gw
 }
 
-func (r *Repo) DefaultRemoteInfo() *RemoteInfo {
-	// TODO
-	return nil
+// WithStdin returns the current argument
+func (gw *GitWrap) WithStdin(in *os.File) *GitWrap {
+	gw.Stdin = in
+	return gw
 }
 
-func (r *Repo) RemoteInfo(name string) *RemoteInfo {
-	// TODO
-	return nil
+// WithOutput returns the current argument
+func (gw *GitWrap) WithOutput(out *os.File, errOut *os.File) *GitWrap {
+	gw.Stdout = out
+	if errOut != nil {
+		gw.Stderr = errOut
+	}
+	return gw
 }
 
-func (r *Repo) Dir() string {
-	return r.dir
+// SubCmd returns the current object
+func (gw *GitWrap) SubCmd(cmd string) *GitWrap {
+	gw.Args = append(gw.Args, cmd)
+	return gw
 }
 
-func (r *Repo) Git() *GitWrap {
-	return New().WithWorkDir(r.dir)
+// WithArg returns the current argument
+func (gw *GitWrap) WithArg(args ...string) *GitWrap {
+	gw.Args = append(gw.Args, args...)
+	return gw
+}
+
+// WithArgs for the git
+func (gw *GitWrap) WithArgs(args []string) *GitWrap {
+	gw.Args = append(gw.Args, args...)
+	return gw
+}
+
+// IsGitRepo return the work dir is an git repo.
+func (gw *GitWrap) IsGitRepo() bool {
+	return fsutil.IsDir(gw.WorkDir + "/" + GitDir)
+}
+
+// GitDir return git data dir
+func (gw *GitWrap) GitDir() string {
+	if gw.gitDir != "" {
+		return gw.gitDir
+	}
+
+	if gw.WorkDir != "" {
+		gw.gitDir = gw.WorkDir + "/.git"
+	} else {
+		gw.gitDir = GitDir
+	}
+	return gw.gitDir
+}
+
+// CurrentBranch return current branch name
+func (gw *GitWrap) CurrentBranch() string {
+	// cat .git/HEAD
+	// ref: refs/heads/fea_4_12
+	return ""
+}
+
+// NewExecCmd create exec.Cmd from current cmd
+func (gw *GitWrap) NewExecCmd() *exec.Cmd {
+	// gw.parseBinArgs()
+
+	// create exec.Cmd
+	return exec.Command(gw.Bin, gw.Args...)
+}
+
+// Success run and return whether success
+func (gw *GitWrap) Success() bool {
+	verboseLog(gw)
+	err := exec.Command(gw.Bin, gw.Args...).Run()
+	return err == nil
+}
+
+// SafeOutput run and return output
+func (gw *GitWrap) SafeOutput() string {
+	out, err := gw.Output()
+	if err != nil {
+		return ""
+	}
+
+	return out
+}
+
+// Output run and return output
+func (gw *GitWrap) Output() (string, error) {
+	verboseLog(gw)
+	c := exec.Command(gw.Bin, gw.Args...)
+	c.Stderr = gw.Stderr
+	output, err := c.Output()
+
+	return string(output), err
+}
+
+// CombinedOutput run and return output, will combine stderr and stdout output
+func (gw *GitWrap) CombinedOutput() (string, error) {
+	verboseLog(gw)
+	output, err := exec.Command(gw.Bin, gw.Args...).CombinedOutput()
+
+	return string(output), err
+}
+
+// MustRun an command. will panic on error
+func (gw *GitWrap) MustRun()  {
+	if err := gw.Run(); err != nil {
+		panic(err)
+	}
+}
+
+// Run runs command with `Exec` on platforms except Windows
+// which only supports `Spawn`
+func (gw *GitWrap) Run() error {
+	if isWindows() {
+		return gw.Spawn()
+	}
+	return gw.Exec()
+}
+
+// Spawn runs command with spawn(3)
+func (gw *GitWrap) Spawn() error {
+	verboseLog(gw)
+	c := exec.Command(gw.Bin, gw.Args...)
+	c.Stdin = gw.Stdin
+	c.Stdout = gw.Stdout
+	c.Stderr = gw.Stderr
+
+	return c.Run()
+}
+
+// Exec runs command with exec(3)
+// Note that Windows doesn't support exec(3): http://golang.org/src/pkg/syscall/exec_windows.go#L339
+func (gw *GitWrap) Exec() error {
+	verboseLog(gw)
+
+	binary, err := exec.LookPath(gw.Bin)
+	if err != nil {
+		return &exec.Error{
+			Name: gw.Bin,
+			Err:  fmt.Errorf("%s not found in the system", gw.Bin),
+		}
+	}
+
+	args := []string{binary}
+	args = append(args, gw.Args...)
+
+	return syscall.Exec(binary, args, os.Environ())
+}
+
+func verboseLog(cmd *GitWrap) {
+	if debug {
+		color.Comment.Println("> ", cmd.String())
+	}
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows" || detectWSL()
+}
+
+var detectedWSL bool
+var detectedWSLContents string
+
+// https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+func detectWSL() bool {
+	if !detectedWSL {
+		b := make([]byte, 1024)
+		f, err := os.Open("/proc/version")
+		if err == nil {
+			_, _ = f.Read(b) // ignore error
+			f.Close()
+			detectedWSLContents = string(b)
+		}
+		detectedWSL = true
+	}
+	return strings.Contains(detectedWSLContents, "Microsoft")
 }
