@@ -28,6 +28,7 @@ import (
 var editorCmd string
 
 // Editor returns program name of the editor.
+// from https://github.com/alibaba/git-repo-go/blob/master/editor/editor.go
 func Editor() string {
 	if editorCmd != "" {
 		return editorCmd

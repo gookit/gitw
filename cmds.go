@@ -23,6 +23,17 @@ func gitCmd(args ...string) *GitWrap {
 	return cmd.WithArgs(args)
 }
 
+func cmdWithArgs(subCmd string, args ...string) *GitWrap {
+	cmd := New(subCmd)
+
+	// with global flags
+	if len(GlobalFlags) > 0 {
+		cmd.WithArgs(GlobalFlags)
+	}
+
+	return cmd.WithArgs(args)
+}
+
 func Version() (string, error) {
 	versionCmd := gitCmd("version")
 	output, err := versionCmd.Output()
@@ -34,11 +45,13 @@ func Version() (string, error) {
 
 var cachedDir string
 
+// Dir get git dir. eg: ".git"
 func Dir() (string, error) {
 	if cachedDir != "" {
 		return cachedDir, nil
 	}
 
+	// git rev-parse -q --git-dir
 	dirCmd := gitCmd("rev-parse", "-q", "--git-dir")
 	dirCmd.Stderr = nil
 	output, err := dirCmd.Output()
@@ -59,7 +72,6 @@ func Dir() (string, error) {
 	}
 
 	gitDir := firstLine(output)
-
 	if !filepath.IsAbs(gitDir) {
 		if chdir != "" {
 			gitDir = filepath.Join(chdir, gitDir)
@@ -77,7 +89,14 @@ func Dir() (string, error) {
 	return gitDir, nil
 }
 
+// Workdir git workdir name. alias of WorkdirName()
+func Workdir() (string, error) {
+	return WorkdirName()
+}
+
+// WorkdirName git workdir name
 func WorkdirName() (string, error) {
+	// git rev-parse --show-toplevel
 	toplevelCmd := gitCmd("rev-parse", "--show-toplevel")
 	toplevelCmd.Stderr = nil
 	output, err := toplevelCmd.Output()
@@ -88,6 +107,7 @@ func WorkdirName() (string, error) {
 	return dir, err
 }
 
+// HasFile check
 func HasFile(segments ...string) bool {
 	// The blessed way to resolve paths within git dir since Git 2.5.0
 	pathCmd := gitCmd("rev-parse", "-q", "--git-path", filepath.Join(segments...))
@@ -116,7 +136,9 @@ func HasFile(segments ...string) bool {
 	return false
 }
 
+// Head read current branch name. return like: "refs/heads/main"
 func Head() (string, error) {
+	// git symbolic-ref HEAD
 	return SymbolicRef("HEAD")
 }
 
@@ -140,6 +162,7 @@ func SymbolicFullName(name string) (string, error) {
 	return firstLine(output), nil
 }
 
+// Ref get
 func Ref(ref string) (string, error) {
 	parseCmd := gitCmd("rev-parse", "-q", ref)
 	parseCmd.Stderr = nil
@@ -151,18 +174,20 @@ func Ref(ref string) (string, error) {
 	return firstLine(output), nil
 }
 
+// RefList get
 func RefList(a, b string) ([]string, error) {
 	ref := fmt.Sprintf("%s...%s", a, b)
 	listCmd := gitCmd("rev-list", "--cherry-pick", "--right-only", "--no-merges", ref)
 	listCmd.Stderr = nil
 	output, err := listCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("Can't load rev-list for %s", ref)
+		return nil, fmt.Errorf("can't load rev-list for %s", ref)
 	}
 
 	return outputLines(output), nil
 }
 
+// NewRange object
 func NewRange(a, b string) (*Range, error) {
 	parseCmd := gitCmd("rev-parse", "-q", a, b)
 	parseCmd.Stderr = nil
@@ -178,6 +203,7 @@ func NewRange(a, b string) (*Range, error) {
 	return &Range{lines[0], lines[1]}, nil
 }
 
+// Range struct
 type Range struct {
 	A string
 	B string
@@ -266,7 +292,7 @@ func Remotes() ([]string, error) {
 }
 
 // -------------------------------------------------
-// git config
+// git var
 // -------------------------------------------------
 
 // Var get by git var.
@@ -280,10 +306,16 @@ func Var(name string) string {
 	return val
 }
 
+// AllVars get all git vars
+func AllVars() string {
+	return Var("-l")
+}
+
 // -------------------------------------------------
 // git config
 // -------------------------------------------------
 
+// Config get git config by name
 func Config(name string) string {
 	val, err := gitConfigGet(name)
 	if err != nil {
@@ -298,7 +330,8 @@ func ConfigAll(name string) ([]string, error) {
 		mode = "--get-regexp"
 	}
 
-	configCmd := gitCmd(gitConfigCommand([]string{mode, name})...)
+	// configCmd := gitCmd(gitConfigCommand([]string{mode, name})...)
+	configCmd := cmdWithArgs("config", mode, name)
 	output, err := configCmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("unknown config %s", name)
@@ -306,10 +339,12 @@ func ConfigAll(name string) ([]string, error) {
 	return outputLines(output), nil
 }
 
+// GlobalConfig get git global config by name
 func GlobalConfig(name string) (string, error) {
 	return gitConfigGet("--global", name)
 }
 
+// SetGlobalConfig by name
 func SetGlobalConfig(name, value string) error {
 	_, err := gitConfig("--global", name, value)
 	return err
@@ -359,6 +394,12 @@ func IsGitDir(dir string) bool {
 	return cmd.Success()
 }
 
+// IsGitCmd check
+func IsGitCmd(command string) bool {
+	return IsGitCommand(command)
+}
+
+// IsGitCommand check
 func IsGitCommand(command string) bool {
 	helpCmd := gitCmd("help", "--no-verbose", "-a")
 	helpCmd.Stderr = nil
@@ -373,9 +414,9 @@ func IsGitCommand(command string) bool {
 		return false
 	}
 
-	for _, helpCommandOutputLine := range outputLines(cmdOutput) {
-		if strings.HasPrefix(helpCommandOutputLine, "  ") {
-			for _, gitCommand := range strings.Split(helpCommandOutputLine, " ") {
+	for _, helpCmdOutputLine := range outputLines(cmdOutput) {
+		if strings.HasPrefix(helpCmdOutputLine, "  ") {
+			for _, gitCommand := range strings.Split(helpCmdOutputLine, " ") {
 				if gitCommand == command {
 					return true
 				}

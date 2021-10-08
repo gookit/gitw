@@ -35,7 +35,7 @@ type GitWrap struct {
 	gitDir string
 }
 
-// New instance
+// New create instance with args
 func New(args ...string) *GitWrap {
 	return &GitWrap{
 		Bin:    DefaultBin,
@@ -45,6 +45,11 @@ func New(args ...string) *GitWrap {
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	}
+}
+
+// CmdWithArgs create instance with cmd and args
+func CmdWithArgs(cmd string, args ...string) *GitWrap {
+	return New(cmd).WithArgs(args)
 }
 
 func (gw *GitWrap) String() string {
@@ -100,24 +105,6 @@ func (gw *GitWrap) WithArgs(args []string) *GitWrap {
 	return gw
 }
 
-// Output run and return output
-func (gw *GitWrap) Output() (string, error) {
-	verboseLog(gw)
-	c := exec.Command(gw.Bin, gw.Args...)
-	c.Stderr = gw.Stderr
-	output, err := c.Output()
-
-	return string(output), err
-}
-
-// CombinedOutput run and return output, will combine stderr and stdout output
-func (gw *GitWrap) CombinedOutput() (string, error) {
-	verboseLog(gw)
-	output, err := exec.Command(gw.Bin, gw.Args...).CombinedOutput()
-
-	return string(output), err
-}
-
 // IsGitRepo return the work dir is an git repo.
 func (gw *GitWrap) IsGitRepo() bool {
 	return fsutil.IsDir(gw.WorkDir + "/" + GitDir)
@@ -144,6 +131,14 @@ func (gw *GitWrap) CurrentBranch() string {
 	return ""
 }
 
+// NewExecCmd create exec.Cmd from current cmd
+func (gw *GitWrap) NewExecCmd() *exec.Cmd {
+	// gw.parseBinArgs()
+
+	// create exec.Cmd
+	return exec.Command(gw.Bin, gw.Args...)
+}
+
 // Success run and return whether success
 func (gw *GitWrap) Success() bool {
 	verboseLog(gw)
@@ -151,12 +146,32 @@ func (gw *GitWrap) Success() bool {
 	return err == nil
 }
 
-// NewExecCmd create exec.Cmd from current cmd
-func (gw *GitWrap) NewExecCmd() *exec.Cmd {
-	// gw.parseBinArgs()
+// SafeOutput run and return output
+func (gw *GitWrap) SafeOutput() string {
+	out, err := gw.Output()
+	if err != nil {
+		return ""
+	}
 
-	// create exec.Cmd
-	return exec.Command(gw.Bin, gw.Args...)
+	return out
+}
+
+// Output run and return output
+func (gw *GitWrap) Output() (string, error) {
+	verboseLog(gw)
+	c := exec.Command(gw.Bin, gw.Args...)
+	c.Stderr = gw.Stderr
+	output, err := c.Output()
+
+	return string(output), err
+}
+
+// CombinedOutput run and return output, will combine stderr and stdout output
+func (gw *GitWrap) CombinedOutput() (string, error) {
+	verboseLog(gw)
+	output, err := exec.Command(gw.Bin, gw.Args...).CombinedOutput()
+
+	return string(output), err
 }
 
 // MustRun an command. will panic on error
@@ -195,7 +210,7 @@ func (gw *GitWrap) Exec() error {
 	if err != nil {
 		return &exec.Error{
 			Name: gw.Bin,
-			Err:  fmt.Errorf("command not found"),
+			Err:  fmt.Errorf("%s not found in the system", gw.Bin),
 		}
 	}
 

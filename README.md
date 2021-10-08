@@ -4,7 +4,7 @@ Git commands wrapper tool library
 
 ## Install
 
-> required: git 2.x
+> required: go 1.14+, git 2.x
 
 ```bash
 go get github.com/gookit/gitwrap
@@ -14,14 +14,20 @@ go get github.com/gookit/gitwrap
 
 ```go
 package main
+
 import (
-    "github.com/gookit/gitwrap"
+	"fmt"
+
+	"github.com/gookit/gitwrap"
 )
 
 func main() {
-    git := gitwrap.New("log", "-2")
-    // git.Run()
-    git.MustRun()
+	logCmd := gitwrap.New("log", "-2")
+	// git.Run()
+	// txt, err := logCmd.Output()
+	txt := logCmd.SafeOutput()
+
+	fmt.Println(txt)
 }
 ```
 
@@ -63,3 +69,4 @@ func WorkdirName() (string, error)
 
 - https://github/phppkg/phpgit
 - https://github.com/github/hub
+- https://github.com/alibaba/git-repo-go

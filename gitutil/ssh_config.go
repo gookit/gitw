@@ -14,6 +14,7 @@ const (
 	hostReStr = "(?i)^[ \t]*(host|hostname)[ \t]+(.+)$"
 )
 
+// SSHConfig map
 type SSHConfig map[string]string
 
 func newSSHConfigReader() *SSHConfigReader {
@@ -31,6 +32,7 @@ func newSSHConfigReader() *SSHConfigReader {
 	}
 }
 
+// SSHConfigReader struct
 type SSHConfigReader struct {
 	Files []string
 }
