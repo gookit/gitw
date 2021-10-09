@@ -74,19 +74,35 @@ type Changelog struct {
 	RmRepeat bool
 }
 
-// New object with git log output text
-func New(gitLogOut string) *Changelog {
+// NewWithGitLog new object with git log output text
+func NewWithGitLog(gitLogOut string) *Changelog {
+	return New().Load(gitLogOut)
+}
+
+// New object
+func New() *Changelog {
 	return &Changelog{
-		logText: gitLogOut,
+		// init some settings
+		Title:     "## Change Log",
+		LogFormat: LogFmtHs,
+		RmRepeat:  true,
 	}
 }
 
-// NewEmpty object
-func NewEmpty() *Changelog {
-	return &Changelog{}
+// WithConfig config the object
+func (c *Changelog) WithConfig(fn func(c *Changelog)) *Changelog {
+	fn(c)
+	return c
 }
 
-func (c *Changelog) Load(gitLogOut string) {
+// Load logText by git log
+func (c *Changelog) Load(gitLogOut string) *Changelog  {
+	c.SetLogText(gitLogOut)
+	return c
+}
+
+// SetLogText by git log
+func (c *Changelog) SetLogText(gitLogOut string) {
 	c.logText = gitLogOut
 }
 
@@ -220,7 +236,6 @@ func (c *Changelog) formatLogItems() map[string]int {
 	if c.Formatter == nil {
 		c.Formatter = &SimpleFormatter{}
 	}
-
 
 	groupMap := make(map[string]int, len(c.logItems))
 	for _, li := range c.logItems {

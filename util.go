@@ -8,22 +8,24 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
 )
 
-// func Editor() (string, error) {
-// 	varCmd := gitCmd("var", "GIT_EDITOR")
-// 	varCmd.Stderr = nil
-// 	output, err := varCmd.Output()
-// 	if err != nil {
-// 		return "", fmt.Errorf("can't load git var: GIT_EDITOR")
-// 	}
-//
-// 	return os.ExpandEnv(firstLine(output)), nil
-// }
+// MustString must return string, will panic on error
+func MustString(s string, err error) string {
+	goutil.PanicIfErr(err)
+	return s
+}
+
+// MustStrings must return strings, will panic on error
+func MustStrings(ss []string, err error) []string {
+	goutil.PanicIfErr(err)
+	return ss
+}
 
 var editorCmd string
 

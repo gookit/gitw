@@ -49,12 +49,13 @@ func New(args ...string) *GitWrap {
 	}
 }
 
-// CmdWithArgs create instance with cmd and args
-func CmdWithArgs(cmd string, args ...string) *GitWrap {
+// NewWithArgs create instance with cmd and args
+func NewWithArgs(cmd string, args ...string) *GitWrap {
 	return New(cmd).WithArgs(args)
 }
 
-func (gw *GitWrap) String() string {
+// Cmdline to command line
+func (gw *GitWrap) Cmdline() string {
 	args := make([]string, len(gw.Args))
 	for i, a := range gw.Args {
 		if strings.ContainsRune(a, '"') {
@@ -66,6 +67,11 @@ func (gw *GitWrap) String() string {
 		}
 	}
 	return fmt.Sprintf("%s %s", gw.Bin, strings.Join(args, " "))
+}
+
+// String to command line
+func (gw *GitWrap) String() string {
+	return gw.Cmdline()
 }
 
 // WithWorkDir returns the current object
@@ -95,10 +101,39 @@ func (gw *GitWrap) SubCmd(cmd string) *GitWrap {
 	return gw
 }
 
-// WithArg returns the current argument
-func (gw *GitWrap) WithArg(args ...string) *GitWrap {
+// Add returns the current object
+func (gw *GitWrap) Add(args ...string) *GitWrap {
 	gw.Args = append(gw.Args, args...)
 	return gw
+}
+
+// WithArg returns the current object. alias of the Add()
+func (gw *GitWrap) WithArg(args ...string) *GitWrap {
+	return gw.Add(args...)
+}
+
+// Addf add arg and returns the current object.
+func (gw *GitWrap) Addf(format string, args ...interface{}) *GitWrap {
+	gw.Args = append(gw.Args, fmt.Sprintf(format, args...))
+	return gw
+}
+
+// WithArgf add arg and returns the current object. alias of the Addf()
+func (gw *GitWrap) WithArgf(format string, args ...interface{}) *GitWrap {
+	return gw.Addf(format, args...)
+}
+
+// AddIf add arg and returns the current object
+func (gw *GitWrap) AddIf(arg string, exprOk bool) *GitWrap {
+	if exprOk {
+		gw.Args = append(gw.Args, arg)
+	}
+	return gw
+}
+
+// WithArgIf add arg and returns the current object
+func (gw *GitWrap) WithArgIf(arg string, exprOk bool) *GitWrap {
+	return gw.AddIf(arg, exprOk)
 }
 
 // WithArgs for the git

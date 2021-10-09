@@ -242,6 +242,7 @@ func CommentChar(text string) (string, error) {
 	return char, nil
 }
 
+// Show git log diff by an commit sha
 func Show(sha string) (string, error) {
 	gw := New()
 	gw.Stderr = nil
@@ -252,10 +253,16 @@ func Show(sha string) (string, error) {
 	return strings.TrimSpace(output), err
 }
 
+// Log show git log between sha1 to sha2
+//
+// Usage:
+//	gitwrap.Log("v1.0.2", "v1.0.3")
+//	gitwrap.Log("commit id 1", "commit id 2")
 func Log(sha1, sha2 string) (string, error) {
 	execCmd := New()
 	execCmd.WithArg("-c", "log.showSignature=false").WithArg("log").WithArg("--no-color")
 	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
+	// execCmd.WithArg("--format='%h (%aN, %ar)%n%w(78,3,3)%s%n%+b'")
 	execCmd.WithArg("--cherry")
 
 	// shaRange := fmt.Sprintf("%s...%s", sha1, sha2)
@@ -270,6 +277,7 @@ func Log(sha1, sha2 string) (string, error) {
 	return outputs, nil
 }
 
+// LocalBranches list
 func LocalBranches() ([]string, error) {
 	branchesCmd := gitCmd("branch", "--list")
 	output, err := branchesCmd.Output()
@@ -277,13 +285,14 @@ func LocalBranches() ([]string, error) {
 		return nil, err
 	}
 
-	branches := []string{}
+	var branches []string
 	for _, branch := range outputLines(output) {
 		branches = append(branches, branch[2:])
 	}
 	return branches, nil
 }
 
+// Remotes list
 func Remotes() ([]string, error) {
 	remoteCmd := gitCmd("remote", "-v")
 	remoteCmd.Stderr = nil

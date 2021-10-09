@@ -1,6 +1,8 @@
 # GitWrap
 
-Git commands wrapper tool library
+Git command wrapper, and some extra git tools package.
+
+> Github https://github.com/gookit/gitwrap
 
 ## Install
 
@@ -22,6 +24,16 @@ import (
 )
 
 func main() {
+	// logTxt, err := gitwrap.Log("v1.0.2", "v1.0.3")
+	logTxt := gitwrap.MustString(gitwrap.Log("v1.0.2", "v1.0.3"))
+	fmt.Println(logTxt)
+
+	// LocalBranches
+	brList := gitwrap.MustStrings(gitwrap.LocalBranches())
+	fmt.Println(brList)
+	
+	// custom create command
+
 	logCmd := gitwrap.New("log", "-2")
 	// git.Run()
 	// txt, err := logCmd.Output()
@@ -39,7 +51,6 @@ func CommentChar(text string) (string, error)
 func Config(name string) string
 func ConfigAll(name string) ([]string, error)
 func Dir() (string, error)
-func EditText(data string) string
 func Editor() string
 func GlobalConfig(name string) (string, error)
 func HasFile(segments ...string) bool
@@ -63,6 +74,14 @@ func SymbolicRef(ref string) (string, error)
 func Var(name string) string
 func Version() (string, error)
 func WorkdirName() (string, error)
+```
+
+Util functions:
+
+```go
+func MustString(s string, err error) string
+func MustStrings(ss []string, err error) []string
+func EditText(data string) string
 ```
 
 ## Refer

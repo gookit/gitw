@@ -18,6 +18,7 @@ type CmdBuilder struct {
 	Dir string
 }
 
+// RepoConfig struct
 type RepoConfig struct {
 	DefaultBranch string
 	DefaultRemote string
@@ -25,7 +26,7 @@ type RepoConfig struct {
 
 // Repo struct
 type Repo struct {
-	gw GitWrap
+	gw *GitWrap
 	// the repo dir
 	dir string
 	// config
@@ -39,6 +40,8 @@ func NewRepo(dir string) *Repo {
 	return &Repo{
 		dir:   dir,
 		cache: make(map[string]interface{}, 16),
+		// init gw
+		gw: New().WithWorkDir(dir),
 	}
 }
 
@@ -70,5 +73,5 @@ func (r *Repo) Dir() string {
 }
 
 func (r *Repo) Git() *GitWrap {
-	return New().WithWorkDir(r.dir)
+	return r.gw
 }
