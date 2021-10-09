@@ -237,6 +237,9 @@ func (c *Changelog) formatLogItems() map[string]int {
 		c.Formatter = &SimpleFormatter{}
 	}
 
+	// init field
+	c.formatted = make(map[string][]string)
+
 	groupMap := make(map[string]int, len(c.logItems))
 	for _, li := range c.logItems {
 		group, fmtLine := c.Formatter.Format(li)
