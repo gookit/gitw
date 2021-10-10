@@ -170,8 +170,6 @@ func (gw *GitWrap) CurrentBranch() string {
 
 // NewExecCmd create exec.Cmd from current cmd
 func (gw *GitWrap) NewExecCmd() *exec.Cmd {
-	// gw.parseBinArgs()
-
 	// create exec.Cmd
 	return exec.Command(gw.Bin, gw.Args...)
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gookit/gitwrap"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -76,7 +77,9 @@ type Changelog struct {
 
 // NewWithGitLog new object with git log output text
 func NewWithGitLog(gitLogOut string) *Changelog {
-	return New().Load(gitLogOut)
+	cl := New()
+	cl.SetLogText(gitLogOut)
+	return cl
 }
 
 // New object
@@ -95,15 +98,22 @@ func (c *Changelog) WithConfig(fn func(c *Changelog)) *Changelog {
 	return c
 }
 
-// Load logText by git log
-func (c *Changelog) Load(gitLogOut string) *Changelog  {
-	c.SetLogText(gitLogOut)
-	return c
-}
-
 // SetLogText by git log
 func (c *Changelog) SetLogText(gitLogOut string) {
 	c.logText = gitLogOut
+}
+
+// FetchGitLog by git log
+func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelog {
+	logCmd := gitwrap.New("log", "--reverse")
+	logCmd.Addf("--pretty=format:\"%s\"", c.LogFormat)
+	// logCmd.Add("--no-merges")
+	logCmd.Add(moreArgs...) // add custom args
+	// logCmd.Addf("%s...%s", "v0.1.0", "HEAD")
+	logCmd.Addf("%s...%s", sha1, sha2)
+
+	c.SetLogText(logCmd.SafeOutput())
+	return c
 }
 
 // -------------------------------------------------------------------
