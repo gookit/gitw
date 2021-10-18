@@ -68,6 +68,10 @@ type Changelog struct {
 	Title string
 	// RepoURL repo URL address
 	RepoURL string
+	// GroupPrefix string. eg: '### '
+	GroupPrefix string
+	// GroupPrefix string.
+	GroupSuffix string
 	// NoGroup Not output group name line.
 	NoGroup bool
 	// RmRepeat remove repeated log by message
@@ -229,9 +233,9 @@ func (c *Changelog) Generate() (err error) {
 	}
 
 	for grpName, list := range c.formatted {
-		// only one group, not render group name.
+		// if only one group, not render group name.
 		if groupCount > 1 {
-			outLines = append(outLines, grpName)
+			outLines = append(outLines, c.GroupPrefix + grpName + c.GroupSuffix)
 		}
 
 		outLines = append(outLines, strings.Join(list, "\n"))

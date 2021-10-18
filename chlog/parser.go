@@ -8,8 +8,6 @@ import (
 
 const (
 	Sep = " | "
-
-	DefaultGroup = "Other"
 )
 
 // see https://devhints.io/git-log-format

@@ -2,8 +2,10 @@ package chlog
 
 import "strings"
 
-type LineFilterFunc func(line string) bool
-type ItemFilterFunc func(li *LogItem) bool
+type (
+	LineFilterFunc func(line string) bool
+	ItemFilterFunc func(li *LogItem) bool
+)
 
 // KeywordFilter filter log item by keyword
 func KeywordFilter(kw string, exclude bool) ItemFilterFunc{

@@ -45,7 +45,7 @@ func main() {
 
 ## Gen changelog
 
-You can quickly generate changelog by `gitwrap/chlog` tool.
+You can quickly generate changelog by `gitwrap/chlog` package.
 
 ```go
 package main
@@ -77,26 +77,31 @@ func main() {
 }
 ```
 
-**Output**:
+**Outputs**:
 
 ```text
 ## Change Log
 
 ### Update
 
-- update: update some logic for git command run [96147fb](/commit/96147fba43caf462a50bc97d7ed078dd0059e797)
+- update: update some logic for git command run [96147fb](https://github.com/gookit/gitwrap/commit/96147fba43caf462a50bc97d7ed078dd0059e797)
+- update: move RepoUrl config to MarkdownFormatter [8c861bf](https://github.com/gookit/gitwrap/commit/8c861bf05ae3576aba401692124df63372ae9ed7)
 
 ### Fixed
 
-- fix: gen changelog error [1636761](/commit/16367617bc364ce1022097e89313c7b09983981a)
+- fix: gen changelog error [1636761](https://github.com/gookit/gitwrap/commit/16367617bc364ce1022097e89313c7b09983981a)
 
 ### Other
 
-- style: update some code logic [4a9f146](/commit/4a9f14656b26a08b0cdd9c4f9cec9ae3bf5938b1)
-- build(deps): bump github.com/gookit/color from 1.4.2 to 1.5.0 [037fa47](/commit/037fa477954b630fe34ff7ceab51e6132db645cb)
+- style: update some code logic [4a9f146](https://github.com/gookit/gitwrap/commit/4a9f14656b26a08b0cdd9c4f9cec9ae3bf5938b1)
+- build(deps): bump github.com/gookit/color from 1.4.2 to 1.5.0 [037fa47](https://github.com/gookit/gitwrap/commit/037fa477954b630fe34ff7ceab51e6132db645cb)
+- style: update examples and readme [8277389](https://github.com/gookit/gitwrap/commit/8277389817917e6b0cb97f3e5629f2c5034075e4)
+
 ```
 
-## Functions
+## Commands
+
+Git command functions
 
 ```go
 func Alias(name string) string
@@ -108,17 +113,13 @@ func Editor() string
 func GlobalConfig(name string) (string, error)
 func HasFile(segments ...string) bool
 func Head() (string, error)
-func IsGitCommand(command string) bool
-func IsGitDir(dir string) bool
 func LocalBranches() ([]string, error)
 func Log(sha1, sha2 string) (string, error)
-func ParseURL(rawURL string) (u *url.URL, err error)
 func Quiet(args ...string) bool
 func Ref(ref string) (string, error)
 func RefList(a, b string) ([]string, error)
 func Remotes() ([]string, error)
 func Run(args ...string) error
-func SetDebug()
 func SetGlobalConfig(name, value string) error
 func Show(sha string) (string, error)
 func Spawn(args ...string) error
@@ -132,6 +133,10 @@ func WorkdirName() (string, error)
 Util functions:
 
 ```go
+func SetDebug()
+func ParseURL(rawURL string) (u *url.URL, err error)
+func IsGitCommand(command string) bool
+func IsGitDir(dir string) bool
 func MustString(s string, err error) string
 func MustStrings(ss []string, err error) []string
 func EditText(data string) string

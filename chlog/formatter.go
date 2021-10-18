@@ -13,24 +13,25 @@ type Formatter interface {
 	Format(li *LogItem) (group, fmtLine string)
 }
 
+// GroupMatcher interface
+type GroupMatcher interface {
+	// Match group from log msg
+	Match(msg string) (group string)
+}
+
 // SimpleFormatter struct
-type SimpleFormatter struct {}
+type SimpleFormatter struct {
+	// GroupMatch handler.
+	GroupMatch GroupMatcher
+}
 
 // MatchGroup from log msg
 func (f *SimpleFormatter) MatchGroup(msg string) (group string) {
-	if isFixMsg(msg) {
-		return "Fixed"
+	if f.GroupMatch != nil {
+		return f.GroupMatch.Match(msg)
 	}
 
-	if hasOnePrefix(msg, []string{"up", "add", "create"}) {
-		return "Update"
-	}
-
-	if hasOnePrefix(msg, []string{"feat", "support", "new"}) {
-		return "Feature"
-	}
-
-	return DefaultGroup
+	return SimpleMatchFunc(msg)
 }
 
 // Format the log item to line
@@ -55,13 +56,6 @@ type MarkdownFormatter struct {
 	SimpleFormatter
 	// RepoURL git repo remote URL address
 	RepoURL string
-}
-
-// MatchGroup from log msg
-func (f *MarkdownFormatter) MatchGroup(msg string) (group string) {
-	group = f.SimpleFormatter.MatchGroup(msg)
-
-	return "\n### " + group + "\n"
 }
 
 // Format the log item to line

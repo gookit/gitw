@@ -9,8 +9,10 @@ import (
 
 func main() {
 	cl := chlog.New()
+	// with some settings ...
 	cl.WithConfig(func(c *chlog.Changelog) {
-		// some settings ...
+		c.GroupPrefix = "\n### "
+		c.GroupSuffix = "\n"
 		c.Formatter = &chlog.MarkdownFormatter{
 			RepoURL: "https://github.com/gookit/gitwrap",
 		}
