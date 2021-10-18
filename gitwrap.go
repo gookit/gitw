@@ -33,6 +33,8 @@ type GitWrap struct {
 	Stdin  *os.File
 	Stdout *os.File
 	Stderr *os.File
+	// BeforeExec command
+	BeforeExec func(gw *GitWrap)
 	// inner
 	gitDir string
 }
@@ -56,22 +58,31 @@ func NewWithArgs(cmd string, args ...string) *GitWrap {
 
 // Cmdline to command line
 func (gw *GitWrap) Cmdline() string {
-	args := make([]string, len(gw.Args))
-	for i, a := range gw.Args {
+	b := new(strings.Builder)
+	b.WriteString(gw.Bin)
+
+	for _, a := range gw.Args {
+		b.WriteByte(' ')
 		if strings.ContainsRune(a, '"') {
-			args[i] = fmt.Sprintf(`'%s'`, a)
+			b.WriteString(fmt.Sprintf(`'%s'`, a))
 		} else if a == "" || strings.ContainsRune(a, '\'') || strings.ContainsRune(a, ' ') {
-			args[i] = fmt.Sprintf(`"%s"`, a)
+			b.WriteString(fmt.Sprintf(`"%s"`, a))
 		} else {
-			args[i] = a
+			b.WriteString(a)
 		}
 	}
-	return fmt.Sprintf("%s %s", gw.Bin, strings.Join(args, " "))
+	return b.String()
 }
 
 // String to command line
 func (gw *GitWrap) String() string {
 	return gw.Cmdline()
+}
+
+// OnBeforeExec add hook
+func (gw *GitWrap) OnBeforeExec(fn func(gw *GitWrap)) *GitWrap {
+	gw.BeforeExec = fn
+	return gw
 }
 
 // WithWorkDir returns the current object
@@ -177,8 +188,12 @@ func (gw *GitWrap) NewExecCmd() *exec.Cmd {
 // Success run and return whether success
 func (gw *GitWrap) Success() bool {
 	verboseLog(gw)
-	err := exec.Command(gw.Bin, gw.Args...).Run()
-	return err == nil
+	c := exec.Command(gw.Bin, gw.Args...);
+
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
+	return c.Run() == nil
 }
 
 // SafeOutput run and return output
@@ -196,15 +211,23 @@ func (gw *GitWrap) Output() (string, error) {
 	verboseLog(gw)
 	c := exec.Command(gw.Bin, gw.Args...)
 	c.Stderr = gw.Stderr
-	output, err := c.Output()
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
 
+	output, err := c.Output()
 	return string(output), err
 }
 
 // CombinedOutput run and return output, will combine stderr and stdout output
 func (gw *GitWrap) CombinedOutput() (string, error) {
 	verboseLog(gw)
-	output, err := exec.Command(gw.Bin, gw.Args...).CombinedOutput()
+	c := exec.Command(gw.Bin, gw.Args...)
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
+
+	output, err := c.CombinedOutput()
 
 	return string(output), err
 }
@@ -233,6 +256,9 @@ func (gw *GitWrap) Spawn() error {
 	c.Stdout = gw.Stdout
 	c.Stderr = gw.Stderr
 
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
 	return c.Run()
 }
 
@@ -252,17 +278,25 @@ func (gw *GitWrap) Exec() error {
 	args := []string{binary}
 	args = append(args, gw.Args...)
 
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
 	return syscall.Exec(binary, args, os.Environ())
 }
 
 func verboseLog(cmd *GitWrap) {
 	if debug {
-		color.Comment.Println("> ", cmd.String())
+		PrintCmdline(cmd)
 	}
 }
 
 func isWindows() bool {
 	return runtime.GOOS == "windows" || detectWSL()
+}
+
+// PrintCmdline on exec
+func PrintCmdline(gw *GitWrap) {
+	color.Comment.Println("> ", gw.String())
 }
 
 var detectedWSL bool

@@ -43,6 +43,51 @@ func main() {
 }
 ```
 
+## Gen changelog
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/gookit/gitwrap/chlog"
+	"github.com/gookit/goutil"
+)
+
+func main() {
+	cl := chlog.New()
+	cl.WithConfig(func(c *chlog.Changelog) {
+		// some settings ...
+		c.Formatter = &chlog.MarkdownFormatter{}
+	})
+
+	cl.FetchGitLog("v0.1.0", "HEAD", "--no-merges")
+
+	goutil.PanicIfErr(cl.Generate())
+	fmt.Println(cl.Changelog())
+}
+```
+
+**Output**:
+
+```text
+## Change Log
+
+### Update
+
+- update: update some logic for git command run [96147fb](/commit/96147fba43caf462a50bc97d7ed078dd0059e797)
+
+### Fixed
+
+- fix: gen changelog error [1636761](/commit/16367617bc364ce1022097e89313c7b09983981a)
+
+### Other
+
+- style: update some code logic [4a9f146](/commit/4a9f14656b26a08b0cdd9c4f9cec9ae3bf5938b1)
+- build(deps): bump github.com/gookit/color from 1.4.2 to 1.5.0 [037fa47](/commit/037fa477954b630fe34ff7ceab51e6132db645cb)
+```
+
 ## Functions
 
 ```go
