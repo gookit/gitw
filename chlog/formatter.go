@@ -53,6 +53,8 @@ func (f *SimpleFormatter) Format(li *LogItem) (group, fmtLine string) {
 // MarkdownFormatter struct
 type MarkdownFormatter struct {
 	SimpleFormatter
+	// RepoURL git repo remote URL address
+	RepoURL string
 }
 
 // MatchGroup from log msg
@@ -69,7 +71,7 @@ func (f *MarkdownFormatter) Format(li *LogItem) (group, fmtLine string)  {
 	if li.HashId != "" {
 		// full url.
 		// eg: https://github.com/inhere/kite/commit/ebd90a304755218726df4eb398fd081c08d04b9a
-		fmtLine = fmt.Sprintf("- %s [%s](%s/commit/%s)", li.Msg, li.AbbrevID(), li.RepoUrl, li.HashId)
+		fmtLine = fmt.Sprintf("- %s [%s](%s/commit/%s)", li.Msg, li.AbbrevID(), f.RepoURL, li.HashId)
 	} else {
 		fmtLine = " - " + li.Msg
 	}
@@ -92,7 +94,7 @@ func (f *GHReleaseFormatter) Format(li *LogItem) (group, fmtLine string)  {
 	if li.HashId != "" {
 		// full url.
 		// eg: https://github.com/inhere/kite/commit/ebd90a304755218726df4eb398fd081c08d04b9a
-		fmtLine = fmt.Sprintf("- %s %s/commit/%s", li.Msg, li.RepoUrl, li.HashId)
+		fmtLine = fmt.Sprintf("- %s %s/commit/%s", li.Msg, f.RepoURL, li.HashId)
 	} else {
 		fmtLine = " - " + li.Msg
 	}

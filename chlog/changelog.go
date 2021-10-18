@@ -18,7 +18,6 @@ type LogItem struct {
 	Date      string // %ci
 	Author    string // %an
 	Committer string // %cn
-	RepoUrl   string // Changelog.RepoUrl
 }
 
 // AbbrevID get abbrev commit ID

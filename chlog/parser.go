@@ -62,6 +62,5 @@ var BuiltInParser = LineParseFunc(func(line string, c *Changelog) *LogItem {
 		goutil.Panicf("unsupported log format '%s'", c.LogFormat)
 	}
 
-	li.RepoUrl = c.RepoURL
 	return li
 })
