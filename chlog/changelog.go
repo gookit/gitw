@@ -56,8 +56,6 @@ type Changelog struct {
 	formatted map[string][]string
 	// the valid commit log count after parse and formatted.
 	logCount int
-	// LineFilters The log line filters
-	LineFilters []func(line string) bool
 	// LineParser can custom log line parser
 	LineParser LineParser
 	// ItemFilters The parsed log item filters
@@ -155,11 +153,6 @@ func (c *Changelog) Parse() (err error) {
 			continue
 		}
 
-		// line filters
-		if !c.applyLineFilters(line) {
-			continue
-		}
-
 		// parse line
 		li := parser.Parse(line, c)
 		if li == nil {
@@ -185,15 +178,6 @@ func (c *Changelog) Parse() (err error) {
 	}
 
 	return
-}
-
-func (c *Changelog) applyLineFilters(line string) bool {
-	for _, filter := range c.LineFilters {
-		if !filter(line) {
-			return false
-		}
-	}
-	return true
 }
 
 func (c *Changelog) applyItemFilters(li *LogItem) bool {

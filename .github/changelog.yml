@@ -1,6 +1,7 @@
 options:
   title: '## Change Log'
   style: gh-release
+
 filters:
   # message length >= 12
   - name: msgLen
@@ -13,7 +14,7 @@ filters:
     exclude: true
 
 # not matched will use 'Other' group.
-groups:
+rules:
   - name: New
     keywords: [add, new]
   - name: Fixed

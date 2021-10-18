@@ -2,30 +2,39 @@ package chlog
 
 const DefaultGroup = "Other"
 
-type Group struct {
-	Name string
-}
-
 // Rule struct
 type Rule struct {
+	// Name for group
 	Name string
-}
-
-// DefaultMatcher struct
-type DefaultMatcher struct {
+	// StartWiths message start withs string.
 	StartWiths []string
+	// Keywords message should contains there are keywords
 	Keywords []string
 }
 
-// GroupMatch struct
-type GroupMatch struct {
+// RuleMatcher struct
+type RuleMatcher struct {
 	// Names define group names and sort
 	Names []string
-	Rules []string
-	// MatchHandler func
-	MatchHandler func(msg string) string
+	Rules []Rule
 }
 
+// Match group name from log message.
+func (m RuleMatcher) Match(msg string) string {
+	for _, rule := range m.Rules {
+		if len(rule.StartWiths) > 0 && hasOnePrefix(msg, rule.StartWiths) {
+			return rule.Name
+		}
+
+		if len(rule.Keywords) > 0 && hasOneSub(msg, rule.Keywords) {
+			return rule.Name
+		}
+	}
+
+	return DefaultGroup
+}
+
+// SimpleMatchFunc for match group name.
 var SimpleMatchFunc = func(msg string) string {
 	if isFixMsg(msg) {
 		return "Fixed"
