@@ -12,6 +12,7 @@ const (
 // 	gw *GitWrap
 // }
 
+// RepoInfo struct
 type RepoInfo struct {
 	Name string
 	Path string
@@ -37,18 +38,18 @@ type RemoteInfo struct {
 	Group, Repo string
 	// Type string
 
-	// Proto type 'ssh' OR 'http'
+	// Proto the type 'ssh' OR 'http'
 	Proto string
 }
 
+// NewRemoteInfo create
 func NewRemoteInfo(name, url string) *RemoteInfo {
 	r := &RemoteInfo{
 		Name: name,
-		URL: url,
+		URL:  url,
 	}
 
 	parseRemoteUrl(url, r)
-
 	return r
 }
 

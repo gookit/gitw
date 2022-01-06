@@ -104,14 +104,17 @@ func (c *Changelog) SetLogText(gitLogOut string) {
 	c.logText = gitLogOut
 }
 
-// FetchGitLog by git log
+// FetchGitLog fetch log data by git log
 func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelog {
 	logCmd := gitwrap.New("log", "--reverse")
 	logCmd.Addf("--pretty=format:\"%s\"", c.LogFormat)
 	// logCmd.Add("--no-merges")
 	logCmd.Add(moreArgs...) // add custom args
+
 	// logCmd.Addf("%s...%s", "v0.1.0", "HEAD")
-	logCmd.Addf("%s...%s", sha1, sha2)
+	if sha1 != "" && sha2 != "" {
+		logCmd.Addf("%s...%s", sha1, sha2)
+	}
 
 	c.SetLogText(logCmd.SafeOutput())
 	return c
@@ -219,7 +222,7 @@ func (c *Changelog) Generate() (err error) {
 	for grpName, list := range c.formatted {
 		// if only one group, not render group name.
 		if groupCount > 1 {
-			outLines = append(outLines, c.GroupPrefix + grpName + c.GroupSuffix)
+			outLines = append(outLines, c.GroupPrefix+grpName+c.GroupSuffix)
 		}
 
 		outLines = append(outLines, strings.Join(list, "\n"))
