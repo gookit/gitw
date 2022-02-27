@@ -18,7 +18,7 @@ import (
 
 var (
 	DefaultBin = "git"
-	GitDir = ".git"
+	GitDir     = ".git"
 )
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.
@@ -30,9 +30,9 @@ type GitWrap struct {
 	Args []string
 	// extra
 	WorkDir string
-	Stdin  *os.File
-	Stdout *os.File
-	Stderr *os.File
+	Stdin   *os.File
+	Stdout  *os.File
+	Stderr  *os.File
 	// BeforeExec command
 	BeforeExec func(gw *GitWrap)
 	// inner
@@ -42,7 +42,7 @@ type GitWrap struct {
 // New create instance with args
 func New(args ...string) *GitWrap {
 	return &GitWrap{
-		Bin:    DefaultBin,
+		Bin: DefaultBin,
 		// Cmd:    cmd,
 		Args:   args,
 		Stdin:  os.Stdin,
@@ -51,7 +51,12 @@ func New(args ...string) *GitWrap {
 	}
 }
 
-// NewWithArgs create instance with cmd and args
+// Cmd create instance with git cmd and args
+func Cmd(cmd string, args ...string) *GitWrap {
+	return New(cmd).WithArgs(args)
+}
+
+// NewWithArgs create instance with git cmd and args
 func NewWithArgs(cmd string, args ...string) *GitWrap {
 	return New(cmd).WithArgs(args)
 }
@@ -188,7 +193,7 @@ func (gw *GitWrap) NewExecCmd() *exec.Cmd {
 // Success run and return whether success
 func (gw *GitWrap) Success() bool {
 	verboseLog(gw)
-	c := exec.Command(gw.Bin, gw.Args...);
+	c := exec.Command(gw.Bin, gw.Args...)
 
 	if gw.BeforeExec != nil {
 		gw.BeforeExec(gw)
@@ -233,7 +238,7 @@ func (gw *GitWrap) CombinedOutput() (string, error) {
 }
 
 // MustRun an command. will panic on error
-func (gw *GitWrap) MustRun()  {
+func (gw *GitWrap) MustRun() {
 	if err := gw.Run(); err != nil {
 		panic(err)
 	}
@@ -296,7 +301,7 @@ func isWindows() bool {
 
 // PrintCmdline on exec
 func PrintCmdline(gw *GitWrap) {
-	color.Comment.Println("> ", gw.String())
+	color.Comment.Println(">", gw.String())
 }
 
 var detectedWSL bool
