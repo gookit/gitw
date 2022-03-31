@@ -5,8 +5,8 @@ github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/gookit/color v1.5.0 h1:1Opow3+BWDwqor78DcJkJCIwnkviFi+rrOANki9BUFw=
 github.com/gookit/color v1.5.0/go.mod h1:43aQb+Zerm/BWh2GnrgOQm7ffz7tvQXEKV6BFMl7wAo=
 github.com/gookit/goutil v0.4.4/go.mod h1:qlGVh0PI+WnWSjYnIocfz/7tkeogxL6+EDNP1mRe+7o=
-github.com/gookit/goutil v0.4.5 h1:j7C62Zi3Up2LIlbp5K/vADCPd2wEMpqk9geJIdS3hEY=
-github.com/gookit/goutil v0.4.5/go.mod h1:1OTBcVK4Oqyv0iMkMShikHwTzN6BIaM/i+ICwW1gtWg=
+github.com/gookit/goutil v0.4.6 h1:LSATnmIyR0rV4BMj3XyaKFYtX/HbRURnPVHt6Zb5ABs=
+github.com/gookit/goutil v0.4.6/go.mod h1:pq1eTibwb2wN96jrci0xy7xogWzzo9CihOQJEAvz4yQ=
 github.com/gookit/slog v0.2.1 h1:EI47PlvpoPwxwkNTYaevN6iBNjo9nBxo0aQLiq+MTdk=
 github.com/gookit/slog v0.2.1/go.mod h1:CsbWzAaZA2FjLuGzvfTAR/QvFisZG31deOcZ05H++NI=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
