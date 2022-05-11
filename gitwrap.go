@@ -1,5 +1,5 @@
 // Package gitwrap is library warp git commands.
-// some code is refer from github/hub
+// some code is referred from github/hub
 package gitwrap
 
 import (
@@ -17,8 +17,10 @@ import (
 // from: https://github.com/github/hub/blob/master/cmd/cmd.go
 
 var (
+	// DefaultBin name
 	DefaultBin = "git"
-	GitDir     = ".git"
+	// GitDir name
+	GitDir = ".git"
 )
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.

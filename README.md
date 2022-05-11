@@ -47,6 +47,14 @@ func main() {
 
 You can quickly generate changelog by `gitwrap/chlog` package.
 
+### Install
+
+```shell
+go install github.com/gookit/gitwrap/cmd/chlog@latest
+```
+
+### Examples
+
 ```go
 package main
 

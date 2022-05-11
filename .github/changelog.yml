@@ -1,28 +1,30 @@
 options:
   title: '## Change Log'
   style: gh-release
+  # group names
+  names: [New, Fixed, Feature, Update]
+  repoUrl: https://github.com/gookit/gitwrap
 
 filters:
-  # message length >= 12
+  # message length should >= 12
   - name: msgLen
     minLen: 12
-  # message words >= 3
+  # message words should >= 3
   - name: wordsLen
     minLen: 3
   - name: keywords
     keywords: ['format code']
     exclude: true
 
+# group match rules
 # not matched will use 'Other' group.
 rules:
-  - name: New
-    keywords: [add, new]
   - name: Fixed
-    startWiths: [add, new]
-    keywords: [add, new]
-  - name: Feat
-    startWiths: [feat]
-    keywords: [feature]
+    startWiths: [fix]
+    contains: ['fix:']
+  - name: Feature
+    startWiths: [feat, new]
+    contains: [feature]
   - name: Update
     startWiths: [update, 'up:']
-    keywords: [update]
+    contains: [' update']

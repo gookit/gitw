@@ -1,6 +1,9 @@
 package chlog
 
-const DefaultGroup = "Other"
+import "github.com/gookit/goutil/strutil"
+
+// DefaultGroup name
+var DefaultGroup = "Other"
 
 // Rule struct
 type Rule struct {
@@ -8,8 +11,8 @@ type Rule struct {
 	Name string
 	// StartWiths message start withs string.
 	StartWiths []string
-	// Keywords message should contains there are keywords
-	Keywords []string
+	// Contains message should contain there are strings.
+	Contains []string
 }
 
 // RuleMatcher struct
@@ -22,11 +25,11 @@ type RuleMatcher struct {
 // Match group name from log message.
 func (m RuleMatcher) Match(msg string) string {
 	for _, rule := range m.Rules {
-		if len(rule.StartWiths) > 0 && hasOnePrefix(msg, rule.StartWiths) {
+		if len(rule.StartWiths) > 0 && strutil.HasOnePrefix(msg, rule.StartWiths) {
 			return rule.Name
 		}
 
-		if len(rule.Keywords) > 0 && hasOneSub(msg, rule.Keywords) {
+		if len(rule.Contains) > 0 && strutil.HasOneSub(msg, rule.Contains) {
 			return rule.Name
 		}
 	}
@@ -34,18 +37,24 @@ func (m RuleMatcher) Match(msg string) string {
 	return DefaultGroup
 }
 
-// SimpleMatchFunc for match group name.
-var SimpleMatchFunc = func(msg string) string {
-	if isFixMsg(msg) {
-		return "Fixed"
-	}
-
-	if hasOnePrefix(msg, []string{"up", "add", "create"}) {
-		return "Update"
-	}
-
-	if hasOnePrefix(msg, []string{"feat", "support", "new"}) {
-		return "Feature"
-	}
-	return DefaultGroup
+// DefaultMatcher for match group name.
+var DefaultMatcher = &RuleMatcher{
+	Names: []string{"Feature", "Update", "Fixed"},
+	Rules: []Rule{
+		{
+			Name:       "Feature",
+			StartWiths: []string{"feat", "new"},
+			Contains:   []string{"feature"},
+		},
+		{
+			Name:       "Update",
+			StartWiths: []string{"up:", "update"},
+			Contains:   []string{" update"},
+		},
+		{
+			Name:       "Fixed",
+			StartWiths: []string{"bug", "close", "fix"},
+			Contains:   []string{"fix:", "bug:"},
+		},
+	},
 }

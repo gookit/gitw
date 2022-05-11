@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
+// ErrEmptyLogText error
 var ErrEmptyLogText = errors.New("empty git log text for parse")
 
 // LogItem struct

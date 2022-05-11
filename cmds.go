@@ -209,15 +209,18 @@ type Range struct {
 	B string
 }
 
+// IsIdentical check
 func (r *Range) IsIdentical() bool {
 	return strings.EqualFold(r.A, r.B)
 }
 
+// IsAncestor check
 func (r *Range) IsAncestor() bool {
 	cmd := gitCmd("merge-base", "--is-ancestor", r.A, r.B)
 	return cmd.Success()
 }
 
+// CommentChar find
 func CommentChar(text string) (string, error) {
 	char, err := gitConfigGet("core.commentchar")
 	if err != nil {
@@ -333,6 +336,7 @@ func Config(name string) string {
 	return val
 }
 
+// ConfigAll get
 func ConfigAll(name string) ([]string, error) {
 	mode := "--get-all"
 	if strings.Contains(name, "*") {
@@ -380,24 +384,29 @@ func gitConfigCommand(args []string) []string {
 	return append(cmd, args...)
 }
 
+// Alias find
 func Alias(name string) string {
 	return Config("alias." + name)
 }
 
+// Run command with args
 func Run(args ...string) error {
 	cmd := gitCmd(args...)
 	return cmd.Run()
 }
 
+// Spawn run command with args
 func Spawn(args ...string) error {
 	cmd := gitCmd(args...)
 	return cmd.Spawn()
 }
 
+// Quiet run
 func Quiet(args ...string) bool {
 	return New(args...).Success()
 }
 
+// IsGitDir check
 func IsGitDir(dir string) bool {
 	cmd := New("--git-dir="+dir, "rev-parse", "--git-dir")
 	return cmd.Success()

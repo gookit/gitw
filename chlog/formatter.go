@@ -21,7 +21,7 @@ type GroupMatcher interface {
 
 // SimpleFormatter struct
 type SimpleFormatter struct {
-	// GroupMatch handler.
+	// GroupMatch group match handler.
 	GroupMatch GroupMatcher
 }
 
@@ -31,7 +31,7 @@ func (f *SimpleFormatter) MatchGroup(msg string) (group string) {
 		return f.GroupMatch.Match(msg)
 	}
 
-	return SimpleMatchFunc(msg)
+	return DefaultMatcher.Match(msg)
 }
 
 // Format the log item to line
@@ -59,7 +59,7 @@ type MarkdownFormatter struct {
 }
 
 // Format the log item to line
-func (f *MarkdownFormatter) Format(li *LogItem) (group, fmtLine string)  {
+func (f *MarkdownFormatter) Format(li *LogItem) (group, fmtLine string) {
 	group = f.MatchGroup(li.Msg)
 
 	if li.HashId != "" {
@@ -82,7 +82,7 @@ type GHReleaseFormatter struct {
 }
 
 // Format the log item to line
-func (f *GHReleaseFormatter) Format(li *LogItem) (group, fmtLine string)  {
+func (f *GHReleaseFormatter) Format(li *LogItem) (group, fmtLine string) {
 	group = f.MatchGroup(li.Msg)
 
 	if li.HashId != "" {

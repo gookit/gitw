@@ -50,28 +50,34 @@ func (r *Repo) Init() error {
 	return r.gw.SubCmd("init").Run()
 }
 
+// Info get
 func (r *Repo) Info() {
 	// TODO
 }
 
+// RemoteInfos get
 func (r *Repo) RemoteInfos() {
 	// TODO
 }
 
+// DefaultRemoteInfo get
 func (r *Repo) DefaultRemoteInfo() *RemoteInfo {
 	// TODO
 	return nil
 }
 
+// RemoteInfo get
 func (r *Repo) RemoteInfo(name string) *RemoteInfo {
 	// TODO
 	return nil
 }
 
+// Dir get
 func (r *Repo) Dir() string {
 	return r.dir
 }
 
+// Git get
 func (r *Repo) Git() *GitWrap {
 	return r.gw
 }
