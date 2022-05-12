@@ -8,18 +8,18 @@ var DefaultGroup = "Other"
 // Rule struct
 type Rule struct {
 	// Name for group
-	Name string
+	Name string `json:"name" yaml:"name"`
 	// StartWiths message start withs string.
-	StartWiths []string
+	StartWiths []string `json:"start_withs" yaml:"start_withs"`
 	// Contains message should contain there are strings.
-	Contains []string
+	Contains []string `json:"contains" yaml:"contains"`
 }
 
 // RuleMatcher struct
 type RuleMatcher struct {
 	// Names define group names and sort
-	Names []string
-	Rules []Rule
+	Names []string `json:"names" yaml:"names"`
+	Rules []Rule   `json:"rules" yaml:"rules"`
 }
 
 // Match group name from log message.
@@ -39,12 +39,17 @@ func (m RuleMatcher) Match(msg string) string {
 
 // DefaultMatcher for match group name.
 var DefaultMatcher = &RuleMatcher{
-	Names: []string{"Feature", "Update", "Fixed"},
+	Names: []string{"Feature", "Refactor", "Update", "Fixed"},
 	Rules: []Rule{
 		{
 			Name:       "Feature",
 			StartWiths: []string{"feat", "new"},
 			Contains:   []string{"feature"},
+		},
+		{
+			Name:       "Refactor",
+			StartWiths: []string{"break", "refactor"},
+			Contains:   []string{"refactor:"},
 		},
 		{
 			Name:       "Update",

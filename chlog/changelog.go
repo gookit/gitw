@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gookit/gitwrap"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -38,8 +39,45 @@ func (l *LogItem) Username() string {
 	return l.Committer
 }
 
+// Config struct
+type Config struct {
+	// Title string for formatted text. eg: "## Change Log"
+	Title string `json:"title" yaml:"title"`
+	// RepoURL repo URL address
+	RepoURL string `json:"repo_url" yaml:"repo_url"`
+	// LogFormat string on call git log.
+	LogFormat string `json:"log_format" yaml:"log_format"`
+	// GroupPrefix string. eg: '### '
+	GroupPrefix string `yaml:"group_prefix"`
+	// GroupPrefix string.
+	GroupSuffix string `yaml:"group_suffix"`
+	// NoGroup Not output group name line.
+	NoGroup bool `yaml:"no_group"`
+	// RmRepeat remove repeated log by message
+	RmRepeat bool `yaml:"rm_repeat"`
+	// Names define group names and sort
+	Names []string `json:"names" yaml:"names"`
+	// Rules for match group
+	Rules []Rule `json:"rules" yaml:"rules"`
+	// Filters for filtering
+	Filters []maputil.SMap `json:"filters" yaml:"filters"`
+}
+
+// NewDefaultConfig instance
+func NewDefaultConfig() *Config {
+	return &Config{
+		Title:       "## Change Log",
+		RmRepeat:    true,
+		LogFormat:   LogFmtHs,
+		GroupPrefix: "\n### ",
+		GroupSuffix: "\n",
+	}
+}
+
 // Changelog struct
 type Changelog struct {
+	cfg *Config
+
 	parsed, generated bool
 	// the generated change log text
 	changelog string
@@ -47,9 +85,6 @@ type Changelog struct {
 	// see https://devhints.io/git-log-format
 	// and https://git-scm.com/docs/pretty-formats
 	logText string
-	// built-in log format string on the `git log --pretty="format:%H"`.
-	// see consts LogFmt*
-	LogFormat string
 	// the parsed log items
 	logItems []*LogItem
 	// the formatted lines by formatter
@@ -60,9 +95,12 @@ type Changelog struct {
 	// LineParser can custom log line parser
 	LineParser LineParser
 	// ItemFilters The parsed log item filters
-	ItemFilters []func(li *LogItem) bool
+	ItemFilters []ItemFilter
 	// Formatter The item formatter. format each item to string
 	Formatter Formatter
+	// LogFormat built-in log format string on the `git log --pretty="format:%H"`.
+	// see consts LogFmt*
+	LogFormat string
 	// Title string for formatted text. eg: "## Change Log"
 	Title string
 	// RepoURL repo URL address
@@ -77,6 +115,13 @@ type Changelog struct {
 	RmRepeat bool
 }
 
+// New object
+func New() *Changelog {
+	return &Changelog{
+		cfg: NewDefaultConfig(),
+	}
+}
+
 // NewWithGitLog new object with git log output text
 func NewWithGitLog(gitLogOut string) *Changelog {
 	cl := New()
@@ -84,19 +129,28 @@ func NewWithGitLog(gitLogOut string) *Changelog {
 	return cl
 }
 
-// New object
-func New() *Changelog {
+// NewWithConfig object
+func NewWithConfig(cfg *Config) *Changelog {
 	return &Changelog{
-		// init some settings
-		Title:     "## Change Log",
-		LogFormat: LogFmtHs,
-		RmRepeat:  true,
+		cfg: cfg,
 	}
 }
 
-// WithConfig config the object
-func (c *Changelog) WithConfig(fn func(c *Changelog)) *Changelog {
+// WithFn config the object
+func (c *Changelog) WithFn(fn func(c *Changelog)) *Changelog {
 	fn(c)
+	return c
+}
+
+// WithConfig with new config object
+func (c *Changelog) WithConfig(cfg *Config) *Changelog {
+	c.cfg = cfg
+	return c
+}
+
+// WithConfigFn config the object
+func (c *Changelog) WithConfigFn(fn func(cfg *Config)) *Changelog {
+	fn(c.cfg)
 	return c
 }
 
@@ -144,8 +198,8 @@ func (c *Changelog) Parse() (err error) {
 	}
 
 	parser := c.LineParser
-
 	msgIdMap := make(map[string]int)
+
 	for _, line := range strings.Split(str, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
@@ -186,7 +240,7 @@ func (c *Changelog) Parse() (err error) {
 
 func (c *Changelog) applyItemFilters(li *LogItem) bool {
 	for _, filter := range c.ItemFilters {
-		if !filter(li) {
+		if !filter.Handle(li) {
 			return false
 		}
 	}

@@ -47,7 +47,6 @@ func (f *SimpleFormatter) Format(li *LogItem) (group, fmtLine string) {
 	if user := li.Username(); user != "" {
 		fmtLine += " by(" + user + ")"
 	}
-
 	return
 }
 

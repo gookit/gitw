@@ -45,16 +45,31 @@ var BuiltInParser = LineParseFunc(func(line string, c *Changelog) *LogItem {
 	switch c.LogFormat {
 	case LogFmtHs:
 		ss := strings.SplitN(line, Sep, 2)
+		if len(ss) < 2 {
+			return nil
+		}
 
 		li.HashId, li.Msg = ss[0], ss[1]
 	case LogFmtHsa:
 		ss := strings.SplitN(line, Sep, 3)
+		if len(ss) < 3 {
+			return nil
+		}
+
 		li.HashId, li.Msg, li.Author = ss[0], ss[1], ss[2]
 	case LogFmtHsc:
 		ss := strings.SplitN(line, Sep, 3)
+		if len(ss) < 3 {
+			return nil
+		}
+
 		li.HashId, li.Msg, li.Committer = ss[0], ss[1], ss[2]
-	case LogFmtHsd,LogFmtHsd1:
+	case LogFmtHsd, LogFmtHsd1:
 		ss := strings.SplitN(line, Sep, 3)
+		if len(ss) < 3 {
+			return nil
+		}
+
 		li.HashId, li.Msg, li.Date = ss[0], ss[1], ss[2]
 	default:
 		goutil.Panicf("unsupported log format '%s'", c.LogFormat)
