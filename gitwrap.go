@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 	"syscall"
 
-	"github.com/gookit/color"
 	"github.com/gookit/goutil/fsutil"
 )
 
@@ -22,6 +20,18 @@ var (
 	// GitDir name
 	GitDir = ".git"
 )
+
+var debug = isDebugFromEnv()
+
+// IsDebug mode
+func IsDebug() bool {
+	return debug
+}
+
+// SetDebug mode
+func SetDebug(open bool) {
+	debug = open
+}
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.
 type GitWrap struct {
@@ -61,6 +71,32 @@ func Cmd(cmd string, args ...string) *GitWrap {
 // NewWithArgs create instance with git cmd and args
 func NewWithArgs(cmd string, args ...string) *GitWrap {
 	return New(cmd).WithArgs(args)
+}
+
+// NewWithWorkdir create instance with workdir and args
+func NewWithWorkdir(workdir string, args ...string) *GitWrap {
+	return New(args...).WithWorkDir(workdir)
+}
+
+// Sub new sub git cmd from current instance, can with args
+func (gw *GitWrap) Sub(cmd string, args ...string) *GitWrap {
+	return gw.New(cmd, args...)
+}
+
+// Cmd new git cmd from current instance, can with args
+func (gw *GitWrap) Cmd(cmd string, args ...string) *GitWrap {
+	return gw.New(cmd, args...)
+}
+
+// New git wrap from current instance, can with args
+func (gw *GitWrap) New(cmd string, args ...string) *GitWrap {
+	nw := *gw
+	nw.Args = []string{cmd}
+
+	if len(args) > 0 {
+		nw.WithArgs(args)
+	}
+	return &nw
 }
 
 // Cmdline to command line
@@ -110,12 +146,6 @@ func (gw *GitWrap) WithOutput(out *os.File, errOut *os.File) *GitWrap {
 	if errOut != nil {
 		gw.Stderr = errOut
 	}
-	return gw
-}
-
-// SubCmd returns the current object
-func (gw *GitWrap) SubCmd(cmd string) *GitWrap {
-	gw.Args = append(gw.Args, cmd)
 	return gw
 }
 
@@ -239,7 +269,12 @@ func (gw *GitWrap) CombinedOutput() (string, error) {
 	return string(output), err
 }
 
-// MustRun an command. will panic on error
+// RunCmdWithArgs a command with args
+func (gw *GitWrap) RunCmdWithArgs(cmd string, args ...string) error {
+	return gw.New(cmd, args...).Run()
+}
+
+// MustRun a command. will panic on error
 func (gw *GitWrap) MustRun() {
 	if err := gw.Run(); err != nil {
 		panic(err)
@@ -269,6 +304,11 @@ func (gw *GitWrap) Spawn() error {
 	return c.Run()
 }
 
+// ResetArgs for git
+func (gw *GitWrap) ResetArgs() {
+	gw.Args = make([]string, 0)
+}
+
 // Exec runs command with exec(3)
 // Note that Windows doesn't support exec(3): http://golang.org/src/pkg/syscall/exec_windows.go#L339
 func (gw *GitWrap) Exec() error {
@@ -289,37 +329,4 @@ func (gw *GitWrap) Exec() error {
 		gw.BeforeExec(gw)
 	}
 	return syscall.Exec(binary, args, os.Environ())
-}
-
-func verboseLog(cmd *GitWrap) {
-	if debug {
-		PrintCmdline(cmd)
-	}
-}
-
-func isWindows() bool {
-	return runtime.GOOS == "windows" || detectWSL()
-}
-
-// PrintCmdline on exec
-func PrintCmdline(gw *GitWrap) {
-	color.Comment.Println(">", gw.String())
-}
-
-var detectedWSL bool
-var detectedWSLContents string
-
-// https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
-func detectWSL() bool {
-	if !detectedWSL {
-		b := make([]byte, 1024)
-		f, err := os.Open("/proc/version")
-		if err == nil {
-			_, _ = f.Read(b) // ignore error
-			f.Close()
-			detectedWSLContents = string(b)
-		}
-		detectedWSL = true
-	}
-	return strings.Contains(detectedWSLContents, "Microsoft")
 }

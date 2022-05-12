@@ -274,7 +274,7 @@ func Log(sha1, sha2 string) (string, error) {
 
 	outputs, err := execCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("can't load git log %s..%s", sha1, sha2)
+		return "", fmt.Errorf("can't load git log for %s..%s", sha1, sha2)
 	}
 
 	return outputs, nil

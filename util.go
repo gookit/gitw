@@ -3,14 +3,19 @@ package gitwrap
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 
+	"github.com/gookit/color"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
 )
@@ -25,6 +30,11 @@ func MustString(s string, err error) string {
 func MustStrings(ss []string, err error) []string {
 	goutil.PanicIfErr(err)
 	return ss
+}
+
+// PrintCmdline on exec
+func PrintCmdline(gw *GitWrap) {
+	color.Comment.Println(">", gw.String())
 }
 
 var editorCmd string
@@ -85,6 +95,7 @@ func EditText(data string) string {
 		slog.Fatal(err)
 	}
 
+	//goland:noinspection GoUnhandledErrorResult
 	defer os.Remove(tmpfile.Name())
 
 	_, err = tmpfile.WriteString(data)
@@ -166,17 +177,61 @@ func editorCommands(editor string, args ...string) []string {
 	return cmdArgs
 }
 
-func parseRemoteUrl(url string, r *RemoteInfo) *RemoteInfo {
+// ErrRemoteInfoNil error
+var ErrRemoteInfoNil = errorx.Raw("the remote info data cannot be nil")
+
+// ParseRemoteUrl info to the RemoteInfo object.
+func ParseRemoteUrl(URL string, r *RemoteInfo) (err error) {
 	if r == nil {
-		r = &RemoteInfo{Name: DefaultRemoteName, URL: url}
+		return ErrRemoteInfoNil
 	}
+
+	var str string
+	hasSfx := strings.HasSuffix(URL, ".git")
 
 	// eg: "git@github.com:gookit/gitwrap.git"
-	if strings.HasPrefix(url, "git@") {
+	if strings.HasPrefix(URL, "git@") {
+		r.Proto = ProtoSsh
+		if hasSfx {
+			str = URL[3 : len(URL)-4]
+		} else {
+			str = URL[3:]
+		}
 
+		host, path, ok := strutil.Cut(str, ":")
+		if !ok {
+			return errorx.Rawf("invalid git URL: %s", URL)
+		}
+
+		group, repo, ok := strutil.Cut(path, "/")
+		if !ok {
+			return errorx.Rawf("invalid git URL path: %s", URL)
+		}
+
+		r.Scheme = "git"
+		r.Host, r.Group, r.Repo = host, group, repo
+		return nil
 	}
 
-	return r
+	if hasSfx {
+		str = URL[0 : len(URL)-4]
+	}
+
+	// eg: "https://github.com/gookit/gitwrap.git"
+	info, err := url.Parse(str)
+	if err != nil {
+		return err
+	}
+
+	group, repo, ok := strutil.Cut(strings.Trim(info.Path, "/"), "/")
+	if !ok {
+		return errorx.Rawf("invalid http URL path: %s", URL)
+	}
+
+	r.Proto = ProtoHttp
+	r.Scheme = info.Scheme
+	r.Host, r.Group, r.Repo = info.Host, group, repo
+	return nil
 }
 
 func outputLines(output string) []string {
@@ -192,4 +247,38 @@ func firstLine(output string) string {
 		return output[0:i]
 	}
 	return output
+}
+
+func isDebugFromEnv() bool {
+	return os.Getenv("GIT_CMD_VERBOSE") != ""
+}
+
+func verboseLog(cmd *GitWrap) {
+	if debug {
+		PrintCmdline(cmd)
+	}
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows" || detectWSL()
+}
+
+var (
+	detectedWSL         bool
+	detectedWSLContents string
+)
+
+// https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+func detectWSL() bool {
+	if !detectedWSL {
+		b := make([]byte, 1024)
+		f, err := os.Open("/proc/version")
+		if err == nil {
+			_, _ = f.Read(b) // ignore error
+			f.Close()
+			detectedWSLContents = string(b)
+		}
+		detectedWSL = true
+	}
+	return strings.Contains(detectedWSLContents, "Microsoft")
 }
