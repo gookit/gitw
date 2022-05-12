@@ -31,7 +31,7 @@ func main() {
 	// LocalBranches
 	brList := gitwrap.MustStrings(gitwrap.LocalBranches())
 	fmt.Println(brList)
-	
+
 	// custom create command
 
 	logCmd := gitwrap.New("log", "-2")
