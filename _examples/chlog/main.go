@@ -9,13 +9,14 @@ import (
 
 func main() {
 	cl := chlog.New()
+	cl.Formatter = &chlog.MarkdownFormatter{
+		RepoURL: "https://github.com/gookit/gitwrap",
+	}
+
 	// with some settings ...
-	cl.WithConfig(func(c *chlog.Changelog) {
+	cl.WithConfigFn(func(c *chlog.Config) {
 		c.GroupPrefix = "\n### "
 		c.GroupSuffix = "\n"
-		c.Formatter = &chlog.MarkdownFormatter{
-			RepoURL: "https://github.com/gookit/gitwrap",
-		}
 	})
 
 	// fetch git log
