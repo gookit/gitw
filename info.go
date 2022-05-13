@@ -2,30 +2,25 @@ package gitwrap
 
 import "fmt"
 
+// some consts for remote info
 const (
-	ProtoSsh  = "ssh"
-	ProtoHttp = "http"
+	ProtoSSH  = "ssh"
+	ProtoHTTP = "http"
 
-	SchemeGit   = "git"
-	SchemeHttp  = "https"
-	SchemeHttps = "https"
+	SchemeGIT   = "git"
+	SchemeHTTP  = "http"
+	SchemeHTTPS = "https"
 
 	DefaultBranchName = "master"
 	DefaultRemoteName = "origin"
 )
 
-// Info struct
-// type Info struct {
-// 	gw *GitWrap
-// }
-
 // RepoInfo struct
 type RepoInfo struct {
 	Name string
 	Path string
-
-	Dir string
-	URL string
+	Dir  string
+	URL  string
 }
 
 // remote type names
@@ -73,7 +68,7 @@ func NewRemoteInfo(name, url, typ string) (*RemoteInfo, error) {
 		Type: typ,
 	}
 
-	err := ParseRemoteUrl(url, r)
+	err := ParseRemoteURL(url, r)
 
 	if err != nil {
 		return nil, err
@@ -100,18 +95,27 @@ func (r *RemoteInfo) Invalid() bool {
 	return r.URL == ""
 }
 
-// GitUrl build. eg: "git@github.com:gookit/gitwrap.git"
-func (r *RemoteInfo) GitUrl() string {
-	return SchemeGit + "@" + r.Host + ":" + r.Group + "/" + r.Repo + ".git"
+// GitURL build. eg: "git@github.com:gookit/gitwrap.git"
+func (r *RemoteInfo) GitURL() string {
+	return SchemeGIT + "@" + r.Host + ":" + r.Group + "/" + r.Repo + ".git"
 }
 
-func (r *RemoteInfo) HttpUrl() string {
-	return SchemeHttp + "//" + r.Host + "/" + r.Group + "/" + r.Repo
+// RawURLOfHTTP get, if RemoteInfo.URL is git proto, build an https url.
+func (r *RemoteInfo) RawURLOfHTTP() string {
+	if r.Proto == ProtoHTTP {
+		return r.URL
+	}
+	return r.URLOfHTTPS()
 }
 
-// HttpsUrl build
-func (r *RemoteInfo) HttpsUrl() string {
-	return SchemeHttps + "//" + r.Host + "/" + r.Group + "/" + r.Repo
+// URLOfHTTP build
+func (r *RemoteInfo) URLOfHTTP() string {
+	return SchemeHTTP + "://" + r.Host + "/" + r.Group + "/" + r.Repo
+}
+
+// URLOfHTTPS build
+func (r *RemoteInfo) URLOfHTTPS() string {
+	return SchemeHTTPS + "://" + r.Host + "/" + r.Group + "/" + r.Repo
 }
 
 // Path string

@@ -78,7 +78,17 @@ func (r *Repo) WithConfigFn(fn func(cfg *RepoConfig)) *Repo {
 
 // Info get repo information
 func (r *Repo) Info() *RepoInfo {
-	return &RepoInfo{}
+	rt := r.loadRemoteInfos().RandomRemoteInfo()
+	if rt == nil {
+		return nil
+	}
+
+	return &RepoInfo{
+		Name: rt.Repo,
+		Path: rt.Path(),
+		Dir:  r.dir,
+		URL:  rt.RawURLOfHTTP(),
+	}
 }
 
 // HasRemote check
@@ -104,6 +114,16 @@ func (r *Repo) RemoteInfos(remote string) RemoteInfos {
 // DefaultRemoteInfo get
 func (r *Repo) DefaultRemoteInfo(typ ...string) *RemoteInfo {
 	return r.RemoteInfo(r.cfg.DefaultRemote, typ...)
+}
+
+// RandomRemoteInfo get
+func (r *Repo) RandomRemoteInfo(typ ...string) *RemoteInfo {
+	r.loadRemoteInfos()
+
+	if len(r.remoteNames) == 0 {
+		return nil
+	}
+	return r.RemoteInfo(r.remoteNames[0], typ...)
 }
 
 // RemoteInfo get.
@@ -132,7 +152,7 @@ func (r *Repo) AllRemoteInfos() map[string]RemoteInfos {
 
 // AllRemoteInfos get
 func (r *Repo) loadRemoteInfos() *Repo {
-	// has caches
+	// has loaded
 	if len(r.remoteNames) > 0 {
 		return r
 	}
@@ -191,9 +211,9 @@ func (r *Repo) loadRemoteInfos() *Repo {
 }
 
 // reset last error
-func (r *Repo) resetErr() {
-	r.err = nil
-}
+// func (r *Repo) resetErr() {
+// 	r.err = nil
+// }
 
 // reset last error
 func (r *Repo) setErr(err error) {

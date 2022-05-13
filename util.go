@@ -180,8 +180,8 @@ func editorCommands(editor string, args ...string) []string {
 // ErrRemoteInfoNil error
 var ErrRemoteInfoNil = errorx.Raw("the remote info data cannot be nil")
 
-// ParseRemoteUrl info to the RemoteInfo object.
-func ParseRemoteUrl(URL string, r *RemoteInfo) (err error) {
+// ParseRemoteURL info to the RemoteInfo object.
+func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	if r == nil {
 		return ErrRemoteInfoNil
 	}
@@ -191,7 +191,7 @@ func ParseRemoteUrl(URL string, r *RemoteInfo) (err error) {
 
 	// eg: "git@github.com:gookit/gitwrap.git"
 	if strings.HasPrefix(URL, "git@") {
-		r.Proto = ProtoSsh
+		r.Proto = ProtoSSH
 		if hasSfx {
 			str = URL[3 : len(URL)-4]
 		} else {
@@ -228,7 +228,7 @@ func ParseRemoteUrl(URL string, r *RemoteInfo) (err error) {
 		return errorx.Rawf("invalid http URL path: %s", URL)
 	}
 
-	r.Proto = ProtoHttp
+	r.Proto = ProtoHTTP
 	r.Scheme = info.Scheme
 	r.Host, r.Group, r.Repo = info.Host, group, repo
 	return nil

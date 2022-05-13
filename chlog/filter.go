@@ -12,7 +12,8 @@ type ItemFilter interface {
 	Handle(li *LogItem) bool
 }
 
-type LineFilterFunc func(line string) bool
+// ItemFilterFunc define
+// type LineFilterFunc func(line string) bool
 type ItemFilterFunc func(li *LogItem) bool
 
 // Handle filtering

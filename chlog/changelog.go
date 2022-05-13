@@ -14,8 +14,8 @@ var ErrEmptyLogText = errors.New("empty git log text for parse")
 
 // LogItem struct
 type LogItem struct {
-	HashId    string // %H %h
-	ParentId  string // %P %p
+	HashID    string // %H %h
+	ParentID  string // %P %p
 	Msg       string // %s
 	Date      string // %ci
 	Author    string // %an
@@ -24,11 +24,11 @@ type LogItem struct {
 
 // AbbrevID get abbrev commit ID
 func (l *LogItem) AbbrevID() string {
-	if l.HashId == "" {
+	if l.HashID == "" {
 		return ""
 	}
 
-	return strutil.Substr(l.HashId, 0, 7)
+	return strutil.Substr(l.HashID, 0, 7)
 }
 
 // Username get commit username.
@@ -198,7 +198,7 @@ func (c *Changelog) Parse() (err error) {
 	}
 
 	parser := c.LineParser
-	msgIdMap := make(map[string]int)
+	msgIDMap := make(map[string]int)
 
 	for _, line := range strings.Split(str, "\n") {
 		line = strings.TrimSpace(line)
@@ -224,12 +224,12 @@ func (c *Changelog) Parse() (err error) {
 
 		// remove repeat msg item
 		if c.RmRepeat {
-			msgId := strutil.Md5(li.Msg)
-			if _, ok := msgIdMap[msgId]; ok {
+			msgID := strutil.Md5(li.Msg)
+			if _, ok := msgIDMap[msgID]; ok {
 				continue
 			}
 
-			msgIdMap[msgId] = 1
+			msgIDMap[msgID] = 1
 		}
 
 		c.logItems = append(c.logItems, li)

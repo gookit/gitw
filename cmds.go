@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gookit/goutil/errorx"
 )
 
 // from: https://github.com/github/hub/blob/master/git/git.go
@@ -34,12 +36,14 @@ func cmdWithArgs(subCmd string, args ...string) *GitWrap {
 	return cmd.WithArgs(args)
 }
 
+// Version info get.
 func Version() (string, error) {
 	versionCmd := gitCmd("version")
 	output, err := versionCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("error running git version: %s", err)
+		return "", errorx.Wrap(err, "error running git version")
 	}
+
 	return firstLine(output), nil
 }
 
@@ -56,7 +60,7 @@ func Dir() (string, error) {
 	dirCmd.Stderr = nil
 	output, err := dirCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("not a git repository (or any of the parent directories): .git")
+		return "", errorx.Raw("not a git repository (or any of the parent directories): .git")
 	}
 
 	var chdir string
