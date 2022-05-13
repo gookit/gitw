@@ -100,6 +100,15 @@ func (r *Repo) Info() *RepoInfo {
 	}
 }
 
+// Tags get repo tags list TODO
+func (r *Repo) Tags() error {
+	return nil
+}
+
+// -------------------------------------------------
+// repo git log
+// -------------------------------------------------
+
 // LastAbbrevID get last abbrev commit ID, len is 7
 func (r *Repo) LastAbbrevID() string {
 	cid := r.LastCommitID()

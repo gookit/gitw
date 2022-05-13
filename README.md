@@ -61,7 +61,7 @@ dump.Println(rt)
 
 Output:
 
-![one-repo-info](_examples/images/one-repo-info.png)
+![one-remote-info](_examples/images/one-remote-info.png)
 
 **Repo Information**:
 

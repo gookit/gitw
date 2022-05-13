@@ -14,6 +14,7 @@ var repo = gitwrap.NewRepo("./").WithFn(func(r *gitwrap.Repo) {
 
 func TestRepo_Info(t *testing.T) {
 	info := repo.Info()
+	assert.Nil(t, repo.Err())
 	assert.NotNil(t, info)
 	assert.Equal(t, "gitwrap", info.Name)
 
