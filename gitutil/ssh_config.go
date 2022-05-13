@@ -37,6 +37,7 @@ type SSHConfigReader struct {
 	Files []string
 }
 
+// Read config from files
 func (r *SSHConfigReader) Read() SSHConfig {
 	config := make(SSHConfig)
 	hostRe := regexp.MustCompile(hostReStr)

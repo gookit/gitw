@@ -4,12 +4,14 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
 const (
-	cacheRemoteNames = "rmtNames"
-	cacheRemoteInfos = "rmtInfos"
+	cacheRemoteNames  = "rmtNames"
+	cacheRemoteInfos  = "rmtInfos"
+	cacheLastCommitID = "lastCID"
 )
 
 // CmdBuilder struct
@@ -44,7 +46,7 @@ type Repo struct {
 	// remoteInfosMp
 	remoteInfosMp map[string]RemoteInfos
 	// cache some information of the repo
-	cache map[string]interface{}
+	cache maputil.Data
 }
 
 // NewRepo create Repo object
@@ -55,13 +57,8 @@ func NewRepo(dir string) *Repo {
 		// init gw
 		gw: NewWithWorkdir(dir),
 		// cache some information
-		cache: make(map[string]interface{}, 16),
+		cache: make(maputil.Data, 8),
 	}
-}
-
-// Init run git init for the repo dir.
-func (r *Repo) Init() error {
-	return r.gw.Cmd("init").Run()
 }
 
 // WithConfig new repo config
@@ -74,6 +71,11 @@ func (r *Repo) WithConfig(cfg *RepoConfig) *Repo {
 func (r *Repo) WithConfigFn(fn func(cfg *RepoConfig)) *Repo {
 	fn(r.cfg)
 	return r
+}
+
+// Init run git init for the repo dir.
+func (r *Repo) Init() error {
+	return r.gw.Cmd("init").Run()
 }
 
 // Info get repo information
@@ -90,6 +92,21 @@ func (r *Repo) Info() *RepoInfo {
 		URL:  rt.RawURLOfHTTP(),
 	}
 }
+
+// LastCommitID string
+func (r *Repo) LastCommitID() (string, error) {
+	lastCID := r.cache.Str(cacheLastCommitID)
+	if len(lastCID) > 0 {
+		return lastCID, nil
+	}
+
+	// by: git log -1 --format='%H'
+	return r.Cmd("log", "-1", "--format='%H'").Output()
+}
+
+// -------------------------------------------------
+// repo remote
+// -------------------------------------------------
 
 // HasRemote check
 func (r *Repo) HasRemote(name string) bool {
@@ -214,6 +231,10 @@ func (r *Repo) loadRemoteInfos() *Repo {
 // func (r *Repo) resetErr() {
 // 	r.err = nil
 // }
+
+// -------------------------------------------------
+// helper methods
+// -------------------------------------------------
 
 // reset last error
 func (r *Repo) setErr(err error) {

@@ -10,8 +10,11 @@ import (
 
 func TestRepo_RemoteInfos(t *testing.T) {
 	r := gitwrap.NewRepo("./")
+	r.Git().BeforeExec = gitwrap.PrintCmdline
 
 	rs := r.AllRemoteInfos()
+	dump.P(rs)
+
 	assert.NoError(t, r.Err())
 	assert.NotEmpty(t, rs)
 
@@ -29,6 +32,4 @@ func TestRepo_RemoteInfos(t *testing.T) {
 
 	rt = r.DefaultRemoteInfo(gitwrap.RemoteTypePush)
 	assert.NotEmpty(t, rt)
-
-	dump.P(r.Err(), rs)
 }

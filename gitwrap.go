@@ -45,7 +45,9 @@ type GitWrap struct {
 	Stdin   *os.File
 	Stdout  *os.File
 	Stderr  *os.File
-	// BeforeExec command
+	// BeforeExec command.
+	//
+	// Usage: gw.BeforeExec = gitwrap.PrintCmdline
 	BeforeExec func(gw *GitWrap)
 	// inner
 	gitDir string

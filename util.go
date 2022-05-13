@@ -208,7 +208,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 			return errorx.Rawf("invalid git URL path: %s", URL)
 		}
 
-		r.Scheme = "git"
+		r.Scheme = SchemeGIT
 		r.Host, r.Group, r.Repo = host, group, repo
 		return nil
 	}

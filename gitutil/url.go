@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	cachedSSHConfig SSHConfig
+	cachedSSHCfg SSHConfig
 
 	protocolRe = regexp.MustCompile("^[a-zA-Z_+-]+://")
 )
@@ -60,11 +60,11 @@ func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 
 // ParseURL parse raw url
 func ParseURL(rawURL string) (u *url.URL, err error) {
-	if cachedSSHConfig == nil {
-		cachedSSHConfig = newSSHConfigReader().Read()
+	if cachedSSHCfg == nil {
+		cachedSSHCfg = newSSHConfigReader().Read()
 	}
 
-	p := &URLParser{cachedSSHConfig}
+	p := &URLParser{cachedSSHCfg}
 
 	return p.Parse(rawURL)
 }
