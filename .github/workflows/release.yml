@@ -9,15 +9,21 @@ jobs:
   release:
     name: Release new version
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     strategy:
       fail-fast: true
       matrix:
-        go: [1.16]
+        go: [1.17]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Setup Go Faster
+        uses: WillAbides/setup-go-faster@v1.7.0
+        timeout-minutes: 3
+        with:
+          go-version: ${{ matrix.go_version }}
 
       - name: Setup ENV
         # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -26,7 +32,10 @@ jobs:
           echo "RELEASE_NAME=$GITHUB_WORKFLOW" >> $GITHUB_ENV
 
       - name: Display Env
-        run: env
+        run: |
+          env
+          git fetch --unshallow
+          git pull
 
       # https://github.com/actions/create-release
       - uses: meeDamian/github-release@2.0
