@@ -1,6 +1,6 @@
 # GitWrap
 
-Git command wrapper, and some extra git tools package.
+Git command wrapper, git changelog, repo information and some git tools.
 
 > Github https://github.com/gookit/gitwrap
 
@@ -43,7 +43,37 @@ func main() {
 }
 ```
 
-## Gen changelog
+## Repository
+
+You can quickly get a git repository information at local.
+
+```go
+repo := gitwrap.NewRepo("/path/to/my-repo")
+```
+
+**Remote Information**:
+
+```go
+rt := repo.DefaultRemoteInfo()
+
+dump.Println(rt)
+```
+
+Output:
+
+![one-repo-info](_examples/images/one-repo-info.png)
+
+**Repo Information**:
+
+```go
+dump.Println(repo.Info())
+```
+
+Output:
+
+![simple-repo-info](_examples/images/simple-repo-info.png)
+
+## Changelog
 
 You can quickly generate changelog by `gitwrap/chlog` package.
 
