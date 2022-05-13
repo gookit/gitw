@@ -61,6 +61,12 @@ func NewRepo(dir string) *Repo {
 	}
 }
 
+// WithFn new repo self config func
+func (r *Repo) WithFn(fn func(r *Repo)) *Repo {
+	fn(r)
+	return r
+}
+
 // WithConfig new repo config
 func (r *Repo) WithConfig(cfg *RepoConfig) *Repo {
 	r.cfg = cfg
@@ -86,22 +92,40 @@ func (r *Repo) Info() *RepoInfo {
 	}
 
 	return &RepoInfo{
-		Name: rt.Repo,
-		Path: rt.Path(),
-		Dir:  r.dir,
-		URL:  rt.RawURLOfHTTP(),
+		Name:    rt.Repo,
+		Path:    rt.Path(),
+		Dir:     r.dir,
+		URL:     rt.RawURLOfHTTP(),
+		LastCID: r.LastAbbrevID(),
 	}
 }
 
-// LastCommitID string
-func (r *Repo) LastCommitID() (string, error) {
+// LastAbbrevID get last abbrev commit ID, len is 7
+func (r *Repo) LastAbbrevID() string {
+	cid := r.LastCommitID()
+	if cid == "" {
+		return ""
+	}
+
+	return strutil.Substr(cid, 0, 7)
+}
+
+// LastCommitID value
+func (r *Repo) LastCommitID() string {
 	lastCID := r.cache.Str(cacheLastCommitID)
 	if len(lastCID) > 0 {
-		return lastCID, nil
+		return lastCID
 	}
 
 	// by: git log -1 --format='%H'
-	return r.Cmd("log", "-1", "--format='%H'").Output()
+	lastCID, err := r.Cmd("log", "-1", "--format=%H").Output()
+	if err != nil {
+		r.setErr(err)
+		return ""
+	}
+
+	r.cache.Set(cacheLastCommitID, lastCID)
+	return lastCID
 }
 
 // -------------------------------------------------

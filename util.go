@@ -90,36 +90,35 @@ func EditText(data string) string {
 		return data
 	}
 
-	tmpfile, err := ioutil.TempFile("", "go-git-edit-file-*")
+	tmpFile, err := ioutil.TempFile("", "go-git-edit-file-*")
 	if err != nil {
 		slog.Fatal(err)
 	}
 
 	//goland:noinspection GoUnhandledErrorResult
-	defer os.Remove(tmpfile.Name())
+	defer os.Remove(tmpFile.Name())
 
-	_, err = tmpfile.WriteString(data)
-	if err != nil {
-		slog.Fatal(err)
-	}
-	err = tmpfile.Close()
+	_, err = tmpFile.WriteString(data)
 	if err != nil {
 		slog.Fatal(err)
 	}
 
-	cmdArgs := editorCommands(editor, tmpfile.Name())
+	err = tmpFile.Close()
+	if err != nil {
+		slog.Fatal(err)
+	}
+
+	cmdArgs := editorCommands(editor, tmpFile.Name())
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		slog.Errorf("fail to run '%s' to edit script: %s",
-			strings.Join(cmdArgs, " "),
-			err)
+		slog.Errorf("fail to run '%s' to edit script: %s", strings.Join(cmdArgs, " "), err)
 	}
 
-	f, err := os.Open(tmpfile.Name())
+	f, err := os.Open(tmpFile.Name())
 	if err != nil {
 		slog.Fatal(err)
 	}

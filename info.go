@@ -10,9 +10,6 @@ const (
 	SchemeGIT   = "git"
 	SchemeHTTP  = "http"
 	SchemeHTTPS = "https"
-
-	DefaultBranchName = "master"
-	DefaultRemoteName = "origin"
 )
 
 // RepoInfo struct
@@ -21,6 +18,8 @@ type RepoInfo struct {
 	Path string
 	Dir  string
 	URL  string
+	// LastCID value
+	LastCID string
 }
 
 // remote type names

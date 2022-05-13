@@ -1,5 +1,4 @@
-// Package gitwrap is library warp git commands.
-// some code is referred from github/hub
+// Package gitwrap git command wrapper, git changelog, repo information and some git tools.
 package gitwrap
 
 import (
@@ -12,13 +11,19 @@ import (
 	"github.com/gookit/goutil/fsutil"
 )
 
-// from: https://github.com/github/hub/blob/master/cmd/cmd.go
+// some from: https://github.com/github/hub/blob/master/cmd/cmd.go
+
+// GitDir name
+const GitDir = ".git"
 
 var (
 	// DefaultBin name
 	DefaultBin = "git"
-	// GitDir name
-	GitDir = ".git"
+
+	// DefaultBranchName value
+	DefaultBranchName = "master"
+	// DefaultRemoteName value
+	DefaultRemoteName = "origin"
 )
 
 var debug = isDebugFromEnv()
@@ -35,6 +40,9 @@ func SetDebug(open bool) {
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.
 type GitWrap struct {
+	// inner
+	// gitDir cache
+	gitDir string
 	// Bin git bin name. default is "git"
 	Bin string
 	// Cmd sub command name of git
@@ -49,8 +57,6 @@ type GitWrap struct {
 	//
 	// Usage: gw.BeforeExec = gitwrap.PrintCmdline
 	BeforeExec func(gw *GitWrap)
-	// inner
-	gitDir string
 }
 
 // New create instance with args
@@ -204,7 +210,7 @@ func (gw *GitWrap) GitDir() string {
 	}
 
 	if gw.WorkDir != "" {
-		gw.gitDir = gw.WorkDir + "/.git"
+		gw.gitDir = gw.WorkDir + "/" + GitDir
 	} else {
 		gw.gitDir = GitDir
 	}

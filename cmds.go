@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 )
 
-// from: https://github.com/github/hub/blob/master/git/git.go
+// some from: https://github.com/github/hub/blob/master/git/git.go
 
 // GlobalFlags for run git command
 var GlobalFlags []string

@@ -8,20 +8,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRepo_RemoteInfos(t *testing.T) {
-	r := gitwrap.NewRepo("./")
+var repo = gitwrap.NewRepo("./").WithFn(func(r *gitwrap.Repo) {
 	r.Git().BeforeExec = gitwrap.PrintCmdline
+})
 
-	rs := r.AllRemoteInfos()
+func TestRepo_Info(t *testing.T) {
+	info := repo.Info()
+	assert.NotNil(t, info)
+	assert.Equal(t, "gitwrap", info.Name)
+
+	dump.P(info)
+}
+
+func TestRepo_RemoteInfos(t *testing.T) {
+	rs := repo.AllRemoteInfos()
 	dump.P(rs)
 
-	assert.NoError(t, r.Err())
+	assert.NoError(t, repo.Err())
 	assert.NotEmpty(t, rs)
 
-	assert.True(t, r.HasRemote(gitwrap.DefaultRemoteName))
-	assert.NotEmpty(t, r.RemoteNames())
+	assert.True(t, repo.HasRemote(gitwrap.DefaultRemoteName))
+	assert.NotEmpty(t, repo.RemoteNames())
 
-	rt := r.DefaultRemoteInfo()
+	rt := repo.DefaultRemoteInfo()
+	dump.P(rt)
 	assert.NotEmpty(t, rt)
 	assert.True(t, rt.Valid())
 	assert.False(t, rt.Invalid())
@@ -30,6 +40,6 @@ func TestRepo_RemoteInfos(t *testing.T) {
 	assert.Equal(t, "http://github.com/gookit/gitwrap", rt.URLOfHTTP())
 	assert.Equal(t, "https://github.com/gookit/gitwrap", rt.URLOfHTTPS())
 
-	rt = r.DefaultRemoteInfo(gitwrap.RemoteTypePush)
+	rt = repo.DefaultRemoteInfo(gitwrap.RemoteTypePush)
 	assert.NotEmpty(t, rt)
 }
