@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Setup Go Faster
         uses: WillAbides/setup-go-faster@v1.7.0
@@ -37,11 +39,14 @@ jobs:
           git fetch --unshallow
           git pull
 
-      # https://github.com/actions/create-release
-      - uses: meeDamian/github-release@2.0
+      # https://github.com/softprops/action-gh-release
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          gzip: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.RELEASE_TAG }}
           name: ${{ env.RELEASE_TAG }}
-#          files: kite-${{ env.RELEASE_TAG }}.phar
+          tag_name: ${{ env.RELEASE_TAG }}
+          body_path: changelog.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+#          files: macos-chlog.exe

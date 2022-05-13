@@ -24,6 +24,8 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.7.0
@@ -32,7 +34,7 @@ jobs:
         go-version: ${{ matrix.go_version }}
 
     - name: Revive check
-      uses: morphy2k/revive-action@v2.3.1
+      uses: docker://morphy/revive-action:v2.3.1
       with:
         # Exclude patterns, separated by semicolons (optional)
         exclude: "./internal/..."
@@ -51,6 +53,4 @@ jobs:
 
     - name: Run tests
       run: |
-        git fetch --unshallow
-        git pull
         go test -v -cover ./...
