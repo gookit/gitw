@@ -60,4 +60,6 @@ jobs:
 
     - name: Run tests
       run: |
+        pwd
+        ls -al
         go test -v -cover ./...
