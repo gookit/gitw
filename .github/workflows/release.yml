@@ -35,9 +35,11 @@ jobs:
 
       - name: Display Env
         run: |
-          env
+          git remote -v
+          git tag -l
           git fetch --unshallow
           git pull
+          env
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets
