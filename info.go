@@ -1,4 +1,4 @@
-package gitwrap
+package gitw
 
 import "fmt"
 
@@ -32,8 +32,8 @@ const (
 type RemoteInfos map[string]*RemoteInfo
 
 // RemoteInfo struct
-// - http: "https://github.com/gookit/gitwrap.git"
-// - git: "git@github.com:gookit/gitwrap.git"
+// - http: "https://github.com/gookit/gitw.git"
+// - git: "git@github.com:gookit/gitw.git"
 type RemoteInfo struct {
 	// Name the repo remote name, default see DefaultRemoteName
 	Name string
@@ -42,8 +42,8 @@ type RemoteInfo struct {
 	// URL full git remote URL string.
 	//
 	// eg:
-	// - http: "https://github.com/gookit/gitwrap.git"
-	// - git: "git@github.com:gookit/gitwrap.git"
+	// - http: "https://github.com/gookit/gitw.git"
+	// - git: "git@github.com:gookit/gitw.git"
 	URL string
 
 	// ---- details
@@ -94,7 +94,7 @@ func (r *RemoteInfo) Invalid() bool {
 	return r.URL == ""
 }
 
-// GitURL build. eg: "git@github.com:gookit/gitwrap.git"
+// GitURL build. eg: "git@github.com:gookit/gitw.git"
 func (r *RemoteInfo) GitURL() string {
 	return SchemeGIT + "@" + r.Host + ":" + r.Group + "/" + r.Repo + ".git"
 }

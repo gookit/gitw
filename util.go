@@ -1,4 +1,4 @@
-package gitwrap
+package gitw
 
 import (
 	"fmt"
@@ -188,7 +188,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	var str string
 	hasSfx := strings.HasSuffix(URL, ".git")
 
-	// eg: "git@github.com:gookit/gitwrap.git"
+	// eg: "git@github.com:gookit/gitw.git"
 	if strings.HasPrefix(URL, "git@") {
 		r.Proto = ProtoSSH
 		if hasSfx {
@@ -216,7 +216,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 		str = URL[0 : len(URL)-4]
 	}
 
-	// eg: "https://github.com/gookit/gitwrap.git"
+	// eg: "https://github.com/gookit/gitw.git"
 	info, err := url.Parse(str)
 	if err != nil {
 		return err

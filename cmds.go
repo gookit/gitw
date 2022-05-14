@@ -1,4 +1,4 @@
-package gitwrap
+package gitw
 
 import (
 	"fmt"
@@ -263,8 +263,8 @@ func Show(sha string) (string, error) {
 // Log show git log between sha1 to sha2
 //
 // Usage:
-//	gitwrap.Log("v1.0.2", "v1.0.3")
-//	gitwrap.Log("commit id 1", "commit id 2")
+//	gitw.Log("v1.0.2", "v1.0.3")
+//	gitw.Log("commit id 1", "commit id 2")
 func Log(sha1, sha2 string) (string, error) {
 	execCmd := New()
 	execCmd.WithArg("-c", "log.showSignature=false").WithArg("log").WithArg("--no-color")

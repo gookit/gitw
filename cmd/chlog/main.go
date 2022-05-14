@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gookit/gitwrap/chlog"
+	"github.com/gookit/gitw/chlog"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"

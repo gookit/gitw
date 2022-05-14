@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 
-	"github.com/gookit/gitwrap/chlog"
+	"github.com/gookit/gitw/chlog"
 	"github.com/gookit/goutil"
 )
 
 func main() {
 	cl := chlog.New()
 	cl.Formatter = &chlog.MarkdownFormatter{
-		RepoURL: "https://github.com/gookit/gitwrap",
+		RepoURL: "https://github.com/gookit/gitw",
 	}
 
 	// with some settings ...

@@ -1,4 +1,4 @@
-module github.com/gookit/gitwrap
+module github.com/gookit/gitw
 
 go 1.15
 

@@ -1,15 +1,15 @@
-package gitwrap_test
+package gitw_test
 
 import (
 	"testing"
 
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
 )
 
-var repo = gitwrap.NewRepo("./").WithFn(func(r *gitwrap.Repo) {
-	r.Git().BeforeExec = gitwrap.PrintCmdline
+var repo = gitw.NewRepo("./").WithFn(func(r *gitw.Repo) {
+	r.Git().BeforeExec = gitw.PrintCmdline
 })
 
 func TestRepo_Info(t *testing.T) {
@@ -18,7 +18,7 @@ func TestRepo_Info(t *testing.T) {
 
 	assert.Nil(t, repo.Err())
 	assert.NotNil(t, info)
-	assert.Equal(t, "gitwrap", info.Name)
+	assert.Equal(t, "gitw", info.Name)
 }
 
 func TestRepo_RemoteInfos(t *testing.T) {
@@ -28,7 +28,7 @@ func TestRepo_RemoteInfos(t *testing.T) {
 	assert.NoError(t, repo.Err())
 	assert.NotEmpty(t, rs)
 
-	assert.True(t, repo.HasRemote(gitwrap.DefaultRemoteName))
+	assert.True(t, repo.HasRemote(gitw.DefaultRemoteName))
 	assert.NotEmpty(t, repo.RemoteNames())
 
 	rt := repo.DefaultRemoteInfo()
@@ -36,11 +36,11 @@ func TestRepo_RemoteInfos(t *testing.T) {
 	assert.NotEmpty(t, rt)
 	assert.True(t, rt.Valid())
 	assert.False(t, rt.Invalid())
-	assert.Equal(t, gitwrap.DefaultRemoteName, rt.Name)
-	assert.Equal(t, "git@github.com:gookit/gitwrap.git", rt.GitURL())
-	assert.Equal(t, "http://github.com/gookit/gitwrap", rt.URLOfHTTP())
-	assert.Equal(t, "https://github.com/gookit/gitwrap", rt.URLOfHTTPS())
+	assert.Equal(t, gitw.DefaultRemoteName, rt.Name)
+	assert.Equal(t, "git@github.com:gookit/gitw.git", rt.GitURL())
+	assert.Equal(t, "http://github.com/gookit/gitw", rt.URLOfHTTP())
+	assert.Equal(t, "https://github.com/gookit/gitw", rt.URLOfHTTPS())
 
-	rt = repo.DefaultRemoteInfo(gitwrap.RemoteTypePush)
+	rt = repo.DefaultRemoteInfo(gitw.RemoteTypePush)
 	assert.NotEmpty(t, rt)
 }

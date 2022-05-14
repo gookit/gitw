@@ -1,5 +1,5 @@
-// Package gitwrap git command wrapper, git changelog, repo information and some git tools.
-package gitwrap
+// Package gitw git command wrapper, git changelog, repo information and some git tools.
+package gitw
 
 import (
 	"fmt"
@@ -55,7 +55,7 @@ type GitWrap struct {
 	Stderr  *os.File
 	// BeforeExec command.
 	//
-	// Usage: gw.BeforeExec = gitwrap.PrintCmdline
+	// Usage: gw.BeforeExec = gitw.PrintCmdline
 	BeforeExec func(gw *GitWrap)
 }
 

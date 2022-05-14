@@ -1,4 +1,4 @@
-package gitwrap
+package gitw
 
 import (
 	"strings"
@@ -213,8 +213,8 @@ func (r *Repo) loadRemoteInfos() *Repo {
 		return r
 	}
 
-	// origin  https://github.com/gookit/gitwrap.git (fetch)
-	// origin  https://github.com/gookit/gitwrap.git (push)
+	// origin  https://github.com/gookit/gitw.git (fetch)
+	// origin  https://github.com/gookit/gitw.git (push)
 	rmp := make(map[string]RemoteInfos, 2)
 	str = strings.ReplaceAll(strings.TrimSpace(str), "\t", " ")
 

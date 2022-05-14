@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -161,7 +161,7 @@ func (c *Changelog) SetLogText(gitLogOut string) {
 
 // FetchGitLog fetch log data by git log
 func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelog {
-	logCmd := gitwrap.New("log", "--reverse")
+	logCmd := gitw.New("log", "--reverse")
 	logCmd.Addf("--pretty=format:\"%s\"", c.LogFormat)
 	// logCmd.Add("--no-merges")
 	logCmd.Add(moreArgs...) // add custom args

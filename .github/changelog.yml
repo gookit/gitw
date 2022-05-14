@@ -2,7 +2,7 @@ title: '## Change Log'
 style: gh-release
 # group names
 names: [Refactor, Fixed, Feature, Update]
-repo_url: https://github.com/gookit/gitwrap
+repo_url: https://github.com/gookit/gitw
 
 filters:
   # message length should >= 12
