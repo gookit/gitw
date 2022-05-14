@@ -2,6 +2,7 @@ package chlog
 
 import (
 	"errors"
+	"io"
 	"strings"
 
 	"github.com/gookit/gitw"
@@ -323,6 +324,12 @@ func (c *Changelog) formatLogItems() map[string]int {
 // String get generated change log string
 func (c *Changelog) String() string {
 	return c.changelog
+}
+
+// WriteTo changelog to the writer
+func (c *Changelog) WriteTo(w io.Writer) (int64, error) {
+	n, err := io.WriteString(w, c.changelog)
+	return int64(n), err
 }
 
 // Changelog get generated change log string

@@ -97,11 +97,12 @@ import (
 
 func main() {
 	cl := chlog.New()
-	cl.WithConfig(func(c *chlog.Changelog) {
+	cl.Formatter = &chlog.MarkdownFormatter{
+		RepoURL: "https://github.com/gookit/gitw",
+	}
+	cl.WithConfig(func(c *chlog.Config) {
 		// some settings ...
-		c.Formatter = &chlog.MarkdownFormatter{
-			RepoURL: "https://github.com/gookit/gitw",
-		}
+		c.Title = "## Change Log"
 	})
 
 	// fetch git log
