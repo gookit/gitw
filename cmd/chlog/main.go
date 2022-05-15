@@ -92,7 +92,25 @@ func main() {
 	goutil.PanicIfErr(cl.Generate())
 
 	// dump
-	fmt.Println(cl.Changelog())
+	if opts.outputFile == "stdout" {
+		fmt.Println(cl.Changelog())
+		return
+	}
+
+	f, err := fsutil.QuickOpenFile(opts.outputFile)
+	if err != nil {
+		fmt.Println("open output file error:", err)
+		return
+	}
+
+	defer f.Close()
+	_, err = cl.WriteTo(f)
+	if err != nil {
+		fmt.Println("write to output file error:", err)
+		return
+	}
+
+	fmt.Println("OK, changelog written to: ", opts.outputFile)
 }
 
 func showHelp(err error) {
