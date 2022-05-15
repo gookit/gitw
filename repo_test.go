@@ -5,12 +5,19 @@ import (
 
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/slog"
 	"github.com/stretchr/testify/assert"
 )
 
 var repo = gitw.NewRepo("./").WithFn(func(r *gitw.Repo) {
 	r.Git().BeforeExec = gitw.PrintCmdline
 })
+
+func TestMain(m *testing.M) {
+	slog.Println("workdir", sysutil.Workdir())
+	m.Run()
+}
 
 func TestRepo_Info(t *testing.T) {
 	info := repo.Info()
