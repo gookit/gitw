@@ -30,8 +30,6 @@ var (
 
 // GitWrap is a project-wide struct that represents a command to be run in the console.
 type GitWrap struct {
-	// gitDir cache
-	gitDir string
 	// Workdir for run git
 	Workdir string
 	// Bin git bin name. default is "git"
@@ -137,15 +135,12 @@ func (gw *GitWrap) IsGitRepo() bool {
 
 // GitDir return .git data dir
 func (gw *GitWrap) GitDir() string {
-	if gw.gitDir == "" {
-		if gw.Workdir != "" {
-			gw.gitDir = gw.Workdir + "/" + GitDir
-		} else {
-			gw.gitDir = GitDir
-		}
+	gitDir := GitDir
+	if gw.Workdir != "" {
+		gitDir = gw.Workdir + "/" + GitDir
 	}
 
-	return gw.gitDir
+	return gitDir
 }
 
 // -------------------------------------------------

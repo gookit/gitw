@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 func TestRepo_RemoteInfos(t *testing.T) {
 	rs := repo.AllRemoteInfos()
 	dump.P(rs, gitw.Remote("-v").SafeLines())
-	dump.P(repo)
+	// dump.P(repo)
 
 	assert.NoError(t, repo.Err())
 	assert.NotEmpty(t, rs)

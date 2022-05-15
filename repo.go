@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -302,7 +303,7 @@ func (r *Repo) loadRemoteInfos() *Repo {
 
 	names := make([]string, 0, 2)
 	lines := strings.Split(str, "\n")
-
+	dump.P(lines)
 	for _, line := range lines {
 		ss := strutil.SplitN(line, " ", 3)
 		if len(ss) < 3 {
@@ -332,13 +333,11 @@ func (r *Repo) loadRemoteInfos() *Repo {
 		}
 	}
 
-	if len(rmp) > 0 {
+	if len(names) > 0 {
 		r.remoteNames = names
 		r.remoteInfosMp = rmp
 	}
 
-	// r.cache[cacheRemoteInfos] = rmp
-	// r.cache[cacheRemoteNames] = names
 	return r
 }
 
