@@ -37,6 +37,16 @@ func PrintCmdline(gw *GitWrap) {
 	color.Comment.Println(">", gw.String())
 }
 
+// IsGitDir check
+func IsGitDir(dir string) bool {
+	return New("--git-dir="+dir, "rev-parse", "--git-dir").Success()
+}
+
+// HasDotGitDir in the path
+func HasDotGitDir(path string) bool {
+	return fsutil.IsDir(path + "/" + GitDir)
+}
+
 var editorCmd string
 
 // Editor returns program name of the editor.
@@ -233,15 +243,17 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	return nil
 }
 
-func outputLines(output string) []string {
+// OutputLines split output to lines
+func OutputLines(output string) []string {
 	output = strings.TrimSuffix(output, "\n")
 	if output == "" {
-		return []string{}
+		return nil
 	}
 	return strings.Split(output, "\n")
 }
 
-func firstLine(output string) string {
+// FirstLine from command output
+func FirstLine(output string) string {
 	if i := strings.Index(output, "\n"); i >= 0 {
 		return output[0:i]
 	}
@@ -250,12 +262,6 @@ func firstLine(output string) string {
 
 func isDebugFromEnv() bool {
 	return os.Getenv("GIT_CMD_VERBOSE") != ""
-}
-
-func verboseLog(cmd *GitWrap) {
-	if debug {
-		PrintCmdline(cmd)
-	}
 }
 
 func isWindows() bool {

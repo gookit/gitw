@@ -1,6 +1,7 @@
 package gitw
 
 import (
+	"path"
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
@@ -15,9 +16,9 @@ const (
 )
 
 // CmdBuilder struct
-type CmdBuilder struct {
-	Dir string
-}
+// type CmdBuilder struct {
+// 	Dir string
+// }
 
 // RepoConfig struct
 type RepoConfig struct {
@@ -81,7 +82,12 @@ func (r *Repo) WithConfigFn(fn func(cfg *RepoConfig)) *Repo {
 
 // Init run git init for the repo dir.
 func (r *Repo) Init() error {
-	return r.gw.Cmd("init").Run()
+	return r.gw.Init().Run()
+}
+
+// IsInited is init git repo dir
+func (r *Repo) IsInited() bool {
+	return r.gw.IsGitRepo()
 }
 
 // Info get repo information
@@ -92,17 +98,76 @@ func (r *Repo) Info() *RepoInfo {
 	}
 
 	return &RepoInfo{
-		Name:    rt.Repo,
-		Path:    rt.Path(),
-		Dir:     r.dir,
-		URL:     rt.RawURLOfHTTP(),
+		Name: rt.Repo,
+		Path: rt.Path(),
+		Dir:  r.dir,
+		URL:  rt.RawURLOfHTTP(),
+		// more
+		Branch:  r.CurrentBranch(),
 		LastCID: r.LastAbbrevID(),
 	}
 }
 
-// Tags get repo tags list TODO
-func (r *Repo) Tags() error {
-	return nil
+// CurrentBranch return current branch name
+func (r *Repo) CurrentBranch() string {
+	// cat .git/HEAD
+	// OR
+	// git symbolic-ref HEAD // out: refs/heads/fea_pref
+	str, err := r.Cmd("symbolic-ref", "HEAD").Output()
+	if err != nil {
+		r.setErr(err)
+		return ""
+	}
+
+	// eg: fea_pref
+	return path.Base(FirstLine(str))
+}
+
+// TagMax get max tag version of the repo
+func (r *Repo) TagMax() string {
+	return r.TagLargest()
+}
+
+// TagLargest get max tag version of the repo
+func (r *Repo) TagLargest() string {
+	tags := r.TagsSortedByRefName()
+
+	if len(tags) > 0 {
+		return tags[0]
+	}
+	return ""
+}
+
+// TagSecondMax get second-largest tag of the repo
+func (r *Repo) TagSecondMax() string {
+	tags := r.TagsSortedByRefName()
+
+	if len(tags) > 1 {
+		return tags[1]
+	}
+	return ""
+}
+
+// TagsSortedByRefName get repo tags list
+func (r *Repo) TagsSortedByRefName() []string {
+	str, err := r.gw.Tag("-l", "--sort=-version:refname").Output()
+	if err != nil {
+		r.setErr(err)
+		return nil
+	}
+
+	return OutputLines(str)
+}
+
+// Tags get repo tags list
+func (r *Repo) Tags() []string {
+	ss, err := r.gw.Tag("-l").OutputLines()
+	if err != nil {
+		r.setErr(err)
+		return nil
+	}
+
+	return ss
 }
 
 // -------------------------------------------------
@@ -127,7 +192,7 @@ func (r *Repo) LastCommitID() string {
 	}
 
 	// by: git log -1 --format='%H'
-	lastCID, err := r.Cmd("log", "-1", "--format=%H").Output()
+	lastCID, err := r.gw.Log("-1", "--format=%H").Output()
 	if err != nil {
 		r.setErr(err)
 		return ""
@@ -207,7 +272,7 @@ func (r *Repo) loadRemoteInfos() *Repo {
 		return r
 	}
 
-	str, err := r.gw.Sub("remote", "-v").Output()
+	str, err := r.gw.Remote("-v").Output()
 	if err != nil {
 		r.setErr(err)
 		return r

@@ -20,6 +20,7 @@ type RepoInfo struct {
 	URL  string
 	// LastCID value
 	LastCID string
+	Branch  string
 }
 
 // remote type names
