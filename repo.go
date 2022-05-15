@@ -356,7 +356,7 @@ func (r *Repo) loadRemoteInfos() *Repo {
 // reset last error
 func (r *Repo) setErr(err error) {
 	if err != nil {
-		r.err = nil
+		r.err = err
 	}
 }
 
