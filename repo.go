@@ -6,6 +6,7 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -305,8 +306,10 @@ func (r *Repo) loadRemoteInfos() *Repo {
 	lines := strings.Split(str, "\n")
 	dump.P(lines)
 	for _, line := range lines {
+		// origin https://github.com/gookit/gitw (push)
 		ss := strutil.SplitN(line, " ", 3)
 		if len(ss) < 3 {
+			r.setErr(errorx.Rawf("invalid remote line: %s", line))
 			continue
 		}
 
