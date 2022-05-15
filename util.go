@@ -202,9 +202,9 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	if strings.HasPrefix(URL, "git@") {
 		r.Proto = ProtoSSH
 		if hasSfx {
-			str = URL[3 : len(URL)-4]
+			str = URL[4 : len(URL)-4]
 		} else {
-			str = URL[3:]
+			str = URL[4:]
 		}
 
 		host, path, ok := strutil.Cut(str, ":")
@@ -214,7 +214,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 
 		group, repo, ok := strutil.Cut(path, "/")
 		if !ok {
-			return errorx.Rawf("invalid git URL path: %s", URL)
+			return errorx.Rawf("invalid git URL path: %s", path)
 		}
 
 		r.Scheme = SchemeGIT
@@ -222,6 +222,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 		return nil
 	}
 
+	str = URL
 	if hasSfx {
 		str = URL[0 : len(URL)-4]
 	}
@@ -234,7 +235,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 
 	group, repo, ok := strutil.Cut(strings.Trim(info.Path, "/"), "/")
 	if !ok {
-		return errorx.Rawf("invalid http URL path: %s", URL)
+		return errorx.Rawf("invalid http URL path: %s", info.Path)
 	}
 
 	r.Proto = ProtoHTTP
