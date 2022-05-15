@@ -62,4 +62,5 @@ jobs:
       run: |
         pwd
         ls -al
+        git remote -v
         go test -v -cover ./...

@@ -10,9 +10,11 @@ import (
 )
 
 const (
-	cacheRemoteNames  = "rmtNames"
-	cacheRemoteInfos  = "rmtInfos"
-	cacheLastCommitID = "lastCID"
+	cacheRemoteNames   = "rmtNames"
+	cacheRemoteInfos   = "rmtInfos"
+	cacheLastCommitID  = "lastCID"
+	cacheCurrentBranch = "curBranch"
+	cacheMaxTagVersion = "maxVersion"
 )
 
 // CmdBuilder struct
@@ -92,7 +94,7 @@ func (r *Repo) IsInited() bool {
 
 // Info get repo information
 func (r *Repo) Info() *RepoInfo {
-	rt := r.loadRemoteInfos().RandomRemoteInfo()
+	rt := r.loadRemoteInfos().DefaultRemoteInfo()
 	if rt == nil {
 		return nil
 	}
@@ -104,12 +106,18 @@ func (r *Repo) Info() *RepoInfo {
 		URL:  rt.RawURLOfHTTP(),
 		// more
 		Branch:  r.CurrentBranch(),
+		Version: r.TagLargest(),
 		LastCID: r.LastAbbrevID(),
 	}
 }
 
 // CurrentBranch return current branch name
 func (r *Repo) CurrentBranch() string {
+	brName := r.cache.Str(cacheCurrentBranch)
+	if len(brName) > 0 {
+		return brName
+	}
+
 	// cat .git/HEAD
 	// OR
 	// git symbolic-ref HEAD // out: refs/heads/fea_pref
@@ -120,7 +128,10 @@ func (r *Repo) CurrentBranch() string {
 	}
 
 	// eg: fea_pref
-	return path.Base(FirstLine(str))
+	brName = path.Base(FirstLine(str))
+	r.cache.Set(cacheCurrentBranch, brName)
+
+	return brName
 }
 
 // TagMax get max tag version of the repo
@@ -130,9 +141,15 @@ func (r *Repo) TagMax() string {
 
 // TagLargest get max tag version of the repo
 func (r *Repo) TagLargest() string {
+	tagVer := r.cache.Str(cacheMaxTagVersion)
+	if len(tagVer) > 0 {
+		return tagVer
+	}
+
 	tags := r.TagsSortedByRefName()
 
 	if len(tags) > 0 {
+		r.cache.Set(cacheMaxTagVersion, tags[0])
 		return tags[0]
 	}
 	return ""

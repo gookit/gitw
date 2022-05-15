@@ -21,6 +21,7 @@ type RepoInfo struct {
 	// LastCID value
 	LastCID string
 	Branch  string
+	Version string
 }
 
 // remote type names

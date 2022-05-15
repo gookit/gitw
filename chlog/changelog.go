@@ -163,13 +163,13 @@ func (c *Changelog) SetLogText(gitLogOut string) {
 // FetchGitLog fetch log data by git log
 func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelog {
 	logCmd := gitw.New("log", "--reverse")
-	logCmd.Addf("--pretty=format:\"%s\"", c.LogFormat)
+	logCmd.Argf("--pretty=format:\"%s\"", c.LogFormat)
 	// logCmd.Add("--no-merges")
 	logCmd.Add(moreArgs...) // add custom args
 
-	// logCmd.Addf("%s...%s", "v0.1.0", "HEAD")
+	// logCmd.Argf("%s...%s", "v0.1.0", "HEAD")
 	if sha1 != "" && sha2 != "" {
-		logCmd.Addf("%s...%s", sha1, sha2)
+		logCmd.Argf("%s...%s", sha1, sha2)
 	}
 
 	c.SetLogText(logCmd.SafeOutput())

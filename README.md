@@ -28,8 +28,8 @@ func main() {
 	logTxt := gitw.MustString(gitw.Log("v1.0.2", "v1.0.3"))
 	fmt.Println(logTxt)
 
-	// LocalBranches
-	brList := gitw.MustStrings(gitw.LocalBranches())
+	// Local Branches
+	brList := gitw.MustStrings(gitw.Branches())
 	fmt.Println(brList)
 
 	// custom create command
@@ -140,7 +140,9 @@ func main() {
 
 ## Commands
 
-Git command functions
+### Commonly functions
+
+Git command functions of std:
 
 ```go
 func Alias(name string) string
@@ -152,8 +154,9 @@ func Editor() string
 func GlobalConfig(name string) (string, error)
 func HasFile(segments ...string) bool
 func Head() (string, error)
-func LocalBranches() ([]string, error)
+func Branches() ([]string, error)
 func Log(sha1, sha2 string) (string, error)
+func Tag(args ...string) (string, error)
 func Quiet(args ...string) bool
 func Ref(ref string) (string, error)
 func RefList(a, b string) ([]string, error)
