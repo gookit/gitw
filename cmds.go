@@ -9,31 +9,54 @@ import (
 	"github.com/gookit/goutil/errorx"
 )
 
+// debug for std
+var debug bool
+var std = newStd()
+
+// IsDebug mode
+func IsDebug() bool {
+	return debug
+}
+
+// SetDebug mode
+func SetDebug(open bool) {
+	debug = open
+	if open {
+		std.BeforeExec = PrintCmdline
+	} else {
+		std.BeforeExec = nil
+	}
+}
+
+func newStd() *GitWrap {
+	gw := New()
+
+	// load debug setting.
+	debug = isDebugFromEnv()
+	if debug {
+		gw.BeforeExec = PrintCmdline
+	}
+	return gw
+}
+
+// RestStd instance
+func RestStd() {
+	std = newStd()
+}
+
 // some from: https://github.com/github/hub/blob/master/git/git.go
 
 // GlobalFlags for run git command
 var GlobalFlags []string
 
 func gitCmd(args ...string) *GitWrap {
-	cmd := New()
-
 	// with global flags
-	if len(GlobalFlags) > 0 {
-		cmd.WithArgs(GlobalFlags)
-	}
-
-	return cmd.WithArgs(args)
+	return std.New(GlobalFlags...).WithArgs(args)
 }
 
 func cmdWithArgs(subCmd string, args ...string) *GitWrap {
-	cmd := New(subCmd)
-
 	// with global flags
-	if len(GlobalFlags) > 0 {
-		cmd.WithArgs(GlobalFlags)
-	}
-
-	return cmd.WithArgs(args)
+	return std.Cmd(subCmd, GlobalFlags...).WithArgs(args)
 }
 
 // Version info get.
@@ -44,13 +67,13 @@ func Version() (string, error) {
 		return "", errorx.Wrap(err, "error running git version")
 	}
 
-	return firstLine(output), nil
+	return FirstLine(output), nil
 }
 
 var cachedDir string
 
-// Dir get git dir. eg: ".git"
-func Dir() (string, error) {
+// DataDir get .git dir name. eg: ".git"
+func DataDir() (string, error) {
 	if cachedDir != "" {
 		return cachedDir, nil
 	}
@@ -75,7 +98,7 @@ func Dir() (string, error) {
 		}
 	}
 
-	gitDir := firstLine(output)
+	gitDir := FirstLine(output)
 	if !filepath.IsAbs(gitDir) {
 		if chdir != "" {
 			gitDir = filepath.Join(chdir, gitDir)
@@ -93,18 +116,24 @@ func Dir() (string, error) {
 	return gitDir, nil
 }
 
+// SetWorkdir for the std
+func SetWorkdir(dir string) {
+	std.WithWorkDir(dir)
+}
+
 // Workdir git workdir name. alias of WorkdirName()
 func Workdir() (string, error) {
 	return WorkdirName()
 }
 
-// WorkdirName git workdir name
+// WorkdirName get git workdir name
 func WorkdirName() (string, error) {
 	// git rev-parse --show-toplevel
 	toplevelCmd := gitCmd("rev-parse", "--show-toplevel")
 	toplevelCmd.Stderr = nil
 	output, err := toplevelCmd.Output()
-	dir := firstLine(output)
+
+	dir := FirstLine(output)
 	if dir == "" {
 		return "", fmt.Errorf("unable to determine git working directory")
 	}
@@ -117,7 +146,7 @@ func HasFile(segments ...string) bool {
 	pathCmd := gitCmd("rev-parse", "-q", "--git-path", filepath.Join(segments...))
 	pathCmd.Stderr = nil
 	if output, err := pathCmd.Output(); err == nil {
-		if lines := outputLines(output); len(lines) == 1 {
+		if lines := OutputLines(output); len(lines) == 1 {
 			if _, err := os.Stat(lines[0]); err == nil {
 				return true
 			}
@@ -125,7 +154,7 @@ func HasFile(segments ...string) bool {
 	}
 
 	// Fallback for older git versions
-	dir, err := Dir()
+	dir, err := DataDir()
 	if err != nil {
 		return false
 	}
@@ -151,7 +180,7 @@ func SymbolicRef(ref string) (string, error) {
 	refCmd := gitCmd("symbolic-ref", ref)
 	refCmd.Stderr = nil
 	output, err := refCmd.Output()
-	return firstLine(output), err
+	return FirstLine(output), err
 }
 
 // SymbolicFullName reads a branch name from a ref such as "@{upstream}"
@@ -160,10 +189,10 @@ func SymbolicFullName(name string) (string, error) {
 	parseCmd.Stderr = nil
 	output, err := parseCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("unknown revision or path not in the working tree: %s", name)
+		return "", errorx.Newf("unknown revision or path not in the working tree: %s", name)
 	}
 
-	return firstLine(output), nil
+	return FirstLine(output), nil
 }
 
 // Ref get
@@ -172,10 +201,10 @@ func Ref(ref string) (string, error) {
 	parseCmd.Stderr = nil
 	output, err := parseCmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("unknown revision or path not in the working tree: %s", ref)
+		return "", errorx.Newf("unknown revision or path not in the working tree: %s", ref)
 	}
 
-	return firstLine(output), nil
+	return FirstLine(output), nil
 }
 
 // RefList get
@@ -185,10 +214,10 @@ func RefList(a, b string) ([]string, error) {
 	listCmd.Stderr = nil
 	output, err := listCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("can't load rev-list for %s", ref)
+		return nil, errorx.Newf("can't load rev-list for %s", ref)
 	}
 
-	return outputLines(output), nil
+	return OutputLines(output), nil
 }
 
 // NewRange object
@@ -200,7 +229,7 @@ func NewRange(a, b string) (*Range, error) {
 		return nil, err
 	}
 
-	lines := outputLines(output)
+	lines := OutputLines(output)
 	if len(lines) != 2 {
 		return nil, fmt.Errorf("can't parse range %s..%s", a, b)
 	}
@@ -243,18 +272,16 @@ func CommentChar(text string) (string, error) {
 			}
 			return candidate, nil
 		}
-		return "", fmt.Errorf("unable to select a comment character that is not used in the current message")
+		return "", errorx.Raw("unable to select a comment character that is not used in the current message")
 	}
 
 	return char, nil
 }
 
-// Show git log diff by an commit sha
+// Show git log diff by a commit sha
 func Show(sha string) (string, error) {
-	gw := New()
-	gw.Stderr = nil
-	gw.WithArg("-c", "log.showSignature=false")
-	gw.WithArg("show").WithArg("-s").WithArg("--format=%s%n%+b").WithArg(sha)
+	gw := gitCmd("-c", "log.showSignature=false")
+	gw.WithArg("show", "-s", "--format=%s%n%+b", sha)
 
 	output, err := gw.Output()
 	return strings.TrimSpace(output), err
@@ -266,8 +293,7 @@ func Show(sha string) (string, error) {
 //	gitw.Log("v1.0.2", "v1.0.3")
 //	gitw.Log("commit id 1", "commit id 2")
 func Log(sha1, sha2 string) (string, error) {
-	execCmd := New()
-	execCmd.WithArg("-c", "log.showSignature=false").WithArg("log").WithArg("--no-color")
+	execCmd := gitCmd("-c", "log.showSignature=false", "log", "--no-color")
 	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
 	// execCmd.WithArg("--format='%h (%aN, %ar)%n%w(78,3,3)%s%n%+b'")
 	execCmd.WithArg("--cherry")
@@ -284,8 +310,46 @@ func Log(sha1, sha2 string) (string, error) {
 	return outputs, nil
 }
 
-// LocalBranches list
-func LocalBranches() ([]string, error) {
+// Tags list
+//
+// something:
+// 	`git tag -l` == `git tag --format '%(refname:strip=2)'`
+//
+// more e.g:
+//  // refname - sorts in a lexicographic order
+//  // version:refname or v:refname - this sorts based on version
+// 	git tag --sort=-version:refname
+// 	git tag -l --sort version:refname
+// 	git tag --format '%(refname:strip=2)' --sort=-taggerdate
+// 	git tag --format '%(refname:strip=2) %(objectname)' --sort=-taggerdate
+// 	git log --tags --simplify-by-decoration --pretty="format:%d - %cr"
+func Tags(args ...string) ([]string, error) {
+	if len(args) > 0 {
+		args1 := make([]string, len(args)+1)
+		args1[0] = "-l"
+
+		copy(args1[1:], args)
+		return Tag(args1...)
+	}
+
+	return Tag("-l")
+}
+
+// Tag operate of git
+//
+// Usage: Tag("-l")
+func Tag(args ...string) ([]string, error) {
+	tagCmd := cmdWithArgs("tag", args...)
+	output, err := tagCmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	return OutputLines(output), nil
+}
+
+// Branches list
+func Branches() ([]string, error) {
 	branchesCmd := gitCmd("branch", "--list")
 	output, err := branchesCmd.Output()
 	if err != nil {
@@ -293,7 +357,7 @@ func LocalBranches() ([]string, error) {
 	}
 
 	var branches []string
-	for _, branch := range outputLines(output) {
+	for _, branch := range OutputLines(output) {
 		branches = append(branches, branch[2:])
 	}
 	return branches, nil
@@ -304,7 +368,11 @@ func Remotes() ([]string, error) {
 	remoteCmd := gitCmd("remote", "-v")
 	remoteCmd.Stderr = nil
 	output, err := remoteCmd.Output()
-	return outputLines(output), err
+	if err != nil {
+		return nil, err
+	}
+
+	return OutputLines(output), nil
 }
 
 // -------------------------------------------------
@@ -312,8 +380,10 @@ func Remotes() ([]string, error) {
 // -------------------------------------------------
 
 // Var get by git var.
-// all: git var -l
-// one: git var GIT_EDITOR
+//
+// Example
+// 	all: git var -l
+// 	one: git var GIT_EDITOR
 func Var(name string) string {
 	val, err := New("var", name).Output()
 	if err != nil {
@@ -351,9 +421,9 @@ func ConfigAll(name string) ([]string, error) {
 	configCmd := cmdWithArgs("config", mode, name)
 	output, err := configCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("unknown config %s", name)
+		return nil, errorx.Newf("unknown config %s", name)
 	}
-	return outputLines(output), nil
+	return OutputLines(output), nil
 }
 
 // GlobalConfig get git global config by name
@@ -374,13 +444,13 @@ func gitConfigGet(args ...string) (string, error) {
 		return "", fmt.Errorf("unknown config %s", args[len(args)-1])
 	}
 
-	return firstLine(output), nil
+	return FirstLine(output), nil
 }
 
 func gitConfig(args ...string) ([]string, error) {
 	configCmd := gitCmd(gitConfigCommand(args)...)
 	output, err := configCmd.Output()
-	return outputLines(output), err
+	return OutputLines(output), err
 }
 
 func gitConfigCommand(args []string) []string {
@@ -395,25 +465,17 @@ func Alias(name string) string {
 
 // Run command with args
 func Run(args ...string) error {
-	cmd := gitCmd(args...)
-	return cmd.Run()
+	return gitCmd(args...).Run()
 }
 
 // Spawn run command with args
 func Spawn(args ...string) error {
-	cmd := gitCmd(args...)
-	return cmd.Spawn()
+	return gitCmd(args...).Spawn()
 }
 
 // Quiet run
 func Quiet(args ...string) bool {
-	return New(args...).Success()
-}
-
-// IsGitDir check
-func IsGitDir(dir string) bool {
-	cmd := New("--git-dir="+dir, "rev-parse", "--git-dir")
-	return cmd.Success()
+	return gitCmd(args...).Success()
 }
 
 // IsGitCmd check
@@ -436,7 +498,7 @@ func IsGitCommand(command string) bool {
 		return false
 	}
 
-	for _, helpCmdOutputLine := range outputLines(cmdOutput) {
+	for _, helpCmdOutputLine := range OutputLines(cmdOutput) {
 		if strings.HasPrefix(helpCmdOutputLine, "  ") {
 			for _, gitCommand := range strings.Split(helpCmdOutputLine, " ") {
 				if gitCommand == command {
