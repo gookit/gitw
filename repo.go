@@ -336,11 +336,11 @@ func (r *Repo) loadRemoteInfos() *Repo {
 		}
 	}
 
+	dump.P(names, rmp)
 	if len(names) > 0 {
 		r.remoteNames = names
 		r.remoteInfosMp = rmp
 	}
-
 	return r
 }
 
