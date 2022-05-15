@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 
 func TestRepo_Info(t *testing.T) {
 	info := repo.Info()
-	dump.P(info)
+	dump.P(info, gitw.Remote("-v").SafeLines())
 
 	assert.Nil(t, repo.Err())
 	assert.NotNil(t, info)
@@ -30,7 +30,7 @@ func TestRepo_Info(t *testing.T) {
 
 func TestRepo_RemoteInfos(t *testing.T) {
 	rs := repo.AllRemoteInfos()
-	dump.P(rs)
+	dump.P(rs, gitw.Remote("-v").SafeLines())
 
 	assert.NoError(t, repo.Err())
 	assert.NotEmpty(t, rs)

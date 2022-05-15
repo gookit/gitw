@@ -329,23 +329,22 @@ func Tags(args ...string) ([]string, error) {
 		args1[0] = "-l"
 
 		copy(args1[1:], args)
-		return Tag(args1...)
+		return Tag(args1...).OutputLines()
 	}
 
-	return Tag("-l")
+	return Tag("-l").OutputLines()
 }
 
-// Tag operate of git
+// Tag command of git
 //
-// Usage: Tag("-l")
-func Tag(args ...string) ([]string, error) {
-	tagCmd := cmdWithArgs("tag", args...)
-	output, err := tagCmd.Output()
-	if err != nil {
-		return nil, err
-	}
+// Usage: Tag("-l").OutputLines()
+func Tag(args ...string) *GitWrap {
+	return std.Tag(args...)
+}
 
-	return OutputLines(output), nil
+// Branch command of git
+func Branch(args ...string) *GitWrap {
+	return std.Branch(args...)
 }
 
 // Branches list
@@ -361,6 +360,11 @@ func Branches() ([]string, error) {
 		branches = append(branches, branch[2:])
 	}
 	return branches, nil
+}
+
+// Remote command of git
+func Remote(args ...string) *GitWrap {
+	return std.Remote(args...)
 }
 
 // Remotes list

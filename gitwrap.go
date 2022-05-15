@@ -263,13 +263,10 @@ func (gw *GitWrap) Success() bool {
 	return gw.NewExecCmd().Run() == nil
 }
 
-// SafeOutput run and return output
-func (gw *GitWrap) SafeOutput() string {
-	out, err := gw.Output()
-	if err != nil {
-		return ""
-	}
-	return out
+// SafeLines run and return output as lines
+func (gw *GitWrap) SafeLines() []string {
+	ss, _ := gw.OutputLines()
+	return ss
 }
 
 // OutputLines run and return output as lines
@@ -279,6 +276,15 @@ func (gw *GitWrap) OutputLines() ([]string, error) {
 		return nil, err
 	}
 	return OutputLines(out), err
+}
+
+// SafeOutput run and return output
+func (gw *GitWrap) SafeOutput() string {
+	out, err := gw.Output()
+	if err != nil {
+		return ""
+	}
+	return out
 }
 
 // Output run and return output
