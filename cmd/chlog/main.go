@@ -64,7 +64,7 @@ func main() {
 
 	yml := fsutil.ReadExistFile(opts.configFile)
 	if len(yml) > 0 {
-		if err := yaml.Unmarshal([]byte(yml), cfg); err != nil {
+		if err := yaml.Unmarshal(yml, cfg); err != nil {
 			panic(err)
 		}
 	}

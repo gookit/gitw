@@ -19,25 +19,19 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestRepo_Info(t *testing.T) {
-	info := repo.Info()
-	dump.P(info, gitw.Remote("-v").SafeLines())
-
-	assert.Nil(t, repo.Err())
-	assert.NotNil(t, info)
-	assert.Equal(t, "gitw", info.Name)
-}
-
 func TestRepo_RemoteInfos(t *testing.T) {
 	rs := repo.AllRemoteInfos()
 	dump.P(rs, gitw.Remote("-v").SafeLines())
+	dump.P(repo)
 
 	assert.NoError(t, repo.Err())
 	assert.NotEmpty(t, rs)
 
 	assert.True(t, repo.HasRemote(gitw.DefaultRemoteName))
 	assert.NotEmpty(t, repo.RemoteNames())
+}
 
+func TestRepo_DefaultRemoteInfo(t *testing.T) {
 	rt := repo.DefaultRemoteInfo()
 	dump.P(rt)
 	assert.NotEmpty(t, rt)
@@ -48,6 +42,15 @@ func TestRepo_RemoteInfos(t *testing.T) {
 	assert.Equal(t, "http://github.com/gookit/gitw", rt.URLOfHTTP())
 	assert.Equal(t, "https://github.com/gookit/gitw", rt.URLOfHTTPS())
 
-	rt = repo.DefaultRemoteInfo(gitw.RemoteTypePush)
+	rt = repo.RandomRemoteInfo(gitw.RemoteTypePush)
 	assert.NotEmpty(t, rt)
+}
+
+func TestRepo_Info(t *testing.T) {
+	info := repo.Info()
+	dump.P(info, gitw.Remote("-v").SafeLines())
+
+	assert.Nil(t, repo.Err())
+	assert.NotNil(t, info)
+	assert.Equal(t, "gitw", info.Name)
 }
