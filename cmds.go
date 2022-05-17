@@ -9,57 +9,9 @@ import (
 	"github.com/gookit/goutil/errorx"
 )
 
-// debug for std
-var debug bool
-var std = newStd()
-
-// IsDebug mode
-func IsDebug() bool {
-	return debug
-}
-
-// SetDebug mode
-func SetDebug(open bool) {
-	debug = open
-	if open {
-		std.BeforeExec = PrintCmdline
-	} else {
-		std.BeforeExec = nil
-	}
-}
-
-func newStd() *GitWrap {
-	gw := New()
-
-	// load debug setting.
-	debug = isDebugFromEnv()
-	if debug {
-		gw.BeforeExec = PrintCmdline
-	}
-	return gw
-}
-
-// RestStd instance
-func RestStd() {
-	std = newStd()
-}
-
 // some from: https://github.com/github/hub/blob/master/git/git.go
 
-// GlobalFlags for run git command
-var GlobalFlags []string
-
-func gitCmd(args ...string) *GitWrap {
-	// with global flags
-	return std.New(GlobalFlags...).WithArgs(args)
-}
-
-func cmdWithArgs(subCmd string, args ...string) *GitWrap {
-	// with global flags
-	return std.Cmd(subCmd, GlobalFlags...).WithArgs(args)
-}
-
-// Version info get.
+// Version info git.
 func Version() (string, error) {
 	versionCmd := gitCmd("version")
 	output, err := versionCmd.Output()
@@ -207,11 +159,12 @@ func Ref(ref string) (string, error) {
 	return FirstLine(output), nil
 }
 
-// RefList get
+// RefList for two sha
 func RefList(a, b string) ([]string, error) {
 	ref := fmt.Sprintf("%s...%s", a, b)
 	listCmd := gitCmd("rev-list", "--cherry-pick", "--right-only", "--no-merges", ref)
 	listCmd.Stderr = nil
+
 	output, err := listCmd.Output()
 	if err != nil {
 		return nil, errorx.Newf("can't load rev-list for %s", ref)
@@ -278,8 +231,8 @@ func CommentChar(text string) (string, error) {
 	return char, nil
 }
 
-// Show git log diff by a commit sha
-func Show(sha string) (string, error) {
+// ShowDiff git log diff by a commit sha
+func ShowDiff(sha string) (string, error) {
 	gw := gitCmd("-c", "log.showSignature=false")
 	gw.WithArg("show", "-s", "--format=%s%n%+b", sha)
 
@@ -287,15 +240,15 @@ func Show(sha string) (string, error) {
 	return strings.TrimSpace(output), err
 }
 
-// Log show git log between sha1 to sha2
+// ShowLogs show git log between sha1 to sha2
 //
 // Usage:
-//	gitw.Log("v1.0.2", "v1.0.3")
-//	gitw.Log("commit id 1", "commit id 2")
-func Log(sha1, sha2 string) (string, error) {
+//	gitw.ShowLogs("v1.0.2", "v1.0.3")
+//	gitw.ShowLogs("commit id 1", "commit id 2")
+func ShowLogs(sha1, sha2 string) (string, error) {
 	execCmd := gitCmd("-c", "log.showSignature=false", "log", "--no-color")
-	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
 	// execCmd.WithArg("--format='%h (%aN, %ar)%n%w(78,3,3)%s%n%+b'")
+	execCmd.WithArg("--format=%h (%aN, %ar)%n%w(78,3,3)%s%n%+b")
 	execCmd.WithArg("--cherry")
 
 	// shaRange := fmt.Sprintf("%s...%s", sha1, sha2)
@@ -335,18 +288,6 @@ func Tags(args ...string) ([]string, error) {
 	return Tag("-l").OutputLines()
 }
 
-// Tag command of git
-//
-// Usage: Tag("-l").OutputLines()
-func Tag(args ...string) *GitWrap {
-	return std.Tag(args...)
-}
-
-// Branch command of git
-func Branch(args ...string) *GitWrap {
-	return std.Branch(args...)
-}
-
 // Branches list
 func Branches() ([]string, error) {
 	branchesCmd := gitCmd("branch", "--list")
@@ -360,11 +301,6 @@ func Branches() ([]string, error) {
 		branches = append(branches, branch[2:])
 	}
 	return branches, nil
-}
-
-// Remote command of git
-func Remote(args ...string) *GitWrap {
-	return std.Remote(args...)
 }
 
 // Remotes list
