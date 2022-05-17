@@ -61,4 +61,4 @@ jobs:
       run: |
         pwd
         go test -v -cover ./...
-        go run ./cmd/chlog last head
+#        go run ./cmd/chlog last head

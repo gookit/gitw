@@ -1,7 +1,6 @@
 package gitw
 
 import (
-	"path"
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
@@ -122,14 +121,16 @@ func (r *Repo) CurrentBranch() string {
 	// cat .git/HEAD
 	// OR
 	// git symbolic-ref HEAD // out: refs/heads/fea_pref
-	str, err := r.Cmd("symbolic-ref", "HEAD").Output()
+	// git symbolic-ref --short -q HEAD // on checkout tag, run will error
+	// git rev-parse --abbrev-ref -q HEAD
+	str, err := r.gw.RevParse("--abbrev-ref", "-q", "HEAD").Output()
 	if err != nil {
 		r.setErr(err)
 		return ""
 	}
 
 	// eg: fea_pref
-	brName = path.Base(FirstLine(str))
+	brName = FirstLine(str)
 	r.cache.Set(cacheCurrentBranch, brName)
 
 	return brName
