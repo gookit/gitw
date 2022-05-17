@@ -35,11 +35,8 @@ jobs:
 
       - name: Display Env
         run: |
-          git remote -v
-          git tag -l
-          git fetch --unshallow
-          git pull
           env
+          go run ./cmd/chlog -config .github/changelog.yml -output testdata/changelog.md prev last 
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets
@@ -49,6 +46,6 @@ jobs:
         with:
           name: ${{ env.RELEASE_TAG }}
           tag_name: ${{ env.RELEASE_TAG }}
-          body_path: changelog.md
+          body_path: testdata/changelog.md
           token: ${{ secrets.GITHUB_TOKEN }}
 #          files: macos-chlog.exe

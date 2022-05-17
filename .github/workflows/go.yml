@@ -31,7 +31,6 @@ jobs:
       run: |
         git remote -v
         git tag -l
-        git pull
         env
 
     - name: Setup Go Faster
@@ -61,6 +60,5 @@ jobs:
     - name: Run tests
       run: |
         pwd
-        ls -al
-        git remote -v
         go test -v -cover ./...
+        go run ./cmd/chlog last head

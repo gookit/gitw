@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gookit/color"
+	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/chlog"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
@@ -17,14 +18,18 @@ import (
 )
 
 var opts = struct {
-	noMerges   bool
+	verbose bool
+	// with git merges log
+	withMerges bool
+
 	sha1, sha2 string
 	configFile string
 	outputFile string
 }{}
 
 func parseFlags() error {
-	flag.BoolVar(&opts.noMerges, "no-merge", false, "don't collect merge commits")
+	flag.BoolVar(&opts.verbose, "verbose", false, "show more information")
+	flag.BoolVar(&opts.withMerges, "with-merge", false, "collect git merge commits")
 	flag.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog")
 	flag.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog")
 
@@ -49,7 +54,6 @@ func parseFlags() error {
 	if opts.sha1 == "" || opts.sha2 == "" {
 		return errorx.Rawf("arguments: sha1, sha2 both is required")
 	}
-
 	return nil
 }
 
@@ -69,48 +73,85 @@ func main() {
 		}
 	}
 
-	dump.P(cfg)
-	cl := chlog.NewWithConfig(cfg)
-	cl.Formatter = &chlog.MarkdownFormatter{
-		RepoURL: cfg.RepoURL,
+	if opts.verbose {
+		cfg.Verbose = true
+		color.Cyanln("Changelog Config:")
+		dump.NoLoc(cfg)
 	}
-	// with some settings ...
-	cl.WithConfigFn(func(c *chlog.Config) {
-		c.GroupPrefix = "\n### "
-		c.GroupSuffix = "\n"
-	})
 
+	cl := chlog.NewWithConfig(cfg)
+	// with some settings ...
+	// cl.WithConfigFn(func(c *chlog.Config) {
+	// 	c.GroupPrefix = "\n### "
+	// 	c.GroupSuffix = "\n"
+	// })
+
+	// generate
+	err := generate(cl)
+	if err != nil {
+		color.Errorln("Generate error: ", err)
+		return
+	}
+
+	// dump
+	outputTo(cl, opts.outputFile)
+}
+
+func generate(cl *chlog.Changelog) error {
 	// fetch git log
 	var gitArgs []string
-	if opts.noMerges {
+	if !opts.withMerges {
 		gitArgs = append(gitArgs, "--no-merges")
 	}
 
-	cl.FetchGitLog(opts.sha1, opts.sha2, gitArgs...)
+	sha1, sha2 := matchShaVal(opts.sha1), matchShaVal(opts.sha2)
+	color.Infof("Generate changelog: %s to %s\n", sha1, sha2)
+
+	cl.FetchGitLog(sha1, sha2, gitArgs...)
 
 	// do generate
-	goutil.PanicIfErr(cl.Generate())
+	return cl.Generate()
+}
 
-	// dump
-	if opts.outputFile == "stdout" {
+var repo = gitw.NewRepo("./")
+
+func matchShaVal(sha string) string {
+	name := strings.ToLower(sha)
+	if name == "last" {
+		return repo.LargestTag()
+	}
+
+	if name == "prev" {
+		return repo.PrevMaxTag()
+	}
+
+	if name == "head" {
+		return "HEAD"
+	}
+
+	return sha
+}
+
+func outputTo(cl *chlog.Changelog, outFile string) {
+	if outFile == "stdout" {
 		fmt.Println(cl.Changelog())
 		return
 	}
 
-	f, err := fsutil.QuickOpenFile(opts.outputFile)
+	f, err := fsutil.QuickOpenFile(outFile)
 	if err != nil {
-		fmt.Println("open output file error:", err)
+		color.Errorln("open the output file error:", err)
 		return
 	}
 
 	defer f.Close()
 	_, err = cl.WriteTo(f)
 	if err != nil {
-		fmt.Println("write to output file error:", err)
+		color.Errorln("write to output file error:", err)
 		return
 	}
 
-	fmt.Println("OK, changelog written to: ", opts.outputFile)
+	color.Success.Println("OK. Changelog written to:", outFile)
 }
 
 func showHelp(err error) {
@@ -123,13 +164,17 @@ func showHelp(err error) {
 		buf.WriteString("Quick generate change log from git logs\n")
 	}
 
-	buf.WriteString("Usage: " + os.Args[0] + " [-options] sha1 sha2\n")
-	buf.WriteString("Arguments:\n")
+	binName := os.Args[0]
+	buf.WriteString("Usage: " + binName + " [-options] sha1 sha2\n")
+	buf.WriteString(color.Comment.Render("Arguments:\n"))
 	buf.WriteString("  sha1 	  The old git sha version. allow: tag name, commit id\n")
 	buf.WriteString("  sha2 	  The new git sha version. allow: tag name, commit id\n")
-	buf.WriteString("Options:")
+	buf.WriteString(color.Comment.Render("Options:"))
 	fmt.Println(buf.String())
 	flag.PrintDefaults()
-	fmt.Println("Examples:")
-	fmt.Println("  chlog v0.1.0 HEAD")
+	fmt.Println(color.Comment.Render("Examples:"))
+	fmt.Printf("  %s v0.1.0 HEAD\n", binName)
+	fmt.Printf("  %s prev last\n", binName)
+	fmt.Printf("  %s -config .github/changelog.yml last HEAD\n", binName)
+	fmt.Printf("  %s -config .github/changelog.yml -output changelog.md last HEAD\n", binName)
 }

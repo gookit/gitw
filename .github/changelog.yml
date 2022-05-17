@@ -1,7 +1,7 @@
 title: '## Change Log'
 style: gh-release
 # group names
-names: [Refactor, Fixed, Feature, Update]
+names: [Refactor, Fixed, Feature, Update, Other]
 repo_url: https://github.com/gookit/gitw
 
 filters:
@@ -11,8 +11,11 @@ filters:
   # message words should >= 3
   - name: wordsLen
     min_len: 3
+  - name: keyword
+    keyword: format code
+    exclude: true
   - name: keywords
-    keywords: ['format code']
+    keywords: format code, action test
     exclude: true
 
 # group match rules
