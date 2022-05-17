@@ -21,10 +21,13 @@ func (f ItemFilterFunc) Handle(li *LogItem) bool {
 	return f(li)
 }
 
-// global filters
-// var filters = map[string]ItemFilter{
-// 	"msgLen": MsgLenFilter,
-// }
+// built in filters
+const (
+	FilterMsgLen   = "msg_len"
+	FilterWordsLen = "words_len"
+	FilterKeyword  = "keyword"
+	FilterKeywords = "keywords"
+)
 
 // MsgLenFilter handler
 func MsgLenFilter(minLen int) ItemFilterFunc {

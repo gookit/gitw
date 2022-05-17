@@ -11,8 +11,8 @@ type Config struct {
 	Title string `json:"title" yaml:"title"`
 	// RepoURL repo URL address
 	RepoURL string `json:"repo_url" yaml:"repo_url"`
-	// Formatter name. allow: simple, markdown, ghr
-	Formatter string `json:"formatter" yaml:"formatter"`
+	// Style name. allow: simple, markdown, ghr
+	Style string `json:"style" yaml:"style"`
 	// LogFormat built-in log format string.
 	//
 	// use on the `git log --pretty="format:%H"`.
@@ -74,28 +74,28 @@ func (c *Config) CreateFilters() []ItemFilter {
 		}
 
 		switch name {
-		case "msgLen", "msg_len":
+		case FilterMsgLen:
 			ln := rule.Int("min_len")
 			if ln <= 0 {
 				continue
 			}
 
 			fls = append(fls, MsgLenFilter(ln))
-		case "wordsLen", "words_len":
+		case FilterWordsLen:
 			ln := rule.Int("min_len")
 			if ln <= 0 {
 				continue
 			}
 
 			fls = append(fls, WordsLenFilter(ln))
-		case "keyword":
+		case FilterKeyword:
 			str := rule.Str("keyword")
 			if len(str) <= 0 {
 				continue
 			}
 
 			fls = append(fls, KeywordFilter(str, rule.Bool("exclude")))
-		case "keywords":
+		case FilterKeywords:
 			str := rule.Str("keywords")
 			ss := strutil.Split(str, ",")
 			if len(ss) <= 0 {
@@ -127,10 +127,10 @@ func (c *Config) CreateFormatter() Formatter {
 		matcher.Names = ns
 	}
 
-	c.Names = ns
+	c.Names = matcher.Names
 	sf.GroupMatch = matcher
 
-	switch c.Formatter {
+	switch c.Style {
 	case FormatterMarkdown, "mkdown", "mkDown", "mkd":
 		return &MarkdownFormatter{
 			RepoURL:         c.RepoURL,

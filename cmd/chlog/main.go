@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/gookit/color"
@@ -13,6 +14,7 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"gopkg.in/yaml.v3"
 )
@@ -23,6 +25,7 @@ var opts = struct {
 	withMerges bool
 
 	sha1, sha2 string
+	excludes   string
 	configFile string
 	outputFile string
 }{}
@@ -32,6 +35,7 @@ func parseFlags() error {
 	flag.BoolVar(&opts.withMerges, "with-merge", false, "collect git merge commits")
 	flag.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog")
 	flag.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog")
+	flag.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
 
 	flag.Usage = func() {
 		showHelp(nil)
@@ -79,12 +83,17 @@ func main() {
 		dump.NoLoc(cfg)
 	}
 
-	cl := chlog.NewWithConfig(cfg)
 	// with some settings ...
-	// cl.WithConfigFn(func(c *chlog.Config) {
-	// 	c.GroupPrefix = "\n### "
-	// 	c.GroupSuffix = "\n"
-	// })
+	if len(opts.excludes) > 0 {
+		cfg.Filters = append(cfg.Filters, maputil.Data{
+			"name":     chlog.FilterKeywords,
+			"keywords": opts.excludes,
+			"exclude":  "true",
+		})
+	}
+
+	// create
+	cl := chlog.NewWithConfig(cfg)
 
 	// generate
 	err := generate(cl)
@@ -98,6 +107,7 @@ func main() {
 }
 
 func generate(cl *chlog.Changelog) error {
+
 	// fetch git log
 	var gitArgs []string
 	if !opts.withMerges {
@@ -159,12 +169,12 @@ func showHelp(err error) {
 	if err != nil {
 		buf.WriteString("ERROR: " + err.Error())
 		buf.WriteByte('\n')
-		buf.WriteByte('\n')
 	} else {
-		buf.WriteString("Quick generate change log from git logs\n")
+		buf.WriteString(color.Cyan.Render("Quick generate change log from git logs\n"))
 	}
 
-	binName := os.Args[0]
+	binName := path.Base(os.Args[0])
+	buf.WriteByte('\n')
 	buf.WriteString("Usage: " + binName + " [-options] sha1 sha2\n")
 	buf.WriteString(color.Comment.Render("Arguments:\n"))
 	buf.WriteString("  sha1 	  The old git sha version. allow: tag name, commit id\n")
@@ -175,6 +185,7 @@ func showHelp(err error) {
 	fmt.Println(color.Comment.Render("Examples:"))
 	fmt.Printf("  %s v0.1.0 HEAD\n", binName)
 	fmt.Printf("  %s prev last\n", binName)
+	fmt.Printf("  %s -exclude 'action tests,script error' prev last\n", binName)
 	fmt.Printf("  %s -config .github/changelog.yml last HEAD\n", binName)
 	fmt.Printf("  %s -config .github/changelog.yml -output changelog.md last HEAD\n", binName)
 }
