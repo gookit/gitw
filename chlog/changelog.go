@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/gookit/gitw"
-	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -40,45 +39,10 @@ func (l *LogItem) Username() string {
 	return l.Committer
 }
 
-// Config struct
-type Config struct {
-	// Title string for formatted text. eg: "## Change Log"
-	Title string `json:"title" yaml:"title"`
-	// RepoURL repo URL address
-	RepoURL string `json:"repo_url" yaml:"repo_url"`
-	// LogFormat string on call git log.
-	LogFormat string `json:"log_format" yaml:"log_format"`
-	// GroupPrefix string. eg: '### '
-	GroupPrefix string `yaml:"group_prefix"`
-	// GroupPrefix string.
-	GroupSuffix string `yaml:"group_suffix"`
-	// NoGroup Not output group name line.
-	NoGroup bool `yaml:"no_group"`
-	// RmRepeat remove repeated log by message
-	RmRepeat bool `yaml:"rm_repeat"`
-	// Names define group names and sort
-	Names []string `json:"names" yaml:"names"`
-	// Rules for match group
-	Rules []Rule `json:"rules" yaml:"rules"`
-	// Filters for filtering
-	Filters []maputil.SMap `json:"filters" yaml:"filters"`
-}
-
-// NewDefaultConfig instance
-func NewDefaultConfig() *Config {
-	return &Config{
-		Title:       "## Change Log",
-		RmRepeat:    true,
-		LogFormat:   LogFmtHs,
-		GroupPrefix: "\n### ",
-		GroupSuffix: "\n",
-	}
-}
-
 // Changelog struct
 type Changelog struct {
 	cfg *Config
-
+	// handle mark
 	parsed, generated bool
 	// the generated change log text
 	changelog string
@@ -99,21 +63,6 @@ type Changelog struct {
 	ItemFilters []ItemFilter
 	// Formatter The item formatter. format each item to string
 	Formatter Formatter
-	// LogFormat built-in log format string on the `git log --pretty="format:%H"`.
-	// see consts LogFmt*
-	LogFormat string
-	// Title string for formatted text. eg: "## Change Log"
-	Title string
-	// RepoURL repo URL address
-	RepoURL string
-	// GroupPrefix string. eg: '### '
-	GroupPrefix string
-	// GroupPrefix string.
-	GroupSuffix string
-	// NoGroup Not output group name line.
-	NoGroup bool
-	// RmRepeat remove repeated log by message
-	RmRepeat bool
 }
 
 // New object
@@ -162,10 +111,15 @@ func (c *Changelog) SetLogText(gitLogOut string) {
 
 // FetchGitLog fetch log data by git log
 func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelog {
-	logCmd := gitw.New("log", "--reverse")
-	logCmd.Argf("--pretty=format:\"%s\"", c.LogFormat)
-	// logCmd.Add("--no-merges")
-	logCmd.Add(moreArgs...) // add custom args
+	logCmd := gitw.Log("--reverse").
+		Argf("--pretty=format:\"%s\"", c.cfg.LogFormat)
+
+	if c.cfg.Verbose {
+		logCmd.OnBeforeExec(gitw.PrintCmdline)
+	}
+
+	// add custom args. eg: "--no-merges"
+	logCmd.AddArgs(moreArgs)
 
 	// logCmd.Argf("%s...%s", "v0.1.0", "HEAD")
 	if sha1 != "" && sha2 != "" {
@@ -174,6 +128,15 @@ func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelo
 
 	c.SetLogText(logCmd.SafeOutput())
 	return c
+}
+
+// prepare something
+func (c *Changelog) prepare() {
+	if c.Formatter == nil {
+		c.Formatter = c.cfg.CreateFormatter()
+	}
+
+	c.ItemFilters = c.cfg.CreateFilters()
 }
 
 // -------------------------------------------------------------------
@@ -187,6 +150,7 @@ func (c *Changelog) Parse() (err error) {
 	}
 
 	c.parsed = true
+	c.prepare()
 
 	str := strings.TrimSpace(c.logText)
 	if str == "" {
@@ -224,7 +188,7 @@ func (c *Changelog) Parse() (err error) {
 		}
 
 		// remove repeat msg item
-		if c.RmRepeat {
+		if c.cfg.RmRepeat {
 			msgID := strutil.Md5(li.Msg)
 			if _, ok := msgIDMap[msgID]; ok {
 				continue
@@ -271,14 +235,20 @@ func (c *Changelog) Generate() (err error) {
 
 	var outLines []string
 	// first add title
-	if c.Title != "" {
-		outLines = append(outLines, c.Title)
+	if c.cfg.Title != "" {
+		outLines = append(outLines, c.cfg.Title)
 	}
 
-	for grpName, list := range c.formatted {
+	// use sorted names for-each
+	for _, grpName := range c.cfg.Names {
+		list := c.formatted[grpName]
+		if len(list) == 0 {
+			continue
+		}
+
 		// if only one group, not render group name.
 		if groupCount > 1 {
-			outLines = append(outLines, c.GroupPrefix+grpName+c.GroupSuffix)
+			outLines = append(outLines, c.cfg.GroupPrefix+grpName+c.cfg.GroupSuffix)
 		}
 
 		outLines = append(outLines, strings.Join(list, "\n"))
@@ -294,7 +264,7 @@ func (c *Changelog) formatLogItems() map[string]int {
 	}
 
 	// init field
-	c.formatted = make(map[string][]string)
+	c.formatted = make(map[string][]string, len(c.cfg.Names))
 
 	groupMap := make(map[string]int, len(c.logItems))
 	for _, li := range c.logItems {
@@ -341,6 +311,11 @@ func (c *Changelog) Changelog() string {
 // func (c *Changelog) Formatted() []string {
 // 	return c.formatted
 // }
+
+// Config get
+func (c *Changelog) Config() *Config {
+	return c.cfg
+}
 
 // LogCount get
 func (c *Changelog) LogCount() int {

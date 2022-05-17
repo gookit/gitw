@@ -18,6 +18,13 @@ type GroupMatcher interface {
 	Match(msg string) (group string)
 }
 
+// built-in formatters
+const (
+	FormatterSimple    = "simple"
+	FormatterMarkdown  = "markdown"
+	FormatterGhRelease = "ghr"
+)
+
 // SimpleFormatter struct
 type SimpleFormatter struct {
 	// GroupMatch group match handler.

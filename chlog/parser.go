@@ -41,7 +41,7 @@ func (f LineParseFunc) Parse(line string, c *Changelog) *LogItem {
 // BuiltInParser struct
 var BuiltInParser = LineParseFunc(func(line string, c *Changelog) *LogItem {
 	li := &LogItem{}
-	switch c.LogFormat {
+	switch c.cfg.LogFormat {
 	case LogFmtHs:
 		ss := strings.SplitN(line, Sep, 2)
 		if len(ss) < 2 {
@@ -71,7 +71,7 @@ var BuiltInParser = LineParseFunc(func(line string, c *Changelog) *LogItem {
 
 		li.HashID, li.Msg, li.Date = ss[0], ss[1], ss[2]
 	default:
-		goutil.Panicf("unsupported log format '%s'", c.LogFormat)
+		goutil.Panicf("unsupported log format '%s'", c.cfg.LogFormat)
 	}
 
 	return li

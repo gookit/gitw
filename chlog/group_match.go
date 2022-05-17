@@ -5,6 +5,9 @@ import "github.com/gookit/goutil/strutil"
 // DefaultGroup name
 var DefaultGroup = "Other"
 
+// DefaultMatcher for match group name.
+var DefaultMatcher = NewDefaultMatcher()
+
 // Rule struct
 type Rule struct {
 	// Name for group
@@ -37,29 +40,31 @@ func (m RuleMatcher) Match(msg string) string {
 	return DefaultGroup
 }
 
-// DefaultMatcher for match group name.
-var DefaultMatcher = &RuleMatcher{
-	Names: []string{"Feature", "Refactor", "Update", "Fixed"},
-	Rules: []Rule{
-		{
-			Name:       "Feature",
-			StartWiths: []string{"feat", "new"},
-			Contains:   []string{"feature"},
+// NewDefaultMatcher instance
+func NewDefaultMatcher() *RuleMatcher {
+	return &RuleMatcher{
+		Names: []string{"Feature", "Refactor", "Update", "Fixed", DefaultGroup},
+		Rules: []Rule{
+			{
+				Name:       "Feature",
+				StartWiths: []string{"feat", "new"},
+				Contains:   []string{"feature"},
+			},
+			{
+				Name:       "Refactor",
+				StartWiths: []string{"break", "refactor"},
+				Contains:   []string{"refactor:"},
+			},
+			{
+				Name:       "Update",
+				StartWiths: []string{"up:", "update"},
+				Contains:   []string{" update"},
+			},
+			{
+				Name:       "Fixed",
+				StartWiths: []string{"bug", "close", "fix"},
+				Contains:   []string{"fix:", "bug:"},
+			},
 		},
-		{
-			Name:       "Refactor",
-			StartWiths: []string{"break", "refactor"},
-			Contains:   []string{"refactor:"},
-		},
-		{
-			Name:       "Update",
-			StartWiths: []string{"up:", "update"},
-			Contains:   []string{" update"},
-		},
-		{
-			Name:       "Fixed",
-			StartWiths: []string{"bug", "close", "fix"},
-			Contains:   []string{"fix:", "bug:"},
-		},
-	},
+	}
 }
