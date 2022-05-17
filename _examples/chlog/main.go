@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/goutil"
 )
 
+// run: go run ./_examples/chlog
 func main() {
 	cl := chlog.New()
 	cl.Formatter = &chlog.MarkdownFormatter{

@@ -107,7 +107,7 @@ func (r *Repo) Info() *RepoInfo {
 		URL:  rt.RawURLOfHTTP(),
 		// more
 		Branch:  r.CurrentBranch(),
-		Version: r.TagLargest(),
+		Version: r.LargestTag(),
 		LastCID: r.LastAbbrevID(),
 	}
 }
@@ -135,13 +135,13 @@ func (r *Repo) CurrentBranch() string {
 	return brName
 }
 
-// TagMax get max tag version of the repo
-func (r *Repo) TagMax() string {
-	return r.TagLargest()
+// MaxTag get max tag version of the repo
+func (r *Repo) MaxTag() string {
+	return r.LargestTag()
 }
 
-// TagLargest get max tag version of the repo
-func (r *Repo) TagLargest() string {
+// LargestTag get max tag version of the repo
+func (r *Repo) LargestTag() string {
 	tagVer := r.cache.Str(cacheMaxTagVersion)
 	if len(tagVer) > 0 {
 		return tagVer
@@ -154,6 +154,11 @@ func (r *Repo) TagLargest() string {
 		return tags[0]
 	}
 	return ""
+}
+
+// PrevMaxTag get second-largest tag of the repo
+func (r *Repo) PrevMaxTag() string {
+	return r.TagSecondMax()
 }
 
 // TagSecondMax get second-largest tag of the repo

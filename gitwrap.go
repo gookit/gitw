@@ -59,12 +59,12 @@ func New(args ...string) *GitWrap {
 
 // Cmd create instance with git cmd and args
 func Cmd(cmd string, args ...string) *GitWrap {
-	return New(cmd).AddArgs(args)
+	return New(cmd).WithArgs(args)
 }
 
 // NewWithArgs create instance with git cmd and args
 func NewWithArgs(cmd string, args ...string) *GitWrap {
-	return New(cmd).AddArgs(args)
+	return New(cmd).WithArgs(args)
 }
 
 // NewWithWorkdir create instance with workdir and args
@@ -174,15 +174,15 @@ func (gw *GitWrap) WithOutput(out *os.File, errOut *os.File) *GitWrap {
 	return gw
 }
 
-// AddArg add args and returns the current object
-func (gw *GitWrap) AddArg(args ...string) *GitWrap {
+// WithArg add args and returns the current object. alias of the WithArg()
+func (gw *GitWrap) WithArg(args ...string) *GitWrap {
 	gw.Args = append(gw.Args, args...)
 	return gw
 }
 
-// WithArg add args and returns the current object. alias of the Add()
-func (gw *GitWrap) WithArg(args ...string) *GitWrap {
-	return gw.AddArg(args...)
+// AddArg add args and returns the current object
+func (gw *GitWrap) AddArg(args ...string) *GitWrap {
+	return gw.WithArg(args...)
 }
 
 // Argf add arg and returns the current object.
@@ -209,13 +209,13 @@ func (gw *GitWrap) WithArgIf(arg string, exprOk bool) *GitWrap {
 	return gw.ArgIf(arg, exprOk)
 }
 
-// WithArgs for the git. alias of AddArgs()
-func (gw *GitWrap) WithArgs(args []string) *GitWrap {
-	return gw.AddArgs(args)
+// AddArgs for the git. alias of WithArgs()
+func (gw *GitWrap) AddArgs(args []string) *GitWrap {
+	return gw.WithArgs(args)
 }
 
-// AddArgs for the git
-func (gw *GitWrap) AddArgs(args []string) *GitWrap {
+// WithArgs for the git
+func (gw *GitWrap) WithArgs(args []string) *GitWrap {
 	if len(args) > 0 {
 		gw.Args = append(gw.Args, args...)
 	}
