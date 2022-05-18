@@ -33,10 +33,10 @@ jobs:
           echo "RELEASE_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
           echo "RELEASE_NAME=$GITHUB_WORKFLOW" >> $GITHUB_ENV
 
-      - name: Display Env
+      - name: Generate changelog
         run: |
-          env
-          go run ./cmd/chlog -config .github/changelog.yml -output testdata/changelog.md prev last 
+          go install github.com/gookit/gitw/cmd/chlog@latest
+          chlog -config .github/changelog.yml -output testdata/changelog.md prev last 
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets

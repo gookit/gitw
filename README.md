@@ -118,6 +118,34 @@ chlog -config .github/changelog.md last head
 
 ```
 
+### Use on action
+
+Can use `gitw/chlog` on github actions, like:
+
+> Full script please see [.github/workflows/release.yml](.github/workflows/release.yml)
+
+```yaml
+# ...
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go Faster
+        uses: WillAbides/setup-go-faster@v1.7.0
+        timeout-minutes: 3
+        with:
+          go-version: 1.17 # or use ${{ matrix.go_version }} 
+
+      - name: Generate changelog
+        run: |
+          go install github.com/gookit/gitw/cmd/chlog@latest
+          chlog -config .github/changelog.yml -output testdata/changelog.md prev last 
+
+```
+
 ### Use in code
 
 ```go
