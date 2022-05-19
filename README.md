@@ -1,8 +1,21 @@
-# GitWrap
+# GitW
 
-Git command wrapper, git changelog, repo information and some git tools.
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/gookit/gitw?style=flat-square)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gitw)](https://github.com/gookit/gitw)
+[![GoDoc](https://godoc.org/github.com/gookit/gitw?status.svg)](https://pkg.go.dev/github.com/gookit/gitw)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gitw)](https://goreportcard.com/report/github.com/gookit/gitw)
+[![Unit-Tests](https://github.com/gookit/gitw/workflows/Unit-Tests/badge.svg)](https://github.com/gookit/gitw/actions)
+[![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=master)](https://coveralls.io/github/gookit/gitw?branch=master)
+
+`gitw` - Git command wrapper, git changelog, repo information and some git tools.
 
 > Github https://github.com/gookit/gitw
+
+- Wrap the git commands
+- Quick run a git command
+- Generate changelog by git log
+  - allow custom generate config, such as filter, style and more
+- Quick query repository information
 
 ## Install
 
