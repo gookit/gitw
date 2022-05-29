@@ -11,11 +11,11 @@
 
 > Github https://github.com/gookit/gitw
 
-- Wrap the git commands
+- Wrap the local git commands
 - Quick run a git command
+- Quick query repository information
 - Generate changelog by git log
   - allow custom generate config, such as filter, style and more
-- Quick query repository information
 
 ## Install
 
@@ -37,8 +37,8 @@ import (
 )
 
 func main() {
-	// logTxt, err := gitw.Log("v1.0.2", "v1.0.3")
-	logTxt := gitw.MustString(gitw.Log("v1.0.2", "v1.0.3"))
+	// logTxt, err := gitw.ShowLogs("v1.0.2", "v1.0.3")
+	logTxt := gitw.MustString(gitw.ShowLogs("v1.0.2", "v1.0.3"))
 	fmt.Println(logTxt)
 
 	// Local Branches
