@@ -61,8 +61,6 @@ func parseFlags() error {
 	return nil
 }
 
-var cfg = chlog.NewDefaultConfig()
-
 // run: go run ./cmd/chlog
 func main() {
 	if err := parseFlags(); err != nil {
@@ -70,18 +68,8 @@ func main() {
 		return
 	}
 
-	yml := fsutil.ReadExistFile(opts.configFile)
-	if len(yml) > 0 {
-		if err := yaml.Unmarshal(yml, cfg); err != nil {
-			panic(err)
-		}
-	}
-
-	if opts.verbose {
-		cfg.Verbose = true
-		color.Cyanln("Changelog Config:")
-		dump.NoLoc(cfg)
-	}
+	// load config
+	loadConfig()
 
 	// with some settings ...
 	if len(opts.excludes) > 0 {
@@ -102,13 +90,35 @@ func main() {
 		return
 	}
 
-	// dump
+	// dump change logs to file
 	outputTo(cl, opts.outputFile)
 }
 
-func generate(cl *chlog.Changelog) error {
+var cfg = chlog.NewDefaultConfig()
+var repo = gitw.NewRepo("./")
 
-	// fetch git log
+func loadConfig() {
+	yml := fsutil.ReadExistFile(opts.configFile)
+	if len(yml) > 0 {
+		if err := yaml.Unmarshal(yml, cfg); err != nil {
+			panic(err)
+		}
+	}
+
+	if cfg.RepoURL == "" {
+		cfg.RepoURL = repo.DefaultRemoteInfo().URLOfHTTPS()
+	}
+
+	if opts.verbose {
+		cfg.Verbose = true
+		color.Cyanln("Changelog Config:")
+		dump.NoLoc(cfg)
+		fmt.Println()
+	}
+}
+
+func generate(cl *chlog.Changelog) error {
+	// fetch git logs
 	var gitArgs []string
 	if !opts.withMerges {
 		gitArgs = append(gitArgs, "--no-merges")
@@ -123,8 +133,6 @@ func generate(cl *chlog.Changelog) error {
 	return cl.Generate()
 }
 
-var repo = gitw.NewRepo("./")
-
 func matchShaVal(sha string) string {
 	name := strings.ToLower(sha)
 	if name == "last" {
@@ -138,7 +146,6 @@ func matchShaVal(sha string) string {
 	if name == "head" {
 		return "HEAD"
 	}
-
 	return sha
 }
 
@@ -167,7 +174,7 @@ func outputTo(cl *chlog.Changelog, outFile string) {
 func showHelp(err error) {
 	buf := new(bytes.Buffer)
 	if err != nil {
-		buf.WriteString("ERROR: " + err.Error())
+		buf.WriteString(color.Error.Render("ERROR ") + " " + err.Error())
 		buf.WriteByte('\n')
 	} else {
 		buf.WriteString(color.Cyan.Render("Quick generate change log from git logs\n"))
