@@ -7,25 +7,27 @@
 [![Unit-Tests](https://github.com/gookit/gitw/workflows/Unit-Tests/badge.svg)](https://github.com/gookit/gitw/actions)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=master)](https://coveralls.io/github/gookit/gitw?branch=master)
 
-`gitw` - Git command wrapper, generate git changelog, fetch repo information and some git tools.
+`gitw` - Git 命令包装器，生成 git 更改日志，获取 repo 信息和一些 git 工具。
 
-- Wrap the local git commands
-- Quick run a git command
-- Quick query repository information
-- Generate changelog by git log
-  - Allow custom generate config, such as filter, style and more
+> Github https://github.com/gookit/gitw
 
-> **[中文说明](README.zh-CN.md)**
+- 包装本地 git 命令
+- 快速运行 git 命令
+- 快速查询存储库信息
+- 通过 git log 快速生成更改日志
+  - 允许自定义生成配置，例如过滤、样式等
 
-## Install
+> **[EN-README](README.md)**
 
-> required: go 1.14+, git 2.x
+## 安装
+
+> 需要: go 1.14+, git 2.x
 
 ```bash
 go get github.com/gookit/gitw
 ```
 
-## Usage
+## 使用
 
 ```go
 package main
@@ -56,7 +58,9 @@ func main() {
 }
 ```
 
-### With more arguments
+### 使用更多参数
+
+通过 `git log` 获取两个 sha 版本之间的提交日志
 
 Examples, get commit logs between two sha versions via `git log`
 
@@ -79,15 +83,15 @@ Examples, get commit logs between two sha versions via `git log`
 	fmt.Println(logCmd.SafeOutput())
 ```
 
-## Repository
+## 仓库信息
 
-You can quickly get a git repository information at local.
+可以通过 gitw 在本地快速获取 git 存储库信息。
 
 ```go
 repo := gitw.NewRepo("/path/to/my-repo")
 ```
 
-**Remote Information**:
+**Remote 信息**:
 
 ```go
 rt := repo.DefaultRemoteInfo()
@@ -99,7 +103,7 @@ Output:
 
 ![one-remote-info](_examples/images/one-remote-info.png)
 
-**Repo Information**:
+**仓库信息**:
 
 ```go
 dump.Println(repo.Info())
@@ -111,21 +115,21 @@ Output:
 
 ## Changelog
 
-You can quickly generate changelog by `gitw/chlog` package.
+可以通过 `gitwchlog` 包快速生成更新日志。
 
-### Install
+### 安装
 
 ```shell
 go install github.com/gookit/gitw/cmd/chlog@latest
 ```
 
-### Usage
+### 使用
 
 Please run `chlog -h` to see help:
 
 ![chlog-help](_examples/images/chlog-help.png)
 
-**Example Run**:
+**运行示例**:
 
 ```shell
 chlog last head
@@ -154,9 +158,9 @@ chlog -config .github/changelog.md last head
 
 ```
 
-### Use on action
+### 在GitHub Action使用
 
-Can use `gitw/chlog` on GitHub actions, like:
+`gitw/chlog` 可以直接在 GitHub Actions 中使用, 示例:
 
 > Full script please see [.github/workflows/release.yml](.github/workflows/release.yml)
 
@@ -182,7 +186,9 @@ Can use `gitw/chlog` on GitHub actions, like:
 
 ```
 
-### Use in code
+### 在项目中使用
+
+在项目代码中使用
 
 ```go
 package main
@@ -217,7 +223,7 @@ func main() {
 
 ## Commands
 
-### Commonly git functions
+### Commonly functions
 
 Git command functions of std:
 
@@ -287,7 +293,7 @@ func (r *RemoteInfo) URLOfHTTPS() string
 func (r *RemoteInfo) Valid() bool
 ```
 
-## Refers
+## Refer
 
 - https://github/phppkg/phpgit
 - https://github.com/github/hub
