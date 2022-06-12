@@ -15,7 +15,7 @@
 - Quick run a git command
 - Quick query repository information
 - Generate changelog by git log
-  - allow custom generate config, such as filter, style and more
+  - Allow custom generate config, such as filter, style and more
 
 ## Install
 
@@ -133,7 +133,7 @@ chlog -config .github/changelog.md last head
 
 ### Use on action
 
-Can use `gitw/chlog` on github actions, like:
+Can use `gitw/chlog` on GitHub actions, like:
 
 > Full script please see [.github/workflows/release.yml](.github/workflows/release.yml)
 
@@ -155,7 +155,7 @@ Can use `gitw/chlog` on github actions, like:
       - name: Generate changelog
         run: |
           go install github.com/gookit/gitw/cmd/chlog@latest
-          chlog -config .github/changelog.yml -output testdata/changelog.md prev last 
+          chlog -config .github/changelog.yml -output changelog.md prev last 
 
 ```
 
