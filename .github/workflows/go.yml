@@ -32,6 +32,7 @@ jobs:
         git remote -v
         git tag -l
         env
+        make
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.7.0
