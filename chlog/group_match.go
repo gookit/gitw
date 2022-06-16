@@ -48,7 +48,7 @@ func NewDefaultMatcher() *RuleMatcher {
 			{
 				Name:       "Feature",
 				StartWiths: []string{"feat", "new"},
-				Contains:   []string{"feature"},
+				Contains:   []string{"feat:"},
 			},
 			{
 				Name:       "Refactor",
@@ -57,8 +57,8 @@ func NewDefaultMatcher() *RuleMatcher {
 			},
 			{
 				Name:       "Update",
-				StartWiths: []string{"up:", "update"},
-				Contains:   []string{" update"},
+				StartWiths: []string{"up ", "update"},
+				Contains:   []string{"up:", "update:"},
 			},
 			{
 				Name:       "Fixed",

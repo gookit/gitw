@@ -11,6 +11,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/chlog"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
@@ -19,20 +20,26 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Version number
+var Version = "1.0.1"
+
 var opts = struct {
 	verbose bool
 	// with git merges log
 	withMerges bool
 
-	sha1, sha2 string
-	excludes   string
+	workdir  string
+	excludes string
+
 	configFile string
 	outputFile string
+	sha1, sha2 string
 }{}
 
 func parseFlags() error {
 	flag.BoolVar(&opts.verbose, "verbose", false, "show more information")
 	flag.BoolVar(&opts.withMerges, "with-merge", false, "collect git merge commits")
+	flag.StringVar(&opts.workdir, "workdir", "", "workdir for run, default is current workdir")
 	flag.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog")
 	flag.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog")
 	flag.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
@@ -58,10 +65,20 @@ func parseFlags() error {
 	if opts.sha1 == "" || opts.sha2 == "" {
 		return errorx.Rawf("arguments: sha1, sha2 both is required")
 	}
+
+	if opts.workdir != "" {
+		cliutil.Infoln("try change workdir to", opts.workdir)
+		return os.Chdir(opts.workdir)
+	}
+
 	return nil
 }
 
-// run: go run ./cmd/chlog
+// quick run:
+//  go run ./cmd/chlog
+//
+// install to GOPATH/bin:
+//  go install ./cmd/chlog
 func main() {
 	if err := parseFlags(); err != nil {
 		showHelp(err)
@@ -177,7 +194,7 @@ func showHelp(err error) {
 		buf.WriteString(color.Error.Render("ERROR ") + " " + err.Error())
 		buf.WriteByte('\n')
 	} else {
-		buf.WriteString(color.Cyan.Render("Quick generate change log from git logs\n"))
+		buf.WriteString(color.Cyan.Sprintf("Quick generate change log from git logs(v%s)\n", Version))
 	}
 
 	binName := path.Base(os.Args[0])
