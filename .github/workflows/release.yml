@@ -33,9 +33,12 @@ jobs:
           echo "RELEASE_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
           echo "RELEASE_NAME=$GITHUB_WORKFLOW" >> $GITHUB_ENV
 
+      - name: Build bin package
+        run: make build-all
+
       - name: Generate changelog
         run: |
-          go install github.com/gookit/gitw/cmd/chlog@latest
+          go install ./cmd/chlog
           chlog -config .github/changelog.yml -output changelog.md prev last 
 
       # https://github.com/softprops/action-gh-release
@@ -48,4 +51,8 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           body_path: changelog.md
           token: ${{ secrets.GITHUB_TOKEN }}
-#          files: macos-chlog.exe
+          files: |
+            build/chlog-darwin-amd64
+            build/chlog-linux-amd64
+            build/chlog-linux-arm
+            build/chlog-windows-amd64.exe
