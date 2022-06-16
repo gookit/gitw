@@ -1,4 +1,4 @@
-# GitW
+# Gitw
 
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/gookit/gitw?style=flat-square)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gitw)](https://github.com/gookit/gitw)
@@ -166,18 +166,10 @@ Can use `gitw/chlog` on GitHub actions, like:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go Faster
-        uses: WillAbides/setup-go-faster@v1.7.0
-        timeout-minutes: 3
-        with:
-          go-version: 1.17 # or use ${{ matrix.go_version }} 
 
       - name: Generate changelog
         run: |
-          go install github.com/gookit/gitw/cmd/chlog@latest
+          curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -o /usr/local/bin/chlog
           chlog -config .github/changelog.yml -output changelog.md prev last 
 
 ```
