@@ -39,7 +39,7 @@ jobs:
       - name: Generate changelog
         run: |
           go install ./cmd/chlog
-          chlog -config .github/changelog.yml -output changelog.md prev last 
+          chlog -c .github/changelog.yml -o changelog.md prev last 
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets

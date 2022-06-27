@@ -31,7 +31,7 @@ rules:
     contains: ['fix:']
   - name: Feature
     start_withs: [feat, new]
-    contains: [feature]
+    contains: ['feat:']
   - name: Update
     start_withs: [update, 'up:']
-    contains: [' update']
+    contains: ['update:']
