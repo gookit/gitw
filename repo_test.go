@@ -46,6 +46,11 @@ func TestRepo_DefaultRemoteInfo(t *testing.T) {
 	assert.NotEmpty(t, rt)
 }
 
+func TestRepo_AutoMatchTag(t *testing.T) {
+	assert.Equal(t, "HEAD", repo.AutoMatchTag("head"))
+	assert.Equal(t, "541fb9d", repo.AutoMatchTag("541fb9d"))
+}
+
 func TestRepo_Info(t *testing.T) {
 	info := repo.Info()
 	dump.P(info)

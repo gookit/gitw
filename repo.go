@@ -136,6 +136,30 @@ func (r *Repo) CurrentBranch() string {
 	return brName
 }
 
+// ShaHead keywords
+const ShaHead = "HEAD"
+
+// some special keywords for match tag
+const (
+	TagLast = "last"
+	TagPrev = "prev"
+	TagHead = "head"
+)
+
+// AutoMatchTag by given sha or tag name
+func (r *Repo) AutoMatchTag(sha string) string {
+	switch strings.ToLower(sha) {
+	case TagLast:
+		return r.LargestTag()
+	case TagPrev:
+		return r.PrevMaxTag()
+	case TagHead:
+		return ShaHead
+	default:
+		return sha
+	}
+}
+
 // MaxTag get max tag version of the repo
 func (r *Repo) MaxTag() string {
 	return r.LargestTag()
