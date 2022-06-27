@@ -113,6 +113,9 @@ Output:
 
 You can quickly generate changelog by `gitw/chlog` package.
 
+- Allows custom build configuration. see [.github/changelog.yml](.github/changelog.yml)
+- can set filtering, grouping, output styles, etc.
+
 ### Install
 
 ```shell
@@ -129,7 +132,7 @@ Please run `chlog -h` to see help:
 
 ```shell
 chlog last head
-chlog -config .github/changelog.md last head
+chlog -c .github/changelog.yml last head
 ```
 
 **Outputs**:
@@ -169,8 +172,9 @@ Can use `gitw/chlog` on GitHub actions, like:
 
       - name: Generate changelog
         run: |
-          curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -o /usr/local/bin/chlog
-          chlog -config .github/changelog.yml -output changelog.md prev last 
+          curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -L -o /usr/local/bin/chlog
+          chmod a+x /usr/local/bin/chlog
+          chlog -c .github/changelog.yml -o changelog.md prev last 
 
 ```
 

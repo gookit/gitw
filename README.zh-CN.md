@@ -7,7 +7,7 @@
 [![Unit-Tests](https://github.com/gookit/gitw/workflows/Unit-Tests/badge.svg)](https://github.com/gookit/gitw/actions)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=master)](https://coveralls.io/github/gookit/gitw?branch=master)
 
-`gitw` - Git 命令包装器，生成 git 更改日志，获取 repo 信息和一些 git 工具。
+`gitw` - Git 命令包装器，生成 git 变更记录日志，获取 repo 信息和一些 git 命令工具。
 
 > Github https://github.com/gookit/gitw
 
@@ -60,9 +60,7 @@ func main() {
 
 ### 使用更多参数
 
-通过 `git log` 获取两个 sha 版本之间的提交日志
-
-Examples, get commit logs between two sha versions via `git log`
+示例，通过 `git log` 获取两个 sha 版本之间的提交日志
 
 ```go
 	logCmd := gitw.Log("--reverse").
@@ -113,9 +111,12 @@ Output:
 
 ![simple-repo-info](_examples/images/simple-repo-info.png)
 
-## Changelog
+## 生成变更日志
 
-可以通过 `gitwchlog` 包快速生成更新日志。
+可以通过 `gitw/chlog` 包快速生成更新日志。
+
+- 允许自定义生成配置 请看 [.github/changelog.yml](.github/changelog.yml)
+- 可以设置过滤、分组、输出样式等
 
 ### 安装
 
@@ -125,7 +126,7 @@ go install github.com/gookit/gitw/cmd/chlog@latest
 
 ### 使用
 
-Please run `chlog -h` to see help:
+运行 `chlog -h` 查看帮助:
 
 ![chlog-help](_examples/images/chlog-help.png)
 
@@ -133,7 +134,7 @@ Please run `chlog -h` to see help:
 
 ```shell
 chlog last head
-chlog -config .github/changelog.md last head
+chlog -c .github/changelog.yml last head
 ```
 
 **Outputs**:
@@ -173,8 +174,9 @@ chlog -config .github/changelog.md last head
 
       - name: Generate changelog
         run: |
-          curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -o /usr/local/bin/chlog
-          chlog -config .github/changelog.yml -output changelog.md prev last 
+          curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -L -o /usr/local/bin/chlog
+          chmod a+x /usr/local/bin/chlog
+          chlog -c .github/changelog.yml -o changelog.md prev last 
 
 ```
 
