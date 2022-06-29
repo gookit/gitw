@@ -89,7 +89,19 @@ func main() {
 repo := gitw.NewRepo("/path/to/my-repo")
 ```
 
-**Remote 信息**:
+### Branch 信息
+
+```go
+brInfo := repo.CurBranchInfo()
+
+dump.Println(brInfo)
+```
+
+**Output**:
+
+![one-remote-info](_examples/images/one-branch-info.png)
+
+### Remote 信息
 
 ```go
 rt := repo.DefaultRemoteInfo()
@@ -97,7 +109,7 @@ rt := repo.DefaultRemoteInfo()
 dump.Println(rt)
 ```
 
-Output:
+**Output**:
 
 ![one-remote-info](_examples/images/one-remote-info.png)
 
@@ -107,7 +119,7 @@ Output:
 dump.Println(repo.Info())
 ```
 
-Output:
+**Output**:
 
 ![simple-repo-info](_examples/images/simple-repo-info.png)
 

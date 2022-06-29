@@ -87,7 +87,19 @@ You can quickly get a git repository information at local.
 repo := gitw.NewRepo("/path/to/my-repo")
 ```
 
-**Remote Information**:
+### Branch Information
+
+```go
+brInfo := repo.CurBranchInfo()
+
+dump.Println(brInfo)
+```
+
+**Output**:
+
+![one-remote-info](_examples/images/one-branch-info.png)
+
+### Remote Information
 
 ```go
 rt := repo.DefaultRemoteInfo()
@@ -95,17 +107,17 @@ rt := repo.DefaultRemoteInfo()
 dump.Println(rt)
 ```
 
-Output:
+**Output**:
 
 ![one-remote-info](_examples/images/one-remote-info.png)
 
-**Repo Information**:
+### Repo Information
 
 ```go
 dump.Println(repo.Info())
 ```
 
-Output:
+**Output**:
 
 ![simple-repo-info](_examples/images/simple-repo-info.png)
 
