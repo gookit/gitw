@@ -74,8 +74,8 @@ var ErrInvalidBrLine = errorx.Raw("invalid git branch line text")
 // 	False - only branch name
 //	True  - get by `git br -v --all`
 //	        format: * BRANCH_NAME  COMMIT_ID  COMMIT_MSG
-func ParseBranchLine(line string, verbose bool) (info *BranchInfo, err error) {
-	info = &BranchInfo{}
+func ParseBranchLine(line string, verbose bool) (*BranchInfo, error) {
+	info := &BranchInfo{}
 	line = strings.TrimSpace(line)
 
 	if strings.HasPrefix(line, "*") {
@@ -83,9 +83,18 @@ func ParseBranchLine(line string, verbose bool) (info *BranchInfo, err error) {
 		line = strings.Trim(line, "*\t ")
 	}
 
+	if line == "" {
+		return nil, ErrInvalidBrLine
+	}
+
+	// at tag head. eg: `* （头指针在 v0.2.3 分离） 3c08adf chore: update readme add branch info docs`
+	if strings.HasPrefix(line, "(") || strings.HasPrefix(line, "（") {
+		return nil, ErrInvalidBrLine
+	}
+
 	if !verbose {
 		info.SetName(line)
-		return
+		return info, nil
 	}
 
 	// parse name
@@ -103,7 +112,7 @@ func ParseBranchLine(line string, verbose bool) (info *BranchInfo, err error) {
 	}
 
 	info.Hash, info.HashMsg = nodes[0], nodes[1]
-	return
+	return info, nil
 }
 
 // eg:

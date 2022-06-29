@@ -35,7 +35,13 @@ func TestNewRemoteInfo(t *testing.T) {
 }
 
 func TestParseBranchLine_simple(t *testing.T) {
-	info, err := gitw.ParseBranchLine("* fea/new_br001", false)
+	info, err := gitw.ParseBranchLine("* ", false)
+	assert.Error(t, err)
+
+	info, err = gitw.ParseBranchLine("* (HEAD)", false)
+	assert.Error(t, err)
+
+	info, err = gitw.ParseBranchLine("* fea/new_br001", false)
 	assert.NoError(t, err)
 
 	assert.True(t, info.Current)
@@ -81,6 +87,9 @@ func TestParseBranchLine_verbose(t *testing.T) {
 	assert.Equal(t, "my_new_br", info.Short)
 	assert.Equal(t, "6fb8dcd", info.Hash)
 	assert.Equal(t, "the message 003", info.HashMsg)
+
+	info, err = gitw.ParseBranchLine("* （头指针在 v0.2.3 分离） 3c08adf chore: update readme add branch info docs", true)
+	assert.Error(t, err)
 }
 
 func TestBranchInfo_parse_simple(t *testing.T) {
