@@ -53,8 +53,8 @@ func TestRepo_AutoMatchTag(t *testing.T) {
 
 func TestRepo_BranchInfos(t *testing.T) {
 	bs := repo.BranchInfos()
-	// dump.P(bs)
 	assert.NotEmpty(t, bs)
+	dump.P(bs.BrLines())
 
 	assert.NotEmpty(t, repo.BranchInfo("main"))
 	assert.NotEmpty(t, repo.SearchBranches("main", gitw.BrSearchAll))

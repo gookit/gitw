@@ -16,8 +16,8 @@ type RepoInfo struct {
 	Path string
 	Dir  string
 	URL  string
-	// LastCID value
-	LastCID string
-	Branch  string
-	Version string
+	// LastHash last commit hash value
+	LastHash string
+	Branch   string
+	Version  string
 }

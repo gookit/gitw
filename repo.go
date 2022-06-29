@@ -110,9 +110,9 @@ func (r *Repo) Info() *RepoInfo {
 		Dir:  r.dir,
 		URL:  rt.RawURLOfHTTP(),
 		// more
-		Branch:  r.CurBranchName(),
-		Version: r.LargestTag(),
-		LastCID: r.LastAbbrevID(),
+		Branch:   r.CurBranchName(),
+		Version:  r.LargestTag(),
+		LastHash: r.LastAbbrevID(),
 	}
 }
 
