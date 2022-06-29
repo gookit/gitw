@@ -113,6 +113,7 @@ func (bs *BranchInfos) Parse() *BranchInfos {
 		info, err := ParseBranchLine(line, verbose)
 		if err != nil {
 			bs.err = err
+			continue
 		}
 
 		// collect

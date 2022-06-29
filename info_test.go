@@ -111,6 +111,23 @@ func TestBranchInfo_parse_simple(t *testing.T) {
 	assert.Equal(t, "master", bis.Current().Name)
 }
 
+func TestBranchInfo_parse_invalid(t *testing.T) {
+	gitOut := `
+  fea/new_br001
+* (HEAD)
+  my_new_br 
+  remotes/origin/my_new_br 
+`
+	bis := gitw.NewBranchInfos(gitOut)
+	bis.Parse()
+	// dump.P(bis)
+
+	assert.Error(t, bis.LastErr())
+	assert.Nil(t, bis.Current())
+	assert.NotEmpty(t, bis.Locales())
+	assert.NotEmpty(t, bis.Remotes("origin"))
+}
+
 func TestBranchInfo_parse_verbose(t *testing.T) {
 	gitOut := `
   fea/new_br001              73j824d the message 001
