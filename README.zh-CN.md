@@ -125,7 +125,7 @@ dump.Println(repo.Info())
 
 ## 生成变更日志
 
-可以通过 `gitw/chlog` 包快速生成更新日志。
+可以通过 `gitw/chlog` 包快速生成变更日志。
 
 - 允许自定义生成配置 请看 [.github/changelog.yml](.github/changelog.yml)
 - 可以设置过滤、分组、输出样式等
@@ -142,34 +142,17 @@ go install github.com/gookit/gitw/cmd/chlog@latest
 
 ![chlog-help](_examples/images/chlog-help.png)
 
-**运行示例**:
+**生成变更日志:**:
 
 ```shell
+chlog prev last
 chlog last head
 chlog -c .github/changelog.yml last head
 ```
 
 **Outputs**:
 
-```text
-## Change Log
-
-### Update
-
-- update: update some logic for git command run [96147fb](https://github.com/gookit/gitw/commit/96147fba43caf462a50bc97d7ed078dd0059e797)
-- update: move RepoUrl config to MarkdownFormatter [8c861bf](https://github.com/gookit/gitw/commit/8c861bf05ae3576aba401692124df63372ae9ed7)
-
-### Fixed
-
-- fix: gen changelog error [1636761](https://github.com/gookit/gitw/commit/16367617bc364ce1022097e89313c7b09983981a)
-
-### Other
-
-- style: update some code logic [4a9f146](https://github.com/gookit/gitw/commit/4a9f14656b26a08b0cdd9c4f9cec9ae3bf5938b1)
-- build(deps): bump github.com/gookit/color from 1.4.2 to 1.5.0 [037fa47](https://github.com/gookit/gitw/commit/037fa477954b630fe34ff7ceab51e6132db645cb)
-- style: update examples and readme [8277389](https://github.com/gookit/gitw/commit/8277389817917e6b0cb97f3e5629f2c5034075e4)
-
-```
+![chlog-demo](_examples/images/chlog-demo.png)
 
 ### 在GitHub Action使用
 
