@@ -3,19 +3,15 @@ package gitw
 import (
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
 )
@@ -186,64 +182,6 @@ func editorCommands(editor string, args ...string) []string {
 	return cmdArgs
 }
 
-// ErrRemoteInfoNil error
-var ErrRemoteInfoNil = errorx.Raw("the remote info data cannot be nil")
-
-// ParseRemoteURL info to the RemoteInfo object.
-func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
-	if r == nil {
-		return ErrRemoteInfoNil
-	}
-
-	var str string
-	hasSfx := strings.HasSuffix(URL, ".git")
-
-	// eg: "git@github.com:gookit/gitw.git"
-	if strings.HasPrefix(URL, "git@") {
-		r.Proto = ProtoSSH
-		if hasSfx {
-			str = URL[4 : len(URL)-4]
-		} else {
-			str = URL[4:]
-		}
-
-		host, path, ok := strutil.Cut(str, ":")
-		if !ok {
-			return errorx.Rawf("invalid git URL: %s", URL)
-		}
-
-		group, repo, ok := strutil.Cut(path, "/")
-		if !ok {
-			return errorx.Rawf("invalid git URL path: %s", path)
-		}
-
-		r.Scheme = SchemeGIT
-		r.Host, r.Group, r.Repo = host, group, repo
-		return nil
-	}
-
-	str = URL
-	if hasSfx {
-		str = URL[0 : len(URL)-4]
-	}
-
-	// eg: "https://github.com/gookit/gitw.git"
-	info, err := url.Parse(str)
-	if err != nil {
-		return err
-	}
-
-	group, repo, ok := strutil.Cut(strings.Trim(info.Path, "/"), "/")
-	if !ok {
-		return errorx.Rawf("invalid http URL path: %s", info.Path)
-	}
-
-	r.Proto = ProtoHTTP
-	r.Scheme = info.Scheme
-	r.Host, r.Group, r.Repo = info.Host, group, repo
-	return nil
-}
-
 // OutputLines split output to lines
 func OutputLines(output string) []string {
 	output = strings.TrimSuffix(output, "\n")
@@ -263,28 +201,4 @@ func FirstLine(output string) string {
 
 func isDebugFromEnv() bool {
 	return os.Getenv("GIT_CMD_VERBOSE") != ""
-}
-
-func isWindows() bool {
-	return runtime.GOOS == "windows" || detectWSL()
-}
-
-var (
-	detectedWSL         bool
-	detectedWSLContents string
-)
-
-// https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
-func detectWSL() bool {
-	if !detectedWSL {
-		b := make([]byte, 1024)
-		f, err := os.Open("/proc/version")
-		if err == nil {
-			_, _ = f.Read(b) // ignore error
-			f.Close()
-			detectedWSLContents = string(b)
-		}
-		detectedWSL = true
-	}
-	return strings.Contains(detectedWSLContents, "Microsoft")
 }

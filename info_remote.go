@@ -12,6 +12,7 @@ const (
 type RemoteInfos map[string]*RemoteInfo
 
 // RemoteInfo struct
+//
 // - http: "https://github.com/gookit/gitw.git"
 // - git: "git@github.com:gookit/gitw.git"
 type RemoteInfo struct {
@@ -47,9 +48,7 @@ func NewRemoteInfo(name, url, typ string) (*RemoteInfo, error) {
 		Type: typ,
 	}
 
-	err := ParseRemoteURL(url, r)
-
-	if err != nil {
+	if err := ParseRemoteURL(url, r); err != nil {
 		return nil, err
 	}
 	return r, nil

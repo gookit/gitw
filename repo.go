@@ -44,10 +44,15 @@ type Repo struct {
 	err error
 	// config
 	cfg *RepoConfig
+
+	// branch infos for the repo
+	branchInfos *BranchInfos
+
 	// remoteNames
 	remoteNames []string
 	// remoteInfosMp
 	remoteInfosMp map[string]RemoteInfos
+
 	// cache some information of the repo
 	cache maputil.Data
 }
@@ -105,36 +110,15 @@ func (r *Repo) Info() *RepoInfo {
 		Dir:  r.dir,
 		URL:  rt.RawURLOfHTTP(),
 		// more
-		Branch:  r.CurrentBranch(),
+		Branch:  r.CurBranchName(),
 		Version: r.LargestTag(),
 		LastCID: r.LastAbbrevID(),
 	}
 }
 
-// CurrentBranch return current branch name
-func (r *Repo) CurrentBranch() string {
-	brName := r.cache.Str(cacheCurrentBranch)
-	if len(brName) > 0 {
-		return brName
-	}
-
-	// cat .git/HEAD
-	// OR
-	// git symbolic-ref HEAD // out: refs/heads/fea_pref
-	// git symbolic-ref --short -q HEAD // on checkout tag, run will error
-	// git rev-parse --abbrev-ref -q HEAD
-	str, err := r.gw.RevParse("--abbrev-ref", "-q", "HEAD").Output()
-	if err != nil {
-		r.setErr(err)
-		return ""
-	}
-
-	// eg: fea_pref
-	brName = FirstLine(str)
-	r.cache.Set(cacheCurrentBranch, brName)
-
-	return brName
-}
+// -------------------------------------------------
+// repo tags
+// -------------------------------------------------
 
 // ShaHead keywords
 const ShaHead = "HEAD"
@@ -251,6 +235,73 @@ func (r *Repo) LastCommitID() string {
 }
 
 // -------------------------------------------------
+// repo branch
+// -------------------------------------------------
+
+// BranchInfos get branch infos of the repo
+func (r *Repo) BranchInfos() *BranchInfos {
+	return r.loadBranchInfos().branchInfos
+}
+
+// CurBranchInfo get current branch info of the repo
+func (r *Repo) CurBranchInfo() *BranchInfo {
+	return r.loadBranchInfos().branchInfos.Current()
+}
+
+// BranchInfo find branch info by name, if remote is empty, find local branch
+func (r *Repo) BranchInfo(branch string, remote ...string) *BranchInfo {
+	return r.loadBranchInfos().branchInfos.GetByName(branch, remote...)
+}
+
+// SearchBranches search branch infos by name
+func (r *Repo) SearchBranches(name string, flag int) []*BranchInfo {
+	return r.loadBranchInfos().branchInfos.Search(name, flag)
+}
+
+// load branch infos
+func (r *Repo) loadBranchInfos() *Repo {
+	// has loaded
+	if r.branchInfos != nil {
+		return r
+	}
+
+	str, err := r.gw.Branch("-v", "--all").Output()
+	if err != nil {
+		r.setErr(err)
+		r.branchInfos = EmptyBranchInfos()
+		return r
+	}
+
+	r.branchInfos = NewBranchInfos(str).Parse()
+	return r
+}
+
+// CurBranchName return current branch name
+func (r *Repo) CurBranchName() string {
+	brName := r.cache.Str(cacheCurrentBranch)
+	if len(brName) > 0 {
+		return brName
+	}
+
+	// cat .git/HEAD
+	// OR
+	// git symbolic-ref HEAD // out: refs/heads/fea_pref
+	// git symbolic-ref --short -q HEAD // on checkout tag, run will error
+	// git rev-parse --abbrev-ref -q HEAD
+	str, err := r.gw.RevParse("--abbrev-ref", "-q", "HEAD").Output()
+	if err != nil {
+		r.setErr(err)
+		return ""
+	}
+
+	// eg: fea_pref
+	brName = FirstLine(str)
+	r.cache.Set(cacheCurrentBranch, brName)
+
+	return brName
+}
+
+// -------------------------------------------------
 // repo remote
 // -------------------------------------------------
 
@@ -290,7 +341,12 @@ func (r *Repo) RandomRemoteInfo(typ ...string) *RemoteInfo {
 }
 
 // RemoteInfo get.
+//
 // if typ is empty, will return random type info.
+//
+// Usage:
+// 	ri := RemoteInfo("origin")
+// 	ri = RemoteInfo("origin", "push")
 func (r *Repo) RemoteInfo(remote string, typ ...string) *RemoteInfo {
 	riMp := r.RemoteInfos(remote)
 	if len(riMp) == 0 {

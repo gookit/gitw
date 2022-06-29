@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 )
@@ -319,7 +320,7 @@ func (gw *GitWrap) MustRun() {
 // Run runs command with `Exec` on platforms except Windows
 // which only supports `Spawn`
 func (gw *GitWrap) Run() error {
-	if isWindows() {
+	if envutil.IsWindows() {
 		return gw.Spawn()
 	}
 	return gw.Exec()

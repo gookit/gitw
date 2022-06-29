@@ -51,6 +51,19 @@ func TestRepo_AutoMatchTag(t *testing.T) {
 	assert.Equal(t, "541fb9d", repo.AutoMatchTag("541fb9d"))
 }
 
+func TestRepo_BranchInfos(t *testing.T) {
+	bs := repo.BranchInfos()
+	// dump.P(bs)
+	assert.NotEmpty(t, bs)
+
+	assert.NotEmpty(t, repo.BranchInfo("main"))
+	assert.NotEmpty(t, repo.SearchBranches("main", gitw.BrSearchAll))
+
+	cur := repo.CurBranchInfo()
+	assert.NotEmpty(t, cur)
+	assert.Equal(t, "main", cur.Name)
+}
+
 func TestRepo_Info(t *testing.T) {
 	info := repo.Info()
 	dump.P(info)
