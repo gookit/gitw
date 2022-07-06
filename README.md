@@ -9,11 +9,14 @@
 
 `gitw` - Git command wrapper, generate git changelog, fetch repo information and some git tools.
 
-- Wrap the local git commands
-- Quick run a git command
-- Quick query repository information
-- Generate changelog by git log
-  - Allow custom generate config, such as filter, style and more
+- Wrap local `git` commands 
+- Quickly run `git` commands 
+- Quickly query repository information 
+  - Get remote, branch details
+- Quickly generate version changelogs via `git log` 
+  - Allow custom build configuration 
+  - Allow custom build filtering , styles, etc 
+  - can be used directly in GitHub Actions
 
 > **[中文说明](README.zh-CN.md)**
 
@@ -207,6 +210,37 @@ func main() {
 ```
 
 ## Commands
+
+### Methods in `GitWrap`
+
+Commands of git, more please see [pkg.go.dev](https://pkg.go.dev/github.com/gookit/gitw#GitWrap)
+
+```go
+func (gw *GitWrap) Add(args ...string) *GitWrap
+func (gw *GitWrap) Annotate(args ...string) *GitWrap
+func (gw *GitWrap) Apply(args ...string) *GitWrap
+func (gw *GitWrap) Bisect(args ...string) *GitWrap
+func (gw *GitWrap) Blame(args ...string) *GitWrap
+func (gw *GitWrap) Branch(args ...string) *GitWrap
+func (gw *GitWrap) Checkout(args ...string) *GitWrap
+func (gw *GitWrap) CherryPick(args ...string) *GitWrap
+func (gw *GitWrap) Clean(args ...string) *GitWrap
+func (gw *GitWrap) Clone(args ...string) *GitWrap
+func (gw *GitWrap) Commit(args ...string) *GitWrap
+func (gw *GitWrap) Config(args ...string) *GitWrap
+func (gw *GitWrap) Describe(args ...string) *GitWrap
+func (gw *GitWrap) Diff(args ...string) *GitWrap
+func (gw *GitWrap) Fetch(args ...string) *GitWrap
+func (gw *GitWrap) Init(args ...string) *GitWrap
+func (gw *GitWrap) Log(args ...string) *GitWrap
+func (gw *GitWrap) Merge(args ...string) *GitWrap
+func (gw *GitWrap) Pull(args ...string) *GitWrap
+func (gw *GitWrap) Push(args ...string) *GitWrap
+func (gw *GitWrap) Rebase(args ...string) *GitWrap
+func (gw *GitWrap) Reflog(args ...string) *GitWrap
+func (gw *GitWrap) Remote(args ...string) *GitWrap
+// and more ...
+```
 
 ### Commonly git functions
 

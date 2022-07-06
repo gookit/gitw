@@ -74,5 +74,6 @@ func Show(args ...string) *GitWrap { return std.Show(args...) }
 
 // Tag command of git
 //
-// Usage: Tag("-l").OutputLines()
+// Usage:
+// 	Tag("-l").OutputLines()
 func Tag(args ...string) *GitWrap { return std.Tag(args...) }

@@ -11,11 +11,14 @@
 
 > Github https://github.com/gookit/gitw
 
-- 包装本地 git 命令
-- 快速运行 git 命令
+- 包装本地 `git` 命令
+- 快速运行 `git` 命令
 - 快速查询存储库信息
-- 通过 git log 快速生成更改日志
-  - 允许自定义生成配置，例如过滤、样式等
+  - 获取 remote, branch 详细信息
+- 通过 `git log` 快速生成版本变更日志
+  - 允许自定义生成配置
+  - 允许自定义生成过滤、样式等
+  - 可以直接在 GitHub Actions 中使用
 
 > **[EN-README](README.md)**
 
@@ -211,6 +214,37 @@ func main() {
 ```
 
 ## Commands
+
+### Methods in `GitWrap`
+
+Commands of git, more please see [pkg.go.dev](https://pkg.go.dev/github.com/gookit/gitw#GitWrap)
+
+```go
+func (gw *GitWrap) Add(args ...string) *GitWrap
+func (gw *GitWrap) Annotate(args ...string) *GitWrap
+func (gw *GitWrap) Apply(args ...string) *GitWrap
+func (gw *GitWrap) Bisect(args ...string) *GitWrap
+func (gw *GitWrap) Blame(args ...string) *GitWrap
+func (gw *GitWrap) Branch(args ...string) *GitWrap
+func (gw *GitWrap) Checkout(args ...string) *GitWrap
+func (gw *GitWrap) CherryPick(args ...string) *GitWrap
+func (gw *GitWrap) Clean(args ...string) *GitWrap
+func (gw *GitWrap) Clone(args ...string) *GitWrap
+func (gw *GitWrap) Commit(args ...string) *GitWrap
+func (gw *GitWrap) Config(args ...string) *GitWrap
+func (gw *GitWrap) Describe(args ...string) *GitWrap
+func (gw *GitWrap) Diff(args ...string) *GitWrap
+func (gw *GitWrap) Fetch(args ...string) *GitWrap
+func (gw *GitWrap) Init(args ...string) *GitWrap
+func (gw *GitWrap) Log(args ...string) *GitWrap
+func (gw *GitWrap) Merge(args ...string) *GitWrap
+func (gw *GitWrap) Pull(args ...string) *GitWrap
+func (gw *GitWrap) Push(args ...string) *GitWrap
+func (gw *GitWrap) Rebase(args ...string) *GitWrap
+func (gw *GitWrap) Reflog(args ...string) *GitWrap
+func (gw *GitWrap) Remote(args ...string) *GitWrap
+// and more ...
+```
 
 ### Commonly functions
 
