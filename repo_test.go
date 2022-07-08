@@ -56,12 +56,14 @@ func TestRepo_BranchInfos(t *testing.T) {
 	assert.NotEmpty(t, bs)
 	dump.P(bs.BrLines())
 
-	assert.NotEmpty(t, repo.BranchInfo("main"))
 	assert.NotEmpty(t, repo.SearchBranches("main", gitw.BrSearchAll))
 
 	cur := repo.CurBranchInfo()
-	assert.NotEmpty(t, cur)
-	assert.Equal(t, "main", cur.Name)
+	if cur != nil {
+		assert.NotEmpty(t, cur)
+		assert.Equal(t, "main", cur.Name)
+		assert.NotEmpty(t, repo.BranchInfo("main"))
+	}
 }
 
 func TestRepo_Info(t *testing.T) {

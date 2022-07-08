@@ -90,6 +90,8 @@ func TestParseBranchLine_verbose(t *testing.T) {
 
 	info, err = gitw.ParseBranchLine("* （头指针在 v0.2.3 分离） 3c08adf chore: update readme add branch info docs", true)
 	assert.Error(t, err)
+	info, err = gitw.ParseBranchLine("* (HEAD detached at pull/29/merge)                                    62f3455 Merge cfc79b748e176c1c9e266c8bc413c87fe974acef into c9503c2aef993a2cf582d90c137deda53c9bca68", true)
+	assert.Error(t, err)
 }
 
 func TestBranchInfo_parse_simple(t *testing.T) {
