@@ -86,7 +86,7 @@ func main() {
 
 ## 仓库信息
 
-可以通过 gitw 在本地快速获取 git 存储库信息。
+可以通过 `gitw` 在本地快速获取 git 存储库信息。
 
 ```go
 repo := gitw.NewRepo("/path/to/my-repo")
@@ -159,7 +159,9 @@ chlog -c .github/changelog.yml last head
 
 ### 在GitHub Action使用
 
-`gitw/chlog` 可以直接在 GitHub Actions 中使用, 示例:
+`gitw/chlog` 可以直接在 `GitHub Actions` 中使用。不依赖Go 环境，下载对应系统的二进制文件即可。
+
+示例:
 
 > Full script please see [.github/workflows/release.yml](.github/workflows/release.yml)
 
@@ -169,6 +171,8 @@ chlog -c .github/changelog.yml last head
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Generate changelog
         run: |

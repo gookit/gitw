@@ -157,7 +157,10 @@ chlog -c .github/changelog.yml last head
 
 ### Use on action
 
-Can use `gitw/chlog` on GitHub actions, like:
+Can use `gitw/chlog` on GitHub actions. It does not depend on the Go environment,
+just download the binary files of the corresponding system.
+
+Example:
 
 > Full script please see [.github/workflows/release.yml](.github/workflows/release.yml)
 
@@ -167,6 +170,8 @@ Can use `gitw/chlog` on GitHub actions, like:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Generate changelog
         run: |
