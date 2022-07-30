@@ -32,6 +32,7 @@ var opts = struct {
 	configFile string
 	outputFile string
 	sha1, sha2 string
+	tagType    int
 }{}
 
 var cfg = chlog.NewDefaultConfig()
@@ -60,6 +61,7 @@ func configCmd() {
 	cmd.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog;;c")
 	cmd.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog;;o")
 	cmd.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
+	cmd.IntVar(&opts.tagType, "tagType", 0, "get tag by tag type, tag_type: 0 refname_sort,1 createordate sort,2 describe command")
 
 	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id", true, nil)
 	cmd.AddArg("sha2", "The new git sha version. allow: tag name, commit id", false, nil)
@@ -154,8 +156,8 @@ func generate(cl *chlog.Changelog) error {
 		gitArgs = append(gitArgs, "--no-merges")
 	}
 
-	sha1 := repo.AutoMatchTag(opts.sha1)
-	sha2 := repo.AutoMatchTag(opts.sha2)
+	sha1 := repo.AutoMatchTagByTagType(opts.sha1, opts.tagType)
+	sha2 := repo.AutoMatchTagByTagType(opts.sha2, opts.tagType)
 	cliutil.Infof("Generate changelog: %s to %s\n", sha1, sha2)
 
 	cl.FetchGitLog(sha1, sha2, gitArgs...)

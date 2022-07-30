@@ -74,3 +74,8 @@ func TestRepo_Info(t *testing.T) {
 	assert.NotNil(t, info)
 	assert.Equal(t, "gitw", info.Name)
 }
+
+func TestRepo_AutoMatchTagByTagType(t *testing.T) {
+	assert.Equal(t, "HEAD", repo.AutoMatchTagByTagType("head", 0))
+	assert.Equal(t, "541fb9d", repo.AutoMatchTagByTagType("541fb9d", 0))
+}

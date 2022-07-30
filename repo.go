@@ -1,6 +1,7 @@
 package gitw
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
@@ -125,18 +126,26 @@ const ShaHead = "HEAD"
 
 // some special keywords for match tag
 const (
-	TagLast = "last"
-	TagPrev = "prev"
-	TagHead = "head"
+	TagLast         = "last"
+	TagPrev         = "prev"
+	TagHead         = "head"
+	Refname_tag int = iota
+	Creatordate_tag
+	Describe_tag
 )
 
 // AutoMatchTag by given sha or tag name
 func (r *Repo) AutoMatchTag(sha string) string {
+	return r.AutoMatchTagByTagType(sha, Refname_tag)
+}
+
+// AutoMatchTagByTagType by given sha or tag name
+func (r *Repo) AutoMatchTagByTagType(sha string, tagType int) string {
 	switch strings.ToLower(sha) {
 	case TagLast:
-		return r.LargestTag()
+		return r.LargestTagByTagType(tagType)
 	case TagPrev:
-		return r.PrevMaxTag()
+		return r.TagSecondMaxByTagType(tagType)
 	case TagHead:
 		return ShaHead
 	default:
@@ -165,6 +174,29 @@ func (r *Repo) LargestTag() string {
 	return ""
 }
 
+func (r *Repo) LargestTagByTagType(tagType int) string {
+	tagVer := r.cache.Str(cacheMaxTagVersion)
+	if len(tagVer) > 0 {
+		return tagVer
+	}
+	tags := make([]string, 0)
+	switch tagType {
+	case Creatordate_tag:
+		tags = append(tags, r.TagsSortedByCreatordate()...)
+		break
+	case Describe_tag:
+		tags = append(tags, r.TagByDescribe(""))
+		break
+	default:
+		tags = append(tags, r.TagsSortedByRefName()...)
+	}
+	if len(tags) > 0 {
+		r.cache.Set(cacheMaxTagVersion, tags[0])
+		return tags[0]
+	}
+	return ""
+}
+
 // PrevMaxTag get second-largest tag of the repo
 func (r *Repo) PrevMaxTag() string {
 	return r.TagSecondMax()
@@ -180,6 +212,29 @@ func (r *Repo) TagSecondMax() string {
 	return ""
 }
 
+// TagSecondMaxByTagType  get second-largest tag of the repo
+func (r *Repo) TagSecondMaxByTagType(tagType int) string {
+	tags := make([]string, 0)
+	switch tagType {
+	case Creatordate_tag:
+		tags = append(tags, r.TagsSortedByCreatordate()...)
+		break
+	case Describe_tag:
+		current := r.TagByDescribe("")
+		if len(current) == 0 {
+			break
+		}
+		tags = append(tags, current, r.TagByDescribe(current))
+		break
+	default:
+		tags = append(tags, r.TagsSortedByRefName()...)
+	}
+	if len(tags) > 1 {
+		return tags[1]
+	}
+	return ""
+}
+
 // TagsSortedByRefName get repo tags list
 func (r *Repo) TagsSortedByRefName() []string {
 	str, err := r.gw.Tag("-l", "--sort=-version:refname").Output()
@@ -189,6 +244,31 @@ func (r *Repo) TagsSortedByRefName() []string {
 	}
 
 	return OutputLines(str)
+}
+
+// TagsSortedByCreatordate get repo tags list by creatordate sort
+func (r *Repo) TagsSortedByCreatordate() []string {
+	str, err := r.gw.Tag("-l", "--sort=-creatordate", "--format=\"%(refname:strip=2)\"").Output()
+	if err != nil {
+		r.setErr(err)
+		return nil
+	}
+	return OutputLines(str)
+}
+
+// TagByDescribe get tag by describe command
+func (r *Repo) TagByDescribe(current string) string {
+	str := ""
+	var err error
+	if len(current) == 0 {
+		str, err = r.gw.Cmd("describe", "--tags", "--abbrev=0").Output()
+	} else {
+		str, err = r.gw.Cmd("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)).Output()
+	}
+	if err != nil {
+		return ""
+	}
+	return FirstLine(str)
 }
 
 // Tags get repo tags list
