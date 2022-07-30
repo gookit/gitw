@@ -79,3 +79,15 @@ func TestRepo_AutoMatchTagByTagType(t *testing.T) {
 	assert.Equal(t, "HEAD", repo.AutoMatchTagByTagType("head", 0))
 	assert.Equal(t, "541fb9d", repo.AutoMatchTagByTagType("541fb9d", 0))
 }
+
+func TestRepo_TagsSortedByCreatordate(t *testing.T) {
+	tags := repo.TagsSortedByCreatordate()
+	dump.P(tags)
+	assert.NotEmpty(t, tags)
+}
+
+func TestRepo_TagByDescribe(t *testing.T) {
+	tags := repo.TagByDescribe("")
+	dump.P(tags)
+	assert.NotEmpty(t, tags)
+}
