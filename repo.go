@@ -184,10 +184,8 @@ func (r *Repo) LargestTagByTagType(tagType int) string {
 	switch tagType {
 	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
-		break
 	case DescribeTagType:
 		tags = append(tags, r.TagByDescribe(""))
-		break
 	default:
 		tags = append(tags, r.TagsSortedByRefName()...)
 	}
@@ -219,14 +217,13 @@ func (r *Repo) TagSecondMaxByTagType(tagType int) string {
 	switch tagType {
 	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
-		break
 	case DescribeTagType:
 		current := r.TagByDescribe("")
-		if len(current) == 0 {
-			break
+		if len(current) != 0 {
+			tags = append(tags, current, r.TagByDescribe(current))
+		} else {
+			tags = append(tags, current)
 		}
-		tags = append(tags, current, r.TagByDescribe(current))
-		break
 	default:
 		tags = append(tags, r.TagsSortedByRefName()...)
 	}
