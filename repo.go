@@ -126,9 +126,13 @@ const ShaHead = "HEAD"
 
 // some special keywords for match tag
 const (
-	TagLast            = "last"
-	TagPrev            = "prev"
-	TagHead            = "head"
+	TagLast = "last"
+	TagPrev = "prev"
+	TagHead = "head"
+)
+
+// type value constants for fetch tags
+const (
 	RefnameTagType int = iota
 	CreatordateTagType
 	DescribeTagType
@@ -180,7 +184,8 @@ func (r *Repo) LargestTagByTagType(tagType int) string {
 	if len(tagVer) > 0 {
 		return tagVer
 	}
-	tags := make([]string, 0)
+
+	tags := make([]string, 0, 2)
 	switch tagType {
 	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
@@ -189,6 +194,7 @@ func (r *Repo) LargestTagByTagType(tagType int) string {
 	default:
 		tags = append(tags, r.TagsSortedByRefName()...)
 	}
+
 	if len(tags) > 0 {
 		r.cache.Set(cacheMaxTagVersion, tags[0])
 		return tags[0]
@@ -213,7 +219,7 @@ func (r *Repo) TagSecondMax() string {
 
 // TagSecondMaxByTagType  get second-largest tag of the repo by tag_type
 func (r *Repo) TagSecondMaxByTagType(tagType int) string {
-	tags := make([]string, 0)
+	tags := make([]string, 0, 2)
 	switch tagType {
 	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
@@ -227,6 +233,7 @@ func (r *Repo) TagSecondMaxByTagType(tagType int) string {
 	default:
 		tags = append(tags, r.TagsSortedByRefName()...)
 	}
+
 	if len(tags) > 1 {
 		return tags[1]
 	}
@@ -255,15 +262,16 @@ func (r *Repo) TagsSortedByCreatordate() []string {
 }
 
 // TagByDescribe get tag by describe command
-func (r *Repo) TagByDescribe(current string) string {
-	str := ""
+func (r *Repo) TagByDescribe(current string) (str string) {
 	var err error
 	if len(current) == 0 {
-		str, err = r.gw.Cmd("describe", "--tags", "--abbrev=0").Output()
+		str, err = r.gw.Describe("--tags", "--abbrev=0").Output()
 	} else {
-		str, err = r.gw.Cmd("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)).Output()
+		str, err = r.gw.Describe("--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)).Output()
 	}
+
 	if err != nil {
+		r.setErr(err)
 		return ""
 	}
 	return FirstLine(str)

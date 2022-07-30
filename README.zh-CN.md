@@ -159,7 +159,7 @@ chlog -c .github/changelog.yml last head
 
 ### 在GitHub Action使用
 
-`gitw/chlog` 可以直接在 `GitHub Actions` 中使用。不依赖Go 环境，下载对应系统的二进制文件即可。
+`gitw/chlog` 可以直接在 `GitHub Actions` 中使用。不依赖 Go 环境，下载对应系统的二进制文件即可。
 
 示例:
 

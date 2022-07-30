@@ -61,7 +61,11 @@ func configCmd() {
 	cmd.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog;;c")
 	cmd.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog;;o")
 	cmd.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
-	cmd.IntVar(&opts.tagType, "tagType", 0, "get tag by tag type, tag_type: 0 refname_sort,1 createordate sort,2 describe command")
+	cmd.IntVar(&opts.tagType, "tag-type", 0, `get git tag name by tag type.
+Allowed:
+0 refname sort(<cyan>default</>)
+1 createordate sort
+2 describe command;;t`)
 
 	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id", true, nil)
 	cmd.AddArg("sha2", "The new git sha version. allow: tag name, commit id", false, nil)
