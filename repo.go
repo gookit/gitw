@@ -126,17 +126,17 @@ const ShaHead = "HEAD"
 
 // some special keywords for match tag
 const (
-	TagLast         = "last"
-	TagPrev         = "prev"
-	TagHead         = "head"
-	Refname_tag int = iota
-	Creatordate_tag
-	Describe_tag
+	TagLast            = "last"
+	TagPrev            = "prev"
+	TagHead            = "head"
+	RefnameTagType int = iota
+	CreatordateTagType
+	DescribeTagType
 )
 
 // AutoMatchTag by given sha or tag name
 func (r *Repo) AutoMatchTag(sha string) string {
-	return r.AutoMatchTagByTagType(sha, Refname_tag)
+	return r.AutoMatchTagByTagType(sha, RefnameTagType)
 }
 
 // AutoMatchTagByTagType by given sha or tag name
@@ -174,6 +174,7 @@ func (r *Repo) LargestTag() string {
 	return ""
 }
 
+// LargestTagByTagType get max tag version of the repo by tag_type
 func (r *Repo) LargestTagByTagType(tagType int) string {
 	tagVer := r.cache.Str(cacheMaxTagVersion)
 	if len(tagVer) > 0 {
@@ -181,10 +182,10 @@ func (r *Repo) LargestTagByTagType(tagType int) string {
 	}
 	tags := make([]string, 0)
 	switch tagType {
-	case Creatordate_tag:
+	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
 		break
-	case Describe_tag:
+	case DescribeTagType:
 		tags = append(tags, r.TagByDescribe(""))
 		break
 	default:
@@ -212,14 +213,14 @@ func (r *Repo) TagSecondMax() string {
 	return ""
 }
 
-// TagSecondMaxByTagType  get second-largest tag of the repo
+// TagSecondMaxByTagType  get second-largest tag of the repo by tag_type
 func (r *Repo) TagSecondMaxByTagType(tagType int) string {
 	tags := make([]string, 0)
 	switch tagType {
-	case Creatordate_tag:
+	case CreatordateTagType:
 		tags = append(tags, r.TagsSortedByCreatordate()...)
 		break
-	case Describe_tag:
+	case DescribeTagType:
 		current := r.TagByDescribe("")
 		if len(current) == 0 {
 			break
