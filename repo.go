@@ -1,7 +1,6 @@
 package gitw
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
@@ -17,11 +16,6 @@ const (
 	cacheCurrentBranch = "curBranch"
 	cacheMaxTagVersion = "maxVersion"
 )
-
-// CmdBuilder struct
-// type CmdBuilder struct {
-// 	Dir string
-// }
 
 // RepoConfig struct
 type RepoConfig struct {
@@ -131,20 +125,20 @@ const (
 	TagHead = "head"
 )
 
-// type value constants for fetch tags
+// enum type value constants for fetch tags
 const (
-	RefnameTagType int = iota
-	CreatordateTagType
+	RefNameTagType int = iota
+	CreatorDateTagType
 	DescribeTagType
 )
 
 // AutoMatchTag by given sha or tag name
 func (r *Repo) AutoMatchTag(sha string) string {
-	return r.AutoMatchTagByTagType(sha, RefnameTagType)
+	return r.AutoMatchTagByType(sha, RefNameTagType)
 }
 
-// AutoMatchTagByTagType by given sha or tag name
-func (r *Repo) AutoMatchTagByTagType(sha string, tagType int) string {
+// AutoMatchTagByType by given sha or tag name.
+func (r *Repo) AutoMatchTagByType(sha string, tagType int) string {
 	switch strings.ToLower(sha) {
 	case TagLast:
 		return r.LargestTagByTagType(tagType)
@@ -187,8 +181,8 @@ func (r *Repo) LargestTagByTagType(tagType int) string {
 
 	tags := make([]string, 0, 2)
 	switch tagType {
-	case CreatordateTagType:
-		tags = append(tags, r.TagsSortedByCreatordate()...)
+	case CreatorDateTagType:
+		tags = append(tags, r.TagsSortedByCreatorDate()...)
 	case DescribeTagType:
 		tags = append(tags, r.TagByDescribe(""))
 	default:
@@ -221,8 +215,8 @@ func (r *Repo) TagSecondMax() string {
 func (r *Repo) TagSecondMaxByTagType(tagType int) string {
 	tags := make([]string, 0, 2)
 	switch tagType {
-	case CreatordateTagType:
-		tags = append(tags, r.TagsSortedByCreatordate()...)
+	case CreatorDateTagType:
+		tags = append(tags, r.TagsSortedByCreatorDate()...)
 	case DescribeTagType:
 		current := r.TagByDescribe("")
 		if len(current) != 0 {
@@ -251,9 +245,12 @@ func (r *Repo) TagsSortedByRefName() []string {
 	return OutputLines(str)
 }
 
-// TagsSortedByCreatordate get repo tags list by creatordate sort
-func (r *Repo) TagsSortedByCreatordate() []string {
-	str, err := r.gw.Tag("-l", "--sort=-creatordate", "--format=\"%(refname:strip=2)\"").Output()
+// TagsSortedByCreatorDate get repo tags list by creator date sort
+func (r *Repo) TagsSortedByCreatorDate() []string {
+	str, err := r.gw.
+		Tag("-l", "--sort=-creatordate", "--format=%(refname:strip=2)").
+		Output()
+
 	if err != nil {
 		r.setErr(err)
 		return nil
@@ -261,20 +258,23 @@ func (r *Repo) TagsSortedByCreatordate() []string {
 	return OutputLines(str)
 }
 
-// TagByDescribe get tag by describe command
-func (r *Repo) TagByDescribe(current string) (str string) {
+// TagByDescribe get tag by describe command. if current not empty, will exclude it.
+func (r *Repo) TagByDescribe(current string) (ver string) {
 	var err error
 	if len(current) == 0 {
-		str, err = r.gw.Describe("--tags", "--abbrev=0").Output()
+		ver, err = r.gw.Describe("--tags", "--abbrev=0").Output()
 	} else {
-		str, err = r.gw.Describe("--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)).Output()
+		ver, err = r.gw.
+			Describe("--tags", "--abbrev=0").
+			Argf("tags/%s^", current).
+			Output()
 	}
 
 	if err != nil {
 		r.setErr(err)
 		return ""
 	}
-	return FirstLine(str)
+	return FirstLine(ver)
 }
 
 // Tags get repo tags list

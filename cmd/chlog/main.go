@@ -63,8 +63,8 @@ func configCmd() {
 	cmd.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
 	cmd.IntVar(&opts.tagType, "tag-type", 0, `get git tag name by tag type.
 Allowed:
-0 refname sort(<cyan>default</>)
-1 createordate sort
+0 ref-name sort(<cyan>default</>)
+1 creator date sort
 2 describe command;;t`)
 
 	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id", true, nil)
@@ -160,8 +160,8 @@ func generate(cl *chlog.Changelog) error {
 		gitArgs = append(gitArgs, "--no-merges")
 	}
 
-	sha1 := repo.AutoMatchTagByTagType(opts.sha1, opts.tagType)
-	sha2 := repo.AutoMatchTagByTagType(opts.sha2, opts.tagType)
+	sha1 := repo.AutoMatchTagByType(opts.sha1, opts.tagType)
+	sha2 := repo.AutoMatchTagByType(opts.sha2, opts.tagType)
 	cliutil.Infof("Generate changelog: %s to %s\n", sha1, sha2)
 
 	cl.FetchGitLog(sha1, sha2, gitArgs...)
