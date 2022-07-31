@@ -66,6 +66,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	return nil
 }
 
+// ErrInvalidBrLine error
 var ErrInvalidBrLine = errorx.Raw("invalid git branch line text")
 
 // ParseBranchLine to BranchInfo data
@@ -115,7 +116,6 @@ func ParseBranchLine(line string, verbose bool) (*BranchInfo, error) {
 	return info, nil
 }
 
-// eg:
 func isVerboseBranchLine(line string) bool {
 	line = strings.Trim(line, " *\t\n\r\x0B")
 	return strings.ContainsRune(line, ' ')
