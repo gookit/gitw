@@ -12,8 +12,6 @@ jobs:
     timeout-minutes: 5
     strategy:
       fail-fast: true
-      matrix:
-        go_version: [1.17]
 
     steps:
       - name: Checkout
@@ -25,7 +23,7 @@ jobs:
         uses: WillAbides/setup-go-faster@v1.7.0
         timeout-minutes: 3
         with:
-          go-version: ${{ matrix.go_version }}
+          go-version: 1.18
 
       - name: Setup ENV
         # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable

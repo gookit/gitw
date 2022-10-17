@@ -61,8 +61,13 @@ func TestRepo_BranchInfos(t *testing.T) {
 	cur := repo.CurBranchInfo()
 	if cur != nil {
 		assert.NotEmpty(t, cur)
-		assert.Equal(t, "main", cur.Name)
-		assert.NotEmpty(t, repo.BranchInfo("main"))
+		assert.NotEmpty(t, cur.Name)
+	}
+
+	mbr := repo.BranchInfo("main")
+	if mbr != nil {
+		assert.Equal(t, "main", mbr.Name)
+		assert.Equal(t, "main", mbr.Short)
 	}
 }
 
