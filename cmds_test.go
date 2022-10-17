@@ -5,15 +5,15 @@ import (
 
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/dump"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestTags(t *testing.T) {
 	ts, err := gitw.Tags()
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	dump.P(ts)
 
 	ts, err = gitw.Tags("-n", "--sort=-version:refname")
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	dump.P(ts)
 }
