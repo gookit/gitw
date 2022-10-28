@@ -12,7 +12,7 @@
 - Wrap local `git` commands 
 - Quickly run `git` commands 
 - Quickly query repository information 
-  - Get remote, branch details
+  - Quick fetch status, remote, branch ... details
 - Quickly generate version changelogs via `git log` 
   - Allow custom build configuration 
   - Allow custom build filtering , styles, etc 
@@ -89,6 +89,18 @@ You can quickly get a git repository information at local.
 ```go
 repo := gitw.NewRepo("/path/to/my-repo")
 ```
+
+### Status Information
+
+```go
+si := repo.StatusInfo()
+
+dump.Println(si)
+```
+
+**Output**:
+
+![repo-status-info](_examples/images/repo-status-info.png)
 
 ### Branch Information
 

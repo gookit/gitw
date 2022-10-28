@@ -11,10 +11,10 @@
 
 > Github https://github.com/gookit/gitw
 
-- 包装本地 `git` 命令
-- 快速运行 `git` 命令
+- 包装本地 `git` 命令以方便使用
+- 快速运行 `git` 子命令,获取信息等
 - 快速查询存储库信息
-  - 获取 remote, branch 详细信息
+  - 获取 status, remote, branch 等详细信息
 - 通过 `git log` 快速生成版本变更日志
   - 允许自定义生成配置
   - 允许自定义生成过滤、样式等
@@ -91,6 +91,18 @@ func main() {
 ```go
 repo := gitw.NewRepo("/path/to/my-repo")
 ```
+
+### Status 信息
+
+```go
+si := repo.StatusInfo()
+
+dump.Println(si)
+```
+
+**Output**:
+
+![repo-status-info](_examples/images/repo-status-info.png)
 
 ### Branch 信息
 
