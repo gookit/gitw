@@ -19,6 +19,11 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestRepo_StatusInfo(t *testing.T) {
+	si := repo.StatusInfo()
+	dump.P(si)
+}
+
 func TestRepo_RemoteInfos(t *testing.T) {
 	rs := repo.AllRemoteInfos()
 	dump.P(rs)

@@ -167,3 +167,21 @@ func TestBranchInfo_parse_verbose(t *testing.T) {
 	assert.True(t, rets[0].IsRemoted())
 	assert.Eq(t, "origin", rets[0].Remote)
 }
+
+func TestStatusInfo_FromLines(t *testing.T) {
+	text := `
+## master...origin/fea/master
+ RM app/Common/GitLocal/GitFlow.php -> app/Common/GitLocal/GitFactory.php
+  M app/Common/GitLocal/GitHub.php
+ ?? app/Common/GitLocal/GitConst.php
+  D tmp/delete-some.file
+`
+	si := gitw.NewStatusInfo(text)
+
+	dump.P(si)
+	assert.Eq(t, "master", si.Branch)
+	assert.Eq(t, "origin", si.UpRemote)
+	assert.Eq(t, "fea/master", si.UpBranch)
+	assert.False(t, si.IsCleaned())
+	assert.Gt(t, si.FileNum(), 2)
+}

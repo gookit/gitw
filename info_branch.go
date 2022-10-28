@@ -59,6 +59,12 @@ func (b *BranchInfo) ParseName() *BranchInfo {
 	return b
 }
 
+// branch types
+const (
+	BranchLocal  = "local"
+	BranchRemote = "remote"
+)
+
 // BranchInfos for a git repo
 type BranchInfos struct {
 	parsed bool
@@ -68,9 +74,9 @@ type BranchInfos struct {
 	brLines []string
 
 	current *BranchInfo
-	// local branches. key is branch name
+	// local branches. key is short branch name, eg: dev
 	locales map[string]*BranchInfo
-	// remote branches. key is full branch name
+	// remote branches. key is full branch name, eg: origin/dev
 	remotes map[string]*BranchInfo
 }
 
@@ -160,12 +166,13 @@ const (
 // Search branches by name.
 //
 // Usage:
-// 	Search("fea", BrSearchLocal)
-// 	Search("fea", BrSearchAll)
-// 	// search on remotes
-// 	Search("fea", BrSearchRemote)
+//
+//	Search("fea", BrSearchLocal)
+//	Search("fea", BrSearchAll)
+//	// search on remotes
+//	Search("fea", BrSearchRemote)
 //	// search on remotes and remote name must be equals "origin"
-// 	Search("origin fea", BrSearchRemote)
+//	Search("origin fea", BrSearchRemote)
 func (bs *BranchInfos) Search(name string, flag int) []*BranchInfo {
 	var list []*BranchInfo
 

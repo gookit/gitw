@@ -40,6 +40,9 @@ type Repo struct {
 	// config
 	cfg *RepoConfig
 
+	// status info
+	statusInfo *StatusInfo
+
 	// branch infos for the repo
 	branchInfos *BranchInfos
 
@@ -321,6 +324,25 @@ func (r *Repo) LastCommitID() string {
 }
 
 // -------------------------------------------------
+// repo status
+// -------------------------------------------------
+
+// StatusInfo get status info of the repo
+func (r *Repo) StatusInfo() *StatusInfo {
+	if r.statusInfo == nil {
+		r.statusInfo = &StatusInfo{}
+		lines, err := r.gw.Status("-bs", "-u").OutputLines()
+		if err != nil {
+			r.setErr(err)
+			return nil
+		}
+
+		r.statusInfo.FromLines(lines)
+	}
+	return r.statusInfo
+}
+
+// -------------------------------------------------
 // repo branch
 // -------------------------------------------------
 
@@ -431,8 +453,9 @@ func (r *Repo) RandomRemoteInfo(typ ...string) *RemoteInfo {
 // if typ is empty, will return random type info.
 //
 // Usage:
-// 	ri := RemoteInfo("origin")
-// 	ri = RemoteInfo("origin", "push")
+//
+//	ri := RemoteInfo("origin")
+//	ri = RemoteInfo("origin", "push")
 func (r *Repo) RemoteInfo(remote string, typ ...string) *RemoteInfo {
 	riMp := r.RemoteInfos(remote)
 	if len(riMp) == 0 {
