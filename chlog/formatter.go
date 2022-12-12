@@ -14,7 +14,7 @@ type Formatter interface {
 
 // GroupMatcher interface
 type GroupMatcher interface {
-	// Match group from log msg
+	// Match group from log msg(has been trimmed)
 	Match(msg string) (group string)
 }
 

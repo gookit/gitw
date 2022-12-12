@@ -19,7 +19,7 @@ import (
 )
 
 // Version number
-var Version = "1.0.1"
+var Version = "1.0.2"
 
 var opts = struct {
 	verbose bool
@@ -43,11 +43,13 @@ var cmd = cflag.New(func(c *cflag.CFlags) {
 })
 
 // quick run:
-//  go run ./cmd/chlog
-//  go run ./cmd/chlog -h
+//
+//	go run ./cmd/chlog
+//	go run ./cmd/chlog -h
 //
 // install to GOPATH/bin:
-//  go install ./cmd/chlog
+//
+//	go install ./cmd/chlog
 func main() {
 	configCmd()
 

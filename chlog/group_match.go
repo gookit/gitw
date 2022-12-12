@@ -1,6 +1,10 @@
 package chlog
 
-import "github.com/gookit/goutil/strutil"
+import (
+	"strings"
+
+	"github.com/gookit/goutil/strutil"
+)
 
 // DefaultGroup name
 var DefaultGroup = "Other"
@@ -27,11 +31,22 @@ type RuleMatcher struct {
 
 // Match group name from log message.
 func (m RuleMatcher) Match(msg string) string {
+	// remove prefix like ":sparkles:"
+	// eg ":sparkles: feat(dump): some message ..."
+	if strings.IndexByte(msg, ':') == 0 {
+		end := strings.IndexByte(msg[1:], ':')
+		if end > 1 {
+			msg = strings.TrimSpace(msg[end+2:])
+		}
+	}
+
 	for _, rule := range m.Rules {
 		if len(rule.StartWiths) > 0 && strutil.HasOnePrefix(msg, rule.StartWiths) {
 			return rule.Name
 		}
+	}
 
+	for _, rule := range m.Rules {
 		if len(rule.Contains) > 0 && strutil.HasOneSub(msg, rule.Contains) {
 			return rule.Name
 		}
@@ -47,8 +62,8 @@ func NewDefaultMatcher() *RuleMatcher {
 		Rules: []Rule{
 			{
 				Name:       "Feature",
-				StartWiths: []string{"feat", "new"},
-				Contains:   []string{"feat:"},
+				StartWiths: []string{"feat", "new", "add"},
+				Contains:   []string{"feat:", "feat("},
 			},
 			{
 				Name:       "Refactor",
@@ -57,7 +72,7 @@ func NewDefaultMatcher() *RuleMatcher {
 			},
 			{
 				Name:       "Update",
-				StartWiths: []string{"up ", "update"},
+				StartWiths: []string{"up:", "up(", "update"},
 				Contains:   []string{"up:", "update:"},
 			},
 			{
