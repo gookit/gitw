@@ -131,12 +131,12 @@ func (c *Config) CreateFormatter() Formatter {
 	sf.GroupMatch = matcher
 
 	switch c.Style {
-	case FormatterMarkdown, "mkdown", "mkDown", "mkd":
+	case FormatterMarkdown, "mkdown", "mkDown", "mkd", "md":
 		return &MarkdownFormatter{
 			RepoURL:         c.RepoURL,
 			SimpleFormatter: *sf,
 		}
-	case FormatterGhRelease, "gh-release", "ghRelease":
+	case FormatterGhRelease, "gh-release", "ghRelease", "gh":
 		f := &GHReleaseFormatter{}
 		f.RepoURL = c.RepoURL
 		f.SimpleFormatter = *sf
