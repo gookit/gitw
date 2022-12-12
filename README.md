@@ -5,7 +5,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/gookit/goutil.svg)](https://pkg.go.dev/github.com/gookit/goutil)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gitw)](https://goreportcard.com/report/github.com/gookit/gitw)
 [![Unit-Tests](https://github.com/gookit/gitw/workflows/Unit-Tests/badge.svg)](https://github.com/gookit/gitw/actions)
-[![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=master)](https://coveralls.io/github/gookit/gitw?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=main)](https://coveralls.io/github/gookit/gitw?branch=main)
 
 `gitw` - Git command wrapper, generate git changelog, fetch repo information and some git tools.
 
@@ -22,7 +22,7 @@
 
 ## Install
 
-> required: go 1.16+, git 2.x
+> required: go 1.18+, git 2.x
 
 ```bash
 go get github.com/gookit/gitw
