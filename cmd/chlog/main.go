@@ -65,7 +65,7 @@ func configCmd() {
 	cmd.StringVar(&opts.configFile, "config", "", "the YAML config file for generate changelog;;c")
 	cmd.StringVar(&opts.outputFile, "output", "stdout", "the output file for generated changelog;;o")
 	cmd.StringVar(&opts.excludes, "exclude", "", "exclude commit by keywords, multi split by comma")
-	cmd.StringVar(&opts.style, "style", "simple", "the output contents format style\nallow: simple, markdown(mkdown,md), ghr(gh-release.gh);;s")
+	cmd.StringVar(&opts.style, "style", "", "the output contents format style\nallow: simple, markdown(mkdown,md), ghr(gh-release.gh);;s")
 	cmd.IntVar(&opts.tagType, "tag-type", 0, `get git tag name by tag type.
 Allowed:
 0 ref-name sort(<cyan>default</>)
