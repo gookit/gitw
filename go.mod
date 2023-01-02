@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/gookit/color v1.5.2
 	github.com/gookit/goutil v0.6.1
-	github.com/gookit/slog v0.3.4
+	github.com/gookit/slog v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
