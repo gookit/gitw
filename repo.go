@@ -448,16 +448,17 @@ func (r *Repo) RandomRemoteInfo(typ ...string) *RemoteInfo {
 	return r.RemoteInfo(r.remoteNames[0], typ...)
 }
 
-// RemoteInfo get.
+// RemoteInfo get by remote name and type.
 //
-// if typ is empty, will return random type info.
+// - If remote is empty, will return default remote
+// - If typ is empty, will return random type info.
 //
 // Usage:
 //
 //	ri := RemoteInfo("origin")
 //	ri = RemoteInfo("origin", "push")
 func (r *Repo) RemoteInfo(remote string, typ ...string) *RemoteInfo {
-	riMp := r.RemoteInfos(remote)
+	riMp := r.RemoteInfos(strutil.OrElse(remote, r.cfg.DefaultRemote))
 	if len(riMp) == 0 {
 		return nil
 	}

@@ -7,7 +7,7 @@
 [![Unit-Tests](https://github.com/gookit/gitw/workflows/Unit-Tests/badge.svg)](https://github.com/gookit/gitw/actions)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gitw/badge.svg?branch=main)](https://coveralls.io/github/gookit/gitw?branch=main)
 
-`gitw` - Git 命令包装器，生成 git 变更记录日志，获取 repo 信息和一些 git 命令工具。
+`gitw` - 包装Git命令方便使用。生成变更记录日志，获取 repo,branch,remote 信息和一些 Git 命令工具。
 
 > Github https://github.com/gookit/gitw
 

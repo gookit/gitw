@@ -78,22 +78,50 @@ func (r *RemoteInfo) GitURL() string {
 	return SchemeGIT + "@" + r.Host + ":" + r.Group + "/" + r.Repo + ".git"
 }
 
-// RawURLOfHTTP get, if RemoteInfo.URL is git proto, build an https url.
+// RawURLOfHTTP get remote url, if RemoteInfo.URL is git proto, build an HTTPS url.
 func (r *RemoteInfo) RawURLOfHTTP() string {
+	return r.URLOrBuild()
+}
+
+// URLOrBuild get remote HTTP url, if RemoteInfo.URL is git proto, build an HTTPS url.
+func (r *RemoteInfo) URLOrBuild() string {
 	if r.Proto == ProtoHTTP {
 		return r.URL
 	}
-	return r.URLOfHTTPS()
+	return r.buildHTTPURL(true)
 }
 
-// URLOfHTTP build
+// URLOfHTTP build an HTTP url.
 func (r *RemoteInfo) URLOfHTTP() string {
-	return SchemeHTTP + "://" + r.Host + "/" + r.Group + "/" + r.Repo
+	return r.buildHTTPURL(false)
 }
 
-// URLOfHTTPS build
+// URLOfHTTPS build an HTTPS url.
 func (r *RemoteInfo) URLOfHTTPS() string {
-	return SchemeHTTPS + "://" + r.Host + "/" + r.Group + "/" + r.Repo
+	return r.buildHTTPURL(true)
+}
+
+// URLOfHTTPS build an HTTP(S) url.
+func (r *RemoteInfo) buildHTTPURL(toHttps bool) string {
+	schema := SchemeHTTP
+	if toHttps {
+		schema = SchemeHTTPS
+	}
+
+	return schema + "://" + r.Host + "/" + r.Group + "/" + r.Repo
+}
+
+// HTTPScheme name string
+func (r *RemoteInfo) HTTPScheme() string {
+	if r.Proto == ProtoHTTP {
+		return r.Scheme
+	}
+	return SchemeHTTPS
+}
+
+// HTTPHost URL build.
+func (r *RemoteInfo) HTTPHost() string {
+	return r.HTTPScheme() + "://" + r.Host
 }
 
 // Path string
