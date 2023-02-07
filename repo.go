@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -97,21 +98,26 @@ func (r *Repo) IsInited() bool {
 
 // Info get repo information
 func (r *Repo) Info() *RepoInfo {
-	rt := r.loadRemoteInfos().DefaultRemoteInfo()
-	if rt == nil {
-		return nil
-	}
-
-	return &RepoInfo{
-		Name: rt.Repo,
-		Path: rt.Path(),
+	ri := &RepoInfo{
 		Dir:  r.dir,
-		URL:  rt.RawURLOfHTTP(),
+		Name: fsutil.Name(r.dir),
 		// more
 		Branch:   r.CurBranchName(),
 		Version:  r.LargestTag(),
 		LastHash: r.LastAbbrevID(),
+		Upstream: r.FollowedRemote(),
 	}
+
+	rt := r.loadRemoteInfos().DefaultRemoteInfo()
+	if rt == nil {
+		return ri
+	}
+
+	ri.Name = rt.Repo
+	ri.Path = rt.Path()
+	ri.URL = rt.URLOrBuild()
+
+	return ri
 }
 
 // -------------------------------------------------
@@ -409,6 +415,24 @@ func (r *Repo) CurBranchName() string {
 	return brName
 }
 
+// SetUpstreamTo set the branch upstream remote branch.
+// If `localBranch` is empty, will use `branch` as `localBranch`
+//
+// CMD:
+//
+//	git branch --set-upstream-to=<remote>/<branch> <local_branch>
+func (r *Repo) SetUpstreamTo(remote, branch string, localBranch ...string) error {
+	localBr := branch
+	if len(localBranch) > 0 {
+		localBr = localBranch[0]
+	}
+
+	return r.gw.Cmd("branch").
+		Argf("--set-upstream-to=%s/%s", remote, branch).
+		AddArg(localBr).
+		Run()
+}
+
 // -------------------------------------------------
 // repo remote
 // -------------------------------------------------
@@ -421,6 +445,17 @@ func (r *Repo) HasRemote(name string) bool {
 // RemoteNames get
 func (r *Repo) RemoteNames() []string {
 	return r.loadRemoteInfos().remoteNames
+}
+
+// FollowedRemote get current followed upstream remote name.
+// Returns like: origin/main
+//
+// CMD:
+//
+//	git rev-parse --abbrev-ref @{u}
+func (r *Repo) FollowedRemote() string {
+	// RUN: git rev-parse --abbrev-ref @{u}
+	return r.Git().RevParse("--abbrev-ref", "@{u}").SafeOutput()
 }
 
 // RemoteInfos get by remote name
@@ -542,6 +577,16 @@ func (r *Repo) loadRemoteInfos() *Repo {
 // func (r *Repo) resetErr() {
 // 	r.err = nil
 // }
+
+// ReadConfig contents from REPO/.git/config
+func (r *Repo) ReadConfig() []byte {
+	return fsutil.GetContents(fsutil.JoinPaths(r.dir, GitDir, ConfFile))
+}
+
+// ReadHEAD contents from REPO/.git/HEAD
+func (r *Repo) ReadHEAD() []byte {
+	return fsutil.GetContents(fsutil.JoinPaths(r.dir, GitDir, HeadFile))
+}
 
 // -------------------------------------------------
 // helper methods

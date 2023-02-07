@@ -20,4 +20,6 @@ type RepoInfo struct {
 	LastHash string
 	Branch   string
 	Version  string
+	// Upstream remote name
+	Upstream string
 }

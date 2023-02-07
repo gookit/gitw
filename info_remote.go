@@ -111,17 +111,14 @@ func (r *RemoteInfo) buildHTTPURL(toHttps bool) string {
 	return schema + "://" + r.Host + "/" + r.Group + "/" + r.Repo
 }
 
-// HTTPScheme name string
-func (r *RemoteInfo) HTTPScheme() string {
-	if r.Proto == ProtoHTTP {
-		return r.Scheme
-	}
-	return SchemeHTTPS
-}
-
-// HTTPHost URL build.
+// HTTPHost URL build. return like: https://github.com
 func (r *RemoteInfo) HTTPHost() string {
-	return r.HTTPScheme() + "://" + r.Host
+	schema := r.Scheme
+	if r.Proto != ProtoHTTP {
+		schema = SchemeHTTPS
+	}
+
+	return schema + "://" + r.Host
 }
 
 // Path string

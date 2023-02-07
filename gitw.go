@@ -19,6 +19,12 @@ import (
 // GitDir name
 const GitDir = ".git"
 
+// HeadFile in .git/
+const HeadFile = "HEAD"
+
+// ConfFile in .git/
+const ConfFile = "config"
+
 var (
 	// DefaultBin name
 	DefaultBin = "git"
@@ -276,6 +282,7 @@ func (gw *GitWrap) OutputLines() ([]string, error) {
 
 // SafeOutput run and return output
 func (gw *GitWrap) SafeOutput() string {
+	gw.Stderr = nil // ignore stderr
 	out, err := gw.Output()
 	if err != nil {
 		return ""
@@ -503,8 +510,9 @@ func (gw *GitWrap) RevList(args ...string) *GitWrap {
 // RevParse command for git
 //
 // rev-parse usage:
-// 	git rev-parse --show-toplevel // get git workdir, repo dir.
-// 	git rev-parse -q --git-dir // get git data dir name. eg: .git
+//
+//	git rev-parse --show-toplevel // get git workdir, repo dir.
+//	git rev-parse -q --git-dir // get git data dir name. eg: .git
 func (gw *GitWrap) RevParse(args ...string) *GitWrap {
 	return gw.Cmd("rev-parse", args...)
 }
