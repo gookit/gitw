@@ -137,6 +137,21 @@ func (bs *BranchInfos) Parse() *BranchInfos {
 	return bs
 }
 
+// HasLocal branch check
+func (bs *BranchInfos) HasLocal(branch string) bool {
+	return bs.GetByName(branch) != nil
+}
+
+// HasRemote branch check
+func (bs *BranchInfos) HasRemote(branch, remote string) bool {
+	return bs.GetByName(branch, remote) != nil
+}
+
+// IsExists branch check
+func (bs *BranchInfos) IsExists(branch string, remote ...string) bool {
+	return bs.GetByName(branch, remote...) != nil
+}
+
 // GetByName find branch by name
 func (bs *BranchInfos) GetByName(branch string, remote ...string) *BranchInfo {
 	if len(remote) > 0 && remote[0] != "" {

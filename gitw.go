@@ -16,16 +16,16 @@ import (
 
 // some from: https://github.com/github/hub/blob/master/cmd/cmd.go
 
-// GitDir name
-const GitDir = ".git"
+const (
+	// GitDir name
+	GitDir = ".git"
+	// HeadFile in .git/
+	HeadFile = "HEAD"
+	// ConfFile in .git/
+	ConfFile = "config"
+)
 
-// HeadFile in .git/
-const HeadFile = "HEAD"
-
-// ConfFile in .git/
-const ConfFile = "config"
-
-var (
+const (
 	// DefaultBin name
 	DefaultBin = "git"
 

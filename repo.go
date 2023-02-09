@@ -16,11 +16,14 @@ const (
 	cacheLastCommitID  = "lastCID"
 	cacheCurrentBranch = "curBranch"
 	cacheMaxTagVersion = "maxVersion"
+	cacheUpstreamPath  = "upstreamTo"
 )
 
 // RepoConfig struct
 type RepoConfig struct {
+	// DefaultBranch name, default is DefaultBranchName
 	DefaultBranch string
+	// DefaultRemote name, default is DefaultRemoteName
 	DefaultRemote string
 }
 
@@ -86,6 +89,12 @@ func (r *Repo) WithConfigFn(fn func(cfg *RepoConfig)) *Repo {
 	return r
 }
 
+// PrintCmdOnExec settings.
+func (r *Repo) PrintCmdOnExec() *Repo {
+	r.gw.BeforeExec = PrintCmdline
+	return r
+}
+
 // Init run git init for the repo dir.
 func (r *Repo) Init() error {
 	return r.gw.Init().Run()
@@ -105,7 +114,7 @@ func (r *Repo) Info() *RepoInfo {
 		Branch:   r.CurBranchName(),
 		Version:  r.LargestTag(),
 		LastHash: r.LastAbbrevID(),
-		Upstream: r.FollowedRemote(),
+		Upstream: r.UpstreamPath(),
 	}
 
 	rt := r.loadRemoteInfos().DefaultRemoteInfo()
@@ -352,6 +361,18 @@ func (r *Repo) StatusInfo() *StatusInfo {
 // repo branch
 // -------------------------------------------------
 
+func (r *Repo) HasBranch(branch string, remote ...string) bool {
+	return r.loadBranchInfos().branchInfos.IsExists(branch, remote...)
+}
+
+func (r *Repo) HasRemoteBranch(branch, remote string) bool {
+	return r.loadBranchInfos().branchInfos.HasRemote(branch, remote)
+}
+
+func (r *Repo) HasLocalBranch(branch string) bool {
+	return r.loadBranchInfos().branchInfos.HasLocal(branch)
+}
+
 // BranchInfos get branch infos of the repo
 func (r *Repo) BranchInfos() *BranchInfos {
 	return r.loadBranchInfos().branchInfos
@@ -447,15 +468,38 @@ func (r *Repo) RemoteNames() []string {
 	return r.loadRemoteInfos().remoteNames
 }
 
-// FollowedRemote get current followed upstream remote name.
+// UpstreamPath get current upstream remote and branch.
 // Returns like: origin/main
 //
 // CMD:
 //
 //	git rev-parse --abbrev-ref @{u}
-func (r *Repo) FollowedRemote() string {
+func (r *Repo) UpstreamPath() string {
+	path := r.cache.Str(cacheUpstreamPath)
+
 	// RUN: git rev-parse --abbrev-ref @{u}
-	return r.Git().RevParse("--abbrev-ref", "@{u}").SafeOutput()
+	if path == "" {
+		path = r.Git().RevParse("--abbrev-ref", "@{u}").SafeOutput()
+		r.cache.Set(cacheUpstreamPath, path)
+	}
+
+	return path
+}
+
+// UpstreamRemote get current upstream remote name.
+func (r *Repo) UpstreamRemote() string {
+	return strutil.OrHandle(r.UpstreamPath(), func(s string) string {
+		remote, _ := strutil.QuietCut(s, "/")
+		return remote
+	})
+}
+
+// UpstreamBranch get current upstream branch name.
+func (r *Repo) UpstreamBranch() string {
+	return strutil.OrHandle(r.UpstreamPath(), func(s string) string {
+		_, branch := strutil.QuietCut(s, "/")
+		return branch
+	})
 }
 
 // RemoteInfos get by remote name
@@ -471,6 +515,11 @@ func (r *Repo) RemoteInfos(remote string) RemoteInfos {
 // DefaultRemoteInfo get
 func (r *Repo) DefaultRemoteInfo(typ ...string) *RemoteInfo {
 	return r.RemoteInfo(r.cfg.DefaultRemote, typ...)
+}
+
+// FirstRemoteInfo get
+func (r *Repo) FirstRemoteInfo(typ ...string) *RemoteInfo {
+	return r.RandomRemoteInfo(typ...)
 }
 
 // RandomRemoteInfo get
