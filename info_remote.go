@@ -11,6 +11,16 @@ const (
 // RemoteInfos map. key is type name(see RemoteTypePush)
 type RemoteInfos map[string]*RemoteInfo
 
+// FetchInfo fetch remote info
+func (rs RemoteInfos) FetchInfo() *RemoteInfo {
+	return rs[RemoteTypeFetch]
+}
+
+// PushInfo push remote info
+func (rs RemoteInfos) PushInfo() *RemoteInfo {
+	return rs[RemoteTypePush]
+}
+
 // RemoteInfo struct
 //
 // - http: "https://github.com/gookit/gitw.git"

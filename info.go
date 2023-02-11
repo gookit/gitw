@@ -22,4 +22,6 @@ type RepoInfo struct {
 	Version  string
 	// Upstream remote name
 	Upstream string
+	// Remotes name and url mapping.
+	Remotes map[string]string
 }

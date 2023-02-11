@@ -53,6 +53,9 @@ type Repo struct {
 	// remoteNames
 	remoteNames []string
 	// remoteInfosMp
+	//
+	// Example:
+	// 	{origin: {fetch: remote info, push: remote info}}
 	remoteInfosMp map[string]RemoteInfos
 
 	// cache some information of the repo
@@ -117,7 +120,7 @@ func (r *Repo) Info() *RepoInfo {
 		Upstream: r.UpstreamPath(),
 	}
 
-	rt := r.loadRemoteInfos().DefaultRemoteInfo()
+	rt := r.loadRemoteInfos().FirstRemoteInfo()
 	if rt == nil {
 		return ri
 	}
@@ -126,6 +129,12 @@ func (r *Repo) Info() *RepoInfo {
 	ri.Path = rt.Path()
 	ri.URL = rt.URLOrBuild()
 
+	remotes := make(map[string]string)
+	for name, infos := range r.remoteInfosMp {
+		remotes[name] = infos.FetchInfo().URL
+	}
+
+	ri.Remotes = remotes
 	return ri
 }
 
@@ -480,7 +489,7 @@ func (r *Repo) UpstreamPath() string {
 	// RUN: git rev-parse --abbrev-ref @{u}
 	if path == "" {
 		path = r.Git().RevParse("--abbrev-ref", "@{u}").SafeOutput()
-		r.cache.Set(cacheUpstreamPath, path)
+		r.cache.Set(cacheUpstreamPath, strings.TrimSpace(path))
 	}
 
 	return path
