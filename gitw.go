@@ -23,6 +23,17 @@ const (
 	HeadFile = "HEAD"
 	// ConfFile in .git/
 	ConfFile = "config"
+	// GitHubHost name
+	GitHubHost = "github.com"
+	// GitHubURL string
+	GitHubURL = "https://github.com"
+)
+
+// git host type
+const (
+	TypeGitHub  = "github"
+	TypeGitlab  = "gitlab"
+	TypeDefault = "git"
 )
 
 const (
@@ -153,6 +164,12 @@ func (gw *GitWrap) GitDir() string {
 // -------------------------------------------------
 // config the git command
 // -------------------------------------------------
+
+// PrintCmdline on exec command
+func (gw *GitWrap) PrintCmdline() *GitWrap {
+	gw.BeforeExec = PrintCmdline
+	return gw
+}
 
 // OnBeforeExec add hook
 func (gw *GitWrap) OnBeforeExec(fn func(gw *GitWrap)) *GitWrap {

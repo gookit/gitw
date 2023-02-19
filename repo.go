@@ -420,6 +420,9 @@ func (r *Repo) loadBranchInfos() *Repo {
 	return r
 }
 
+// HeadBranchName return current branch name
+func (r *Repo) HeadBranchName() string { return r.CurBranchName() }
+
 // CurBranchName return current branch name
 func (r *Repo) CurBranchName() string {
 	brName := r.cache.Str(cacheCurrentBranch)

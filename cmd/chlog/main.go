@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/gookit/color"
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/chlog"
@@ -15,7 +16,6 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
-	"gopkg.in/yaml.v3"
 )
 
 // Version number

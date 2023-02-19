@@ -334,6 +334,8 @@ func (r *RemoteInfo) Valid() bool
 - https://github/phppkg/phpgit
 - https://github.com/github/hub
 - https://github.com/alibaba/git-repo-go
+- https://github.com/carloscuesta/gitmoji/blob/master/packages/gitmojis/src/gitmojis.json
+- https://github.com/hooj0/git-emoji-guide
 
 ## LICENSE
 
