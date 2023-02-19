@@ -8,9 +8,10 @@ import (
 
 var (
 	cachedSSHCfg SSHConfig
-
-	protocolRe = regexp.MustCompile("^[a-zA-Z_+-]+://")
+	protocolReg  = regexp.MustCompile("^[a-zA-Z_+-]+://")
 )
+
+const githubHost = "github.com"
 
 // URLParser struct
 type URLParser struct {
@@ -19,7 +20,7 @@ type URLParser struct {
 
 // Parse parse raw url
 func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
-	if !protocolRe.MatchString(rawURL) &&
+	if !protocolReg.MatchString(rawURL) &&
 		strings.Contains(rawURL, ":") &&
 		// not a Windows path
 		!strings.Contains(rawURL, "\\") {
@@ -50,7 +51,7 @@ func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 	sshHost := p.SSHConfig[u.Host]
 	// ignore replacing host that fixes for limited network
 	// https://help.github.com/articles/using-ssh-over-the-https-port
-	ignoredHost := u.Host == "github.com" && sshHost == "ssh.github.com"
+	ignoredHost := u.Host == githubHost && sshHost == "ssh.github.com"
 	if !ignoredHost && sshHost != "" {
 		u.Host = sshHost
 	}
@@ -65,6 +66,5 @@ func ParseURL(rawURL string) (u *url.URL, err error) {
 	}
 
 	p := &URLParser{cachedSSHCfg}
-
 	return p.Parse(rawURL)
 }

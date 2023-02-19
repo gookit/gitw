@@ -12,19 +12,60 @@ func TestSplitPath(t *testing.T) {
 		repoPath string
 	}
 	tests := []struct {
-		name      string
 		args      args
 		wantGroup string
 		wantName  string
 		wantErr   bool
 	}{
-		// TODO: Add test cases.
+		{
+			args:      args{"my/repo"},
+			wantGroup: "my",
+			wantName:  "repo",
+		},
+		{
+			args:      args{"my/repo-01"},
+			wantGroup: "my",
+			wantName:  "repo-01",
+		},
 	}
 	for _, tt := range tests {
 		gotGroup, gotName, err := gitutil.SplitPath(tt.args.repoPath)
 
 		assert.Eq(t, tt.wantGroup, gotGroup)
 		assert.Eq(t, tt.wantName, gotName)
-		assert.Nil(t, err)
+
+		if tt.wantErr {
+			assert.Err(t, err)
+		} else {
+			assert.Nil(t, err)
+		}
+	}
+}
+
+func TestIsRepoPath(t *testing.T) {
+	tests := []struct {
+		path string
+		want bool
+	}{
+		{
+			path: "my/repo",
+			want: true,
+		},
+		{
+			path: "my/repo-01",
+			want: true,
+		},
+		{
+			path: "my/repo/sub01",
+			want: false,
+		},
+		{
+			path: "my-repo-01",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Eq(t, tt.want, gitutil.IsRepoPath(tt.path))
 	}
 }
