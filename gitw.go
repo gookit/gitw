@@ -9,9 +9,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 )
 
 // some from: https://github.com/github/hub/blob/master/cmd/cmd.go
@@ -58,6 +58,9 @@ type GitWrap struct {
 	Stdin  io.Reader
 	Stdout io.Writer
 	Stderr io.Writer
+
+	// DryRun if True, not real execute command
+	DryRun bool
 	// BeforeExec command hook.
 	//
 	// Usage: gw.BeforeExec = gitw.PrintCmdline
@@ -171,6 +174,12 @@ func (gw *GitWrap) PrintCmdline() *GitWrap {
 	return gw
 }
 
+// WithDryRun on exec command
+func (gw *GitWrap) WithDryRun(dryRun bool) *GitWrap {
+	gw.DryRun = dryRun
+	return gw
+}
+
 // OnBeforeExec add hook
 func (gw *GitWrap) OnBeforeExec(fn func(gw *GitWrap)) *GitWrap {
 	gw.BeforeExec = fn
@@ -184,13 +193,13 @@ func (gw *GitWrap) WithWorkDir(dir string) *GitWrap {
 }
 
 // WithStdin returns the current argument
-func (gw *GitWrap) WithStdin(in *os.File) *GitWrap {
+func (gw *GitWrap) WithStdin(in io.Reader) *GitWrap {
 	gw.Stdin = in
 	return gw
 }
 
 // WithOutput returns the current argument
-func (gw *GitWrap) WithOutput(out *os.File, errOut *os.File) *GitWrap {
+func (gw *GitWrap) WithOutput(out, errOut io.Writer) *GitWrap {
 	gw.Stdout = out
 	if errOut != nil {
 		gw.Stderr = errOut
@@ -271,14 +280,18 @@ func (gw *GitWrap) NewExecCmd() *exec.Cmd {
 	c.Stdout = gw.Stdout
 	c.Stderr = gw.Stderr
 
-	if gw.BeforeExec != nil {
-		gw.BeforeExec(gw)
-	}
 	return c
 }
 
 // Success run and return whether success
 func (gw *GitWrap) Success() bool {
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
+	}
+	if gw.DryRun {
+		return true
+	}
+
 	return gw.NewExecCmd().Run() == nil
 }
 
@@ -294,13 +307,14 @@ func (gw *GitWrap) OutputLines() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return OutputLines(out), err
+	return cmdr.OutputLines(out), err
 }
 
 // SafeOutput run and return output
 func (gw *GitWrap) SafeOutput() string {
 	gw.Stderr = nil // ignore stderr
 	out, err := gw.Output()
+
 	if err != nil {
 		return ""
 	}
@@ -316,6 +330,9 @@ func (gw *GitWrap) Output() (string, error) {
 	if gw.BeforeExec != nil {
 		gw.BeforeExec(gw)
 	}
+	if gw.DryRun {
+		return "DIY-RUN: OK", nil
+	}
 
 	output, err := c.Output()
 	return string(output), err
@@ -328,6 +345,9 @@ func (gw *GitWrap) CombinedOutput() (string, error) {
 
 	if gw.BeforeExec != nil {
 		gw.BeforeExec(gw)
+	}
+	if gw.DryRun {
+		return "DIY-RUN: OK", nil
 	}
 
 	output, err := c.CombinedOutput()
@@ -344,14 +364,27 @@ func (gw *GitWrap) MustRun() {
 // Run runs command with `Exec` on platforms except Windows
 // which only supports `Spawn`
 func (gw *GitWrap) Run() error {
-	if envutil.IsWindows() {
-		return gw.Spawn()
+	if gw.BeforeExec != nil {
+		gw.BeforeExec(gw)
 	}
-	return gw.Exec()
+	if gw.DryRun {
+		fmt.Println("DIY-RUN: OK")
+		return nil
+	}
+
+	return gw.NewExecCmd().Run()
+
+	// if envutil.IsWindows() {
+	// 	return gw.Spawn()
+	// }
+	// return gw.Exec()
 }
 
 // Spawn runs command with spawn(3)
 func (gw *GitWrap) Spawn() error {
+	if gw.DryRun {
+		return nil
+	}
 	return gw.NewExecCmd().Run()
 }
 
@@ -372,6 +405,11 @@ func (gw *GitWrap) Exec() error {
 	if gw.BeforeExec != nil {
 		gw.BeforeExec(gw)
 	}
+	if gw.DryRun {
+		fmt.Println("DIY-RUN: OK")
+		return nil
+	}
+
 	return syscall.Exec(binary, args, os.Environ())
 }
 
