@@ -69,3 +69,21 @@ func TestIsRepoPath(t *testing.T) {
 		assert.Eq(t, tt.want, gitutil.IsRepoPath(tt.path))
 	}
 }
+
+func TestIsFullURL(t *testing.T) {
+	tests := []struct {
+		args string
+		want bool
+	}{
+		{"inhere/gitw", false},
+		{"github.com/inhere/gitw", false},
+		{"https://github.com/inhere/gitw", true},
+		{"http://github.com/inhere/gitw", true},
+		{"git@github.com:inhere/gitw", true},
+		{"ssh://git@github.com:inhere/gitw", true},
+	}
+
+	for _, tt := range tests {
+		assert.Eq(t, tt.want, gitutil.IsFullURL(tt.args))
+	}
+}

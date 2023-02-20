@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 )
 
 const (
@@ -269,7 +270,7 @@ func (r *Repo) TagsSortedByRefName() []string {
 		return nil
 	}
 
-	return OutputLines(str)
+	return cmdr.OutputLines(str)
 }
 
 // TagsSortedByCreatorDate get repo tags list by creator date sort
@@ -282,7 +283,7 @@ func (r *Repo) TagsSortedByCreatorDate() []string {
 		r.setErr(err)
 		return nil
 	}
-	return OutputLines(str)
+	return cmdr.OutputLines(str)
 }
 
 // TagByDescribe get tag by describe command. if current not empty, will exclude it.
@@ -301,7 +302,7 @@ func (r *Repo) TagByDescribe(current string) (ver string) {
 		r.setErr(err)
 		return ""
 	}
-	return FirstLine(ver)
+	return cmdr.FirstLine(ver)
 }
 
 // Tags get repo tags list
@@ -442,7 +443,7 @@ func (r *Repo) CurBranchName() string {
 	}
 
 	// eg: fea_pref
-	brName = FirstLine(str)
+	brName = cmdr.FirstLine(str)
 	r.cache.Set(cacheCurrentBranch, brName)
 
 	return brName

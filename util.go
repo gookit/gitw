@@ -13,6 +13,7 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/slog"
 )
 
@@ -183,21 +184,14 @@ func editorCommands(editor string, args ...string) []string {
 }
 
 // OutputLines split output to lines
-func OutputLines(output string) []string {
-	output = strings.TrimSuffix(output, "\n")
-	if output == "" {
-		return nil
-	}
-	return strings.Split(output, "\n")
-}
+//
+// Deprecated: please use cmdr.OutputLines
+func OutputLines(output string) []string { return cmdr.OutputLines(output) }
 
-// FirstLine from command output
-func FirstLine(output string) string {
-	if i := strings.Index(output, "\n"); i >= 0 {
-		return output[0:i]
-	}
-	return output
-}
+// FirstLine from command output.
+//
+// Deprecated: please use cmdr.FirstLine
+func FirstLine(output string) string { return cmdr.FirstLine(output) }
 
 func isDebugFromEnv() bool {
 	return os.Getenv("GIT_CMD_VERBOSE") != ""
