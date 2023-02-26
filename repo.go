@@ -481,6 +481,16 @@ func (r *Repo) RemoteNames() []string {
 	return r.loadRemoteInfos().remoteNames
 }
 
+// RemoteLines get like: {origin: url, other: url}
+func (r *Repo) RemoteLines() map[string]string {
+	remotes := make(map[string]string)
+	for name, infos := range r.remoteInfosMp {
+		remotes[name] = infos.FetchInfo().URL
+	}
+
+	return remotes
+}
+
 // UpstreamPath get current upstream remote and branch.
 // Returns like: origin/main
 //

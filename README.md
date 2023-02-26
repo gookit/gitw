@@ -17,6 +17,7 @@
   - Allow custom build configuration 
   - Allow custom build filtering , styles, etc 
   - can be used directly in GitHub Actions
+- Support git-emoji code search and replace render
 
 > **[中文说明](README.zh-CN.md)**
 

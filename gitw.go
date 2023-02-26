@@ -27,6 +27,8 @@ const (
 	GitHubHost = "github.com"
 	// GitHubURL string
 	GitHubURL = "https://github.com"
+	// GitHubGit string
+	GitHubGit = "git@github.com"
 )
 
 // git host type

@@ -19,6 +19,7 @@
   - 允许自定义生成配置
   - 允许自定义生成过滤、样式等
   - 可以直接在 GitHub Actions 中使用
+- 支持 `git-emoji` code 搜索和替换渲染
 
 > **[EN-README](README.md)**
 
