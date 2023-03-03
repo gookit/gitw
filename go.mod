@@ -3,7 +3,7 @@ module github.com/gookit/gitw
 go 1.18
 
 require (
-	github.com/goccy/go-yaml v1.9.8
+	github.com/goccy/go-yaml v1.10.0
 	github.com/gookit/color v1.5.2
 	github.com/gookit/goutil v0.6.6
 	github.com/gookit/slog v0.4.0
