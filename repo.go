@@ -484,7 +484,7 @@ func (r *Repo) RemoteNames() []string {
 // RemoteLines get like: {origin: url, other: url}
 func (r *Repo) RemoteLines() map[string]string {
 	remotes := make(map[string]string)
-	for name, infos := range r.remoteInfosMp {
+	for name, infos := range r.loadRemoteInfos().remoteInfosMp {
 		remotes[name] = infos.FetchInfo().URL
 	}
 
