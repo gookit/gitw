@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/goccy/go-yaml v1.10.0
-	github.com/gookit/color v1.5.2
+	github.com/gookit/color v1.5.3
 	github.com/gookit/goutil v0.6.7
 	github.com/gookit/slog v0.4.0
 )
