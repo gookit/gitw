@@ -49,3 +49,42 @@ func IsFullURL(s string) bool {
 	}
 	return false
 }
+
+// FormatVersion string. eg: v1.2.0 -> 1.2.0
+func FormatVersion(ver string) (string, bool) {
+	ver = strings.TrimLeft(ver, "vV")
+	if strutil.IsVersion(ver) {
+		return ver, true
+	}
+	return "", false
+}
+
+// IsValidVersion check
+func IsValidVersion(ver string) bool {
+	ver = strings.TrimLeft(ver, "vV")
+	return strutil.IsVersion(ver)
+}
+
+// NextVersion build. eg: v1.2.0 -> v1.2.1
+func NextVersion(ver string) string {
+	if len(ver) == 0 {
+		return "v0.0.1"
+	}
+
+	ver = strings.TrimLeft(ver, "vV")
+	nodes := strings.Split(ver, ".")
+	if len(nodes) == 1 {
+		return ver + ".0.1"
+	}
+
+	for i := len(nodes) - 1; i > 0; i-- {
+		num, err := strutil.ToInt(nodes[i])
+		if err != nil {
+			continue
+		}
+		nodes[i] = strutil.SafeString(num + 1)
+		break
+	}
+
+	return strings.Join(nodes, ".")
+}

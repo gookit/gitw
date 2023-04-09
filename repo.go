@@ -99,6 +99,12 @@ func (r *Repo) PrintCmdOnExec() *Repo {
 	return r
 }
 
+// SetDryRun settings.
+func (r *Repo) SetDryRun(dr bool) *Repo {
+	r.gw.DryRun = dr
+	return r
+}
+
 // Init run git init for the repo dir.
 func (r *Repo) Init() error {
 	return r.gw.Init().Run()
@@ -431,21 +437,26 @@ func (r *Repo) CurBranchName() string {
 		return brName
 	}
 
-	// cat .git/HEAD
+	// 	cat .git/HEAD
 	// OR
-	// git symbolic-ref HEAD // out: refs/heads/fea_pref
-	// git symbolic-ref --short -q HEAD // on checkout tag, run will error
-	// git rev-parse --abbrev-ref -q HEAD
-	str, err := r.gw.RevParse("--abbrev-ref", "-q", "HEAD").Output()
-	if err != nil {
-		r.setErr(err)
-		return ""
+	// 	git branch --show-current // on high version git
+	// OR
+	// 	git symbolic-ref HEAD // out: refs/heads/fea_pref
+	// 	git symbolic-ref --short -q HEAD // on checkout tag, run will error
+	// Or
+	// 	git rev-parse --abbrev-ref -q HEAD // on init project, will error
+
+	str := r.gw.Branch("--show-current").SafeOutput()
+	if len(str) == 0 {
+		str, r.err = r.gw.RevParse("--abbrev-ref", "-q", "HEAD").Output()
+		if r.err != nil {
+			return ""
+		}
 	}
 
 	// eg: fea_pref
 	brName = cmdr.FirstLine(str)
 	r.cache.Set(cacheCurrentBranch, brName)
-
 	return brName
 }
 
@@ -689,4 +700,9 @@ func (r *Repo) Git() *GitWrap {
 // Cmd new git command wrapper
 func (r *Repo) Cmd(name string, args ...string) *GitWrap {
 	return r.gw.Cmd(name, args...)
+}
+
+// QuickRun git command
+func (r *Repo) QuickRun(cmd string, args ...string) error {
+	return r.gw.Cmd(cmd, args...).Run()
 }
