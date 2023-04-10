@@ -6,7 +6,7 @@ require (
 	github.com/goccy/go-yaml v1.11.0
 	github.com/gookit/color v1.5.3
 	github.com/gookit/goutil v0.6.8
-	github.com/gookit/slog v0.4.0
+	github.com/gookit/slog v0.5.0
 )
 
 require (
