@@ -74,17 +74,17 @@ type BranchInfos struct {
 	brLines []string
 
 	current *BranchInfo
-	// local branches. key is short branch name, eg: dev
-	locales map[string]*BranchInfo
-	// remote branches. key is full branch name, eg: origin/dev
-	remotes map[string]*BranchInfo
+	// local branch list
+	locales []*BranchInfo
+	// all remote branch list
+	remotes []*BranchInfo
 }
 
 // EmptyBranchInfos instance
 func EmptyBranchInfos() *BranchInfos {
 	return &BranchInfos{
-		locales: make(map[string]*BranchInfo),
-		remotes: make(map[string]*BranchInfo),
+		// locales: make(map[string]*BranchInfo),
+		// remotes: make(map[string]*BranchInfo),
 	}
 }
 
@@ -92,8 +92,8 @@ func EmptyBranchInfos() *BranchInfos {
 func NewBranchInfos(gitOut string) *BranchInfos {
 	return &BranchInfos{
 		brLines: strings.Split(strings.TrimSpace(gitOut), "\n"),
-		locales: make(map[string]*BranchInfo),
-		remotes: make(map[string]*BranchInfo),
+		// locales: make(map[string]*BranchInfo),
+		// remotes: make(map[string]*BranchInfo),
 	}
 }
 
@@ -124,10 +124,9 @@ func (bs *BranchInfos) Parse() *BranchInfos {
 
 		// collect
 		if info.IsRemoted() {
-			bs.remotes[info.Name] = info
+			bs.remotes = append(bs.remotes, info)
 		} else {
-			bs.locales[info.Name] = info
-
+			bs.locales = append(bs.locales, info)
 			if info.Current {
 				bs.current = info
 			}
@@ -187,7 +186,7 @@ const (
 //	// search on remotes
 //	Search("fea", BrSearchRemote)
 //	// search on remotes and remote name must be equals "origin"
-//	Search("origin fea", BrSearchRemote)
+//	Search("origin:fea", BrSearchRemote)
 func (bs *BranchInfos) Search(name string, flag int) []*BranchInfo {
 	var list []*BranchInfo
 
@@ -198,8 +197,8 @@ func (bs *BranchInfos) Search(name string, flag int) []*BranchInfo {
 
 	var remote string
 	// "remote name" - search on the remote
-	if strings.Contains(name, " ") {
-		remote, name = strutil.MustCut(name, " ")
+	if strings.Contains(name, ":") {
+		remote, name = strutil.MustCut(name, ":")
 	}
 
 	if remote == "" && flag&BrSearchLocal == BrSearchLocal {
@@ -246,23 +245,36 @@ func (bs *BranchInfos) Current() *BranchInfo {
 }
 
 // Locales branches
-func (bs *BranchInfos) Locales() map[string]*BranchInfo {
+func (bs *BranchInfos) Locales() []*BranchInfo {
 	return bs.locales
 }
 
 // Remotes branch infos get
 //
 // if remote="", will return all remote branches
-func (bs *BranchInfos) Remotes(remote string) map[string]*BranchInfo {
+func (bs *BranchInfos) Remotes(remote string) []*BranchInfo {
 	if remote == "" {
 		return bs.remotes
 	}
 
-	rs := make(map[string]*BranchInfo)
-	for name, info := range bs.remotes {
+	ls := make([]*BranchInfo, 0)
+	for _, info := range bs.remotes {
 		if info.Remote == remote {
-			rs[name] = info
+			ls = append(ls, info)
 		}
 	}
-	return rs
+	return ls
+}
+
+// All branches list
+func (bs *BranchInfos) All() []*BranchInfo {
+	ls := make([]*BranchInfo, 0, len(bs.locales)+len(bs.remotes))
+	for _, info := range bs.locales {
+		ls = append(ls, info)
+	}
+
+	for _, info := range bs.remotes {
+		ls = append(ls, info)
+	}
+	return ls
 }

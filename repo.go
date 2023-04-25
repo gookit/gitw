@@ -145,6 +145,11 @@ func (r *Repo) Info() *RepoInfo {
 	return ri
 }
 
+// FetchAll fetch all remote branches
+func (r *Repo) FetchAll(args ...string) error {
+	return r.gw.Cmd("fetch", "--all").AddArgs(args).Run()
+}
+
 // -------------------------------------------------
 // repo tags
 // -------------------------------------------------
@@ -391,6 +396,12 @@ func (r *Repo) HasLocalBranch(branch string) bool {
 
 // BranchInfos get branch infos of the repo
 func (r *Repo) BranchInfos() *BranchInfos {
+	return r.loadBranchInfos().branchInfos
+}
+
+// ReloadBranches reload branch infos of the repo
+func (r *Repo) ReloadBranches() *BranchInfos {
+	r.branchInfos = nil
 	return r.loadBranchInfos().branchInfos
 }
 

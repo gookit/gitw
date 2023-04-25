@@ -161,7 +161,7 @@ func TestBranchInfo_parse_verbose(t *testing.T) {
 	assert.Len(t, rets, 2)
 
 	// search
-	rets = bis.Search("origin new", gitw.BrSearchRemote)
+	rets = bis.Search("origin:new", gitw.BrSearchRemote)
 	assert.NotEmpty(t, rets)
 	assert.Len(t, rets, 1)
 	assert.True(t, rets[0].IsRemoted())
