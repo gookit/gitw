@@ -3,6 +3,7 @@ package gitw
 import (
 	"strings"
 
+	"github.com/gookit/gitw/brinfo"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
@@ -415,8 +416,13 @@ func (r *Repo) BranchInfo(branch string, remote ...string) *BranchInfo {
 	return r.loadBranchInfos().branchInfos.GetByName(branch, remote...)
 }
 
+// SearchBranchV2 search branch infos by keywords
+func (r *Repo) SearchBranchV2(m brinfo.BranchMatcher, opt *SearchOpt) []*BranchInfo {
+	return r.loadBranchInfos().branchInfos.SearchV2(m, opt)
+}
+
 // SearchBranches search branch infos by name
-func (r *Repo) SearchBranches(name string, flag int) []*BranchInfo {
+func (r *Repo) SearchBranches(name string, flag uint8) []*BranchInfo {
 	return r.loadBranchInfos().branchInfos.Search(name, flag)
 }
 
@@ -487,6 +493,14 @@ func (r *Repo) SetUpstreamTo(remote, branch string, localBranch ...string) error
 		Argf("--set-upstream-to=%s/%s", remote, branch).
 		AddArg(localBr).
 		Run()
+}
+
+// BranchDelete handle
+func (r *Repo) BranchDelete(name string, remote string) error {
+	if len(remote) > 0 {
+		return r.gw.Push(remote, "--delete", name).Run()
+	}
+	return r.gw.Branch("-D", name).Run()
 }
 
 // -------------------------------------------------
