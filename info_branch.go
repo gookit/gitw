@@ -3,6 +3,7 @@ package gitw
 import (
 	"strings"
 
+	"github.com/gookit/gitw/brinfo"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -15,16 +16,16 @@ type BranchInfo struct {
 	Current bool
 	// Name The full branch name. eg: fea_xx, remotes/origin/fea_xx
 	Name string
+	// Short only branch name. local branch is equals Name. eg: fea_xx
+	Short string
 	// Hash commit hash ID.
 	Hash string
 	// HashMsg commit hash message.
 	HashMsg string
 	// Alias name
 	Alias string
-	// Remote name. local branch is empty.
+	// Remote name. local branch is empty. eg: origin
 	Remote string
-	// Short only branch name. local branch is equals Name
-	Short string
 }
 
 // NewBranchInfo from branch line text
@@ -53,8 +54,8 @@ func (b *BranchInfo) ParseName() *BranchInfo {
 	b.Short = b.Name
 
 	if b.IsRemoted() {
-		// b.Name = b.Name[8:]
-		b.Remote, b.Short = strutil.MustCut(b.Name[8:], "/")
+		// remove prefix "remotes"
+		b.Remote, b.Short = strutil.QuietCut(b.Name[8:], "/")
 	}
 	return b
 }
@@ -172,12 +173,14 @@ func (bs *BranchInfos) GetByName(branch string, remote ...string) *BranchInfo {
 
 // flags for search branches
 const (
-	BrSearchLocal  = 1
-	BrSearchRemote = 1 << 1
-	BrSearchAll    = BrSearchRemote | BrSearchLocal
+	BrSearchLocal  uint8 = 1
+	BrSearchRemote uint8 = 1 << 1
+	BrSearchAll          = BrSearchLocal | BrSearchRemote
 )
 
 // Search branches by name.
+//
+// TIP: recommend use `SearchV2()` for search branches.
 //
 // Usage:
 //
@@ -187,7 +190,7 @@ const (
 //	Search("fea", BrSearchRemote)
 //	// search on remotes and remote name must be equals "origin"
 //	Search("origin:fea", BrSearchRemote)
-func (bs *BranchInfos) Search(name string, flag int) []*BranchInfo {
+func (bs *BranchInfos) Search(name string, flag uint8) []*BranchInfo {
 	var list []*BranchInfo
 
 	name = strings.TrimSpace(name)
@@ -216,6 +219,71 @@ func (bs *BranchInfos) Search(name string, flag int) []*BranchInfo {
 					list = append(list, info)
 				} else if remote == info.Remote {
 					list = append(list, info)
+				}
+			}
+		}
+	}
+
+	return list
+}
+
+// SearchOpt for search branches
+type SearchOpt struct {
+	// Flag search flag, default is BrSearchLocal.
+	Flag  uint8
+	Limit int
+	// Remote name, on which remote to search.
+	Remote string
+	// Before search callback, return false to skip.
+	Before func(bi *BranchInfo) bool
+}
+
+// SearchV2 search branches by matcher and hook func.
+//
+// Usage:
+//
+//	SearchV2(brinfo.NewContainsMatch("fea"), &SearchOpt{})
+//	// use multi matcher
+//	SearchV2(brinfo.QuickMulti("start:fea","glob:fea*"), &SearchOpt{})
+func (bs *BranchInfos) SearchV2(matcher brinfo.BranchMatcher, opt *SearchOpt) []*BranchInfo {
+	if opt == nil {
+		opt = &SearchOpt{Limit: 10, Flag: BrSearchLocal}
+	}
+	if opt.Flag == 0 {
+		opt.Flag = BrSearchLocal
+	}
+
+	var list []*BranchInfo
+
+	if opt.Flag&BrSearchLocal == BrSearchLocal {
+		for _, info := range bs.locales {
+			if opt.Before != nil && !opt.Before(info) {
+				continue
+			}
+
+			if matcher.Match(info.Short) {
+				list = append(list, info)
+				if opt.Limit > 0 && len(list) >= opt.Limit {
+					break
+				}
+			}
+		}
+	}
+
+	if opt.Flag&BrSearchRemote == BrSearchRemote {
+		for _, info := range bs.remotes {
+			if opt.Remote != "" && opt.Remote != info.Remote {
+				continue
+			}
+
+			if opt.Before != nil && !opt.Before(info) {
+				continue
+			}
+
+			if matcher.Match(info.Short) {
+				list = append(list, info)
+				if opt.Limit > 0 && len(list) >= opt.Limit {
+					break
 				}
 			}
 		}

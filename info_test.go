@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gitw"
+	"github.com/gookit/gitw/brinfo"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
 )
@@ -149,7 +150,18 @@ func TestBranchInfo_parse_verbose(t *testing.T) {
 	assert.NotEmpty(t, bis.Locales())
 	assert.NotEmpty(t, bis.Remotes(""))
 	assert.Eq(t, "master", bis.Current().Name)
+	assert.True(t, bis.HasLocal("fea/new_br001"))
 
+	t.Run("BranchInfos search", func(t *testing.T) {
+		testBranchInfosSearch(bis, t)
+	})
+
+	t.Run("BranchInfos searchV2", func(t *testing.T) {
+		testBranchInfosSearchV2(bis, t)
+	})
+}
+
+func testBranchInfosSearch(bis *gitw.BranchInfos, t *testing.T) {
 	// search
 	rets := bis.Search("new", gitw.BrSearchLocal)
 	assert.NotEmpty(t, rets)
@@ -166,6 +178,37 @@ func TestBranchInfo_parse_verbose(t *testing.T) {
 	assert.Len(t, rets, 1)
 	assert.True(t, rets[0].IsRemoted())
 	assert.Eq(t, "origin", rets[0].Remote)
+}
+
+func testBranchInfosSearchV2(bis *gitw.BranchInfos, t *testing.T) {
+	// search v2 use glob
+	mch := brinfo.NewGlobMatch("*new*")
+	opt := &gitw.SearchOpt{Limit: 5, Flag: gitw.BrSearchAll}
+	rets := bis.SearchV2(mch, opt)
+	assert.Len(t, rets, 3)
+
+	// search v2 use glob on local
+	opt.Flag = gitw.BrSearchLocal
+	mch = brinfo.NewGlobMatch("*new*")
+	rets = bis.SearchV2(mch, opt)
+	assert.Len(t, rets, 1)
+
+	// search v2 use contains
+	mch = brinfo.NewContainsMatch("new")
+	rets = bis.SearchV2(mch, opt)
+	assert.Len(t, rets, 2)
+
+	// search v2 use prefix
+	mch = brinfo.NewPrefixMatch("my")
+	rets = bis.SearchV2(mch, opt)
+	assert.Len(t, rets, 1)
+
+	// search v2 use suffix
+	opt.Flag = gitw.BrSearchLocal
+	mch = brinfo.NewSuffixMatch("new_br")
+	rets = bis.SearchV2(mch, opt)
+	assert.Len(t, rets, 1)
+
 }
 
 func TestStatusInfo_FromLines(t *testing.T) {
