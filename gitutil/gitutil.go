@@ -50,6 +50,14 @@ func IsFullURL(s string) bool {
 	return false
 }
 
+// regex which validates that the git branch name is correct
+var brNameReg = regexp.MustCompile(`^[a-zA-Z0-9]+([/_-][a-zA-Z0-9]+)*$`)
+
+// IsBranchName validate branch name
+func IsBranchName(name string) bool {
+	return brNameReg.MatchString(name)
+}
+
 // FormatVersion string. eg: v1.2.0 -> 1.2.0
 func FormatVersion(ver string) (string, bool) {
 	ver = strings.TrimLeft(ver, "vV")

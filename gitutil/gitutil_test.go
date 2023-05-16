@@ -47,22 +47,10 @@ func TestIsRepoPath(t *testing.T) {
 		path string
 		want bool
 	}{
-		{
-			path: "my/repo",
-			want: true,
-		},
-		{
-			path: "my/repo-01",
-			want: true,
-		},
-		{
-			path: "my/repo/sub01",
-			want: false,
-		},
-		{
-			path: "my-repo-01",
-			want: false,
-		},
+		{"my/repo", true},
+		{"my/repo-01", true},
+		{"my/repo/sub01", false},
+		{"my-repo-01", false},
 	}
 
 	for _, tt := range tests {
@@ -85,5 +73,29 @@ func TestIsFullURL(t *testing.T) {
 
 	for _, tt := range tests {
 		assert.Eq(t, tt.want, gitutil.IsFullURL(tt.args))
+	}
+}
+
+func TestIsBranchName(t *testing.T) {
+	tests := []struct {
+		name string
+		want bool
+	}{
+		{"master", true},
+		{"dev", true},
+		{"dev-01", true},
+		{"dev_01", true},
+		{"dev/01", true},
+		{"dev-01/02", true},
+		{"dev_01/02", true},
+		{"dev/01-02", true},
+		{"dev/01_02", true},
+		{"dev/01-02/03", true},
+		{"-master", false},
+		{"dev-", false},
+	}
+
+	for _, tt := range tests {
+		assert.Eq(t, tt.want, gitutil.IsBranchName(tt.name))
 	}
 }
