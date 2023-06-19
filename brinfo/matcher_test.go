@@ -31,10 +31,12 @@ func TestNewMulti(t *testing.T) {
 	m := brinfo.NewMulti(
 		brinfo.NewGlobMatch("fea*"),
 		brinfo.NewPrefixMatch("fix"),
-		brinfo.NewContainsMatch("main"),
+		// brinfo.NewContainsMatch("main"),
 		brinfo.NewSuffixMatch("-dev"),
 	)
+	m.Add(brinfo.NewContainsMatch("main"))
 
+	assert.False(t, m.IsEmpty())
 	assert.True(t, m.Match("fea-1"))
 	assert.True(t, m.Match("fea_dev"))
 	assert.True(t, m.Match("fix_2"))
@@ -44,6 +46,8 @@ func TestNewMulti(t *testing.T) {
 	m = brinfo.QuickMulti("start:fix", "end:-dev")
 	assert.True(t, m.Match("fix_23"))
 	assert.True(t, m.Match("fea23-dev"))
+	assert.NotEmpty(t, m.String())
+	assert.Eq(t, 2, m.Len())
 
 	m.WithMode(brinfo.MatchAll)
 

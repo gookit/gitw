@@ -73,7 +73,7 @@ Allowed:
 2 describe command;;t`)
 
 	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id", true, nil)
-	cmd.AddArg("sha2", "The new git sha version. allow: tag name, commit id", false, nil)
+	cmd.AddArg("sha2", "The new git sha version. allow: tag name, commit id", false, "HEAD")
 
 	cmd.Func = handle
 	cmd.Example = `

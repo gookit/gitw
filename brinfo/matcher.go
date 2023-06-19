@@ -124,7 +124,7 @@ func (r *RegexMatch) String() string {
 // NewMatcher create a branch matcher by type and pattern
 func NewMatcher(pattern string, typ ...string) BranchMatcher {
 	var typName string
-	if len(typ) > 0 {
+	if len(typ) > 0 && typ[0] != "" {
 		typName = typ[0]
 	} else if strings.Contains(pattern, ":") {
 		typName, pattern = strutil.TrimCut(pattern, ":")

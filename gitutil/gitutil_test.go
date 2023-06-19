@@ -93,6 +93,7 @@ func TestIsBranchName(t *testing.T) {
 		{"dev/01-02/03", true},
 		{"-master", false},
 		{"dev-", false},
+		{"start:fea-12", false},
 	}
 
 	for _, tt := range tests {

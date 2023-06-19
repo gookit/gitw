@@ -104,9 +104,14 @@ func (c *Changelog) WithConfigFn(fn func(cfg *Config)) *Changelog {
 	return c
 }
 
-// SetLogText by git log
+// SetLogText from git log
 func (c *Changelog) SetLogText(gitLogOut string) {
-	c.logText = gitLogOut
+	c.logText = strings.TrimSpace(gitLogOut)
+}
+
+// LogIsEmpty check by git log
+func (c *Changelog) LogIsEmpty() bool {
+	return len(c.logText) == 0
 }
 
 // FetchGitLog fetch log data by git log
@@ -115,7 +120,7 @@ func (c *Changelog) FetchGitLog(sha1, sha2 string, moreArgs ...string) *Changelo
 		Argf("--pretty=format:\"%s\"", c.cfg.LogFormat)
 
 	if c.cfg.Verbose {
-		logCmd.OnBeforeExec(gitw.PrintCmdline)
+		logCmd.PrintCmdline()
 	}
 
 	// add custom args. eg: "--no-merges"
@@ -152,7 +157,7 @@ func (c *Changelog) Parse() (err error) {
 	c.parsed = true
 	c.prepare()
 
-	str := strings.TrimSpace(c.logText)
+	str := c.logText
 	if str == "" {
 		return ErrEmptyLogText
 	}
