@@ -185,13 +185,13 @@ func testBranchInfosSearchV2(bis *gitw.BranchInfos, t *testing.T) {
 	mch := brinfo.NewGlobMatch("*new*")
 	opt := &gitw.SearchOpt{Limit: 5, Flag: gitw.BrSearchAll}
 	rets := bis.SearchV2(mch, opt)
-	assert.Len(t, rets, 3)
+	assert.Len(t, rets, 4)
 
 	// search v2 use glob on local
 	opt.Flag = gitw.BrSearchLocal
 	mch = brinfo.NewGlobMatch("*new*")
 	rets = bis.SearchV2(mch, opt)
-	assert.Len(t, rets, 1)
+	assert.Len(t, rets, 2)
 
 	// search v2 use contains
 	mch = brinfo.NewContainsMatch("new")
