@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gookit/gitw/brinfo"
+	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -247,10 +248,10 @@ type SearchOpt struct {
 //	SearchV2(brinfo.QuickMulti("start:fea","glob:fea*"), &SearchOpt{})
 func (bs *BranchInfos) SearchV2(matcher brinfo.BranchMatcher, opt *SearchOpt) []*BranchInfo {
 	if opt == nil {
-		opt = &SearchOpt{Limit: 10, Flag: BrSearchLocal}
+		opt = &SearchOpt{Limit: 10}
 	}
 	if opt.Flag == 0 {
-		opt.Flag = BrSearchLocal
+		opt.Flag = basefn.OrValue(opt.Remote == "", BrSearchLocal, BrSearchRemote)
 	}
 
 	var list []*BranchInfo

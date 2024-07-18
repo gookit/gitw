@@ -1,6 +1,10 @@
 package gitw
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gookit/goutil/mathutil"
+)
 
 // remote type names
 const (
@@ -43,6 +47,7 @@ type RemoteInfo struct {
 	Scheme string
 	// Host name. eg: "github.com"
 	Host string
+	Port int
 	// the group, repo name
 	Group, Repo string
 
@@ -122,7 +127,11 @@ func (r *RemoteInfo) buildHTTPURL(toHttps bool) string {
 }
 
 // HTTPHost URL build. return like: https://github.com
-func (r *RemoteInfo) HTTPHost() string {
+func (r *RemoteInfo) HTTPHost(disableHttps ...bool) string {
+	if len(disableHttps) > 0 && disableHttps[0] {
+		return SchemeHTTP + "://" + r.Host
+	}
+
 	schema := r.Scheme
 	if r.Proto != ProtoHTTP {
 		schema = SchemeHTTPS
@@ -144,4 +153,9 @@ func (r *RemoteInfo) RepoPath() string {
 // String remote info to string.
 func (r *RemoteInfo) String() string {
 	return fmt.Sprintf("%s  %s (%s)", r.Name, r.URL, r.Type)
+}
+
+// HostWithPort host with port
+func (r *RemoteInfo) HostWithPort() string {
+	return r.Host + ":" + mathutil.String(r.Port)
 }

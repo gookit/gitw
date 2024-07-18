@@ -700,6 +700,12 @@ func (r *Repo) ReadHEAD() []byte {
 // helper methods
 // -------------------------------------------------
 
+// IsValid check the dir is git repo
+func (r *Repo) IsValid() bool { return r.IsGitRepo() }
+
+// IsGitRepo check the dir is git repo
+func (r *Repo) IsGitRepo() bool { return r.gw.IsGitRepo() }
+
 // reset last error
 func (r *Repo) setErr(err error) {
 	if err != nil {

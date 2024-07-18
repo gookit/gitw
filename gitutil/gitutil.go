@@ -38,16 +38,22 @@ func ResolveGhURL(s string) (string, bool) {
 	return s, false
 }
 
-// IsFullURL quick and simple check input is URL string
+// IsFullURL quick and simple check input is ssh/http URL
 func IsFullURL(s string) bool {
-	if strings.HasPrefix(s, "http:") || strings.HasPrefix(s, "https:") {
+	if IsHTTPProto(s) {
 		return true
 	}
+	return IsSSHProto(s)
+}
 
-	if strings.HasPrefix(s, "ssh:") || strings.HasPrefix(s, "git@") {
-		return true
-	}
-	return false
+// IsHTTPProto check input is HTTP URL
+func IsHTTPProto(s string) bool {
+	return strings.HasPrefix(s, "http:") || strings.HasPrefix(s, "https:")
+}
+
+// IsSSHProto check input is ssh URL
+func IsSSHProto(s string) bool {
+	return strings.HasPrefix(s, "ssh:") || strings.HasPrefix(s, "git@")
 }
 
 // regex which validates that the git branch name is correct

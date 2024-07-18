@@ -4,7 +4,9 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -21,8 +23,9 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	hasSfx := strings.HasSuffix(URL, ".git")
 
 	// eg: "git@github.com:gookit/gitw.git"
-	if strings.HasPrefix(URL, "git@") {
+	if gitutil.IsSSHProto(URL) {
 		r.Proto = ProtoSSH
+		URL = strings.TrimPrefix(URL, "ssh://")
 		if hasSfx {
 			str = URL[4 : len(URL)-4]
 		} else {
@@ -34,9 +37,24 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 			return errorx.Rawf("invalid git URL: %s", URL)
 		}
 
-		group, repo, ok := strutil.Cut(path, "/")
-		if !ok {
+		var group, repo string
+		nodes := strings.Split(path, "/")
+		if len(nodes) < 2 {
 			return errorx.Rawf("invalid git URL path: %s", path)
+		}
+
+		// check first is port
+		if len(nodes) > 2 {
+			if strutil.IsNumeric(nodes[0]) {
+				r.Port = mathutil.SafeInt(nodes[0])
+				group = nodes[1]
+				repo = strings.Join(nodes[2:], "/")
+			}
+		} else {
+			group, repo, ok = strutil.Cut(path, "/")
+			if !ok {
+				return errorx.Rawf("invalid git URL path: %s", path)
+			}
 		}
 
 		r.Scheme = SchemeGIT
@@ -44,6 +62,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 		return nil
 	}
 
+	// http protocol
 	str = URL
 	if hasSfx {
 		str = URL[0 : len(URL)-4]
@@ -72,7 +91,8 @@ var ErrInvalidBrLine = errorx.Raw("invalid git branch line text")
 // ParseBranchLine to BranchInfo data
 //
 // verbose:
-// 	False - only branch name
+//
+//	False - only branch name
 //	True  - get by `git br -v --all`
 //	        format: * BRANCH_NAME  COMMIT_ID  COMMIT_MSG
 func ParseBranchLine(line string, verbose bool) (*BranchInfo, error) {

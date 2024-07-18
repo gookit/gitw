@@ -35,6 +35,34 @@ func TestNewRemoteInfo(t *testing.T) {
 	assert.Eq(t, "https://github.com/gookit/gitw", rt.RawURLOfHTTP())
 }
 
+func TestNewRemoteInfo_sshAndGit(t *testing.T) {
+	URL := "ssh://git@github.com:gookit/gitw.git"
+	rt, err := gitw.NewRemoteInfo("origin", URL, gitw.RemoteTypePush)
+	assert.NoErr(t, err)
+	assert.Eq(t, "github.com", rt.Host)
+	assert.Eq(t, "gookit/gitw", rt.Path())
+	assert.Eq(t, gitw.SchemeGIT, rt.Scheme)
+	assert.Eq(t, gitw.ProtoSSH, rt.Proto)
+	assert.Eq(t, "https://github.com/gookit/gitw", rt.RawURLOfHTTP())
+}
+
+func TestNewRemoteInfo_sshAndGit_port(t *testing.T) {
+	URL := "ssh://git@github.com:3455/gookit/gitw.git"
+	// URL := "git@github.com:3455/gookit/gitw.git"
+	// info, err := url.Parse(URL)
+	// dump.P(info)
+
+	rt, err := gitw.NewRemoteInfo("origin", URL, gitw.RemoteTypePush)
+	dump.P(rt)
+	assert.NoErr(t, err)
+	assert.Eq(t, "github.com", rt.Host)
+	assert.Eq(t, "github.com:3455", rt.HostWithPort())
+	assert.Eq(t, "gookit/gitw", rt.Path())
+	assert.Eq(t, gitw.SchemeGIT, rt.Scheme)
+	assert.Eq(t, gitw.ProtoSSH, rt.Proto)
+	assert.Eq(t, "https://github.com/gookit/gitw", rt.RawURLOfHTTP())
+}
+
 func TestParseBranchLine_simple(t *testing.T) {
 	info, err := gitw.ParseBranchLine("* ", false)
 	assert.Err(t, err)
