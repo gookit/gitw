@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/gookit/gitw/brinfo"
-	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/basefn"
 )
 
 // RemotePfxOnBranch prefix keywords
