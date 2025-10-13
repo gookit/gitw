@@ -29,10 +29,11 @@ jobs:
           echo "RELEASE_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
           echo "RELEASE_NAME=$GITHUB_WORKFLOW" >> $GITHUB_ENV
 
+      - name: Mod tidy cmd/chlog
+        run: cd cmd/chlog && go mod tidy
+
       - name: Build bin package
-        run: |
-          cd cmd/chlog && go mod tidy
-          make build-all
+        run: make build-all
 
       - name: Generate changelog
         run: |
