@@ -14,7 +14,7 @@
 # TAG=$(tag)
 
 BIN_NAME=chlog
-MAIN_SRC_FILE=cmd/chlog/main.go
+MAIN_SRC_FILE=main.go
 ROOT_PACKAGE := main
 VERSION=$(shell git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' 1 |  sed 's/^v//')
 
@@ -31,25 +31,29 @@ help:
 ##Available Commands:
 
 ins2bin: ## Install to GOPATH/bin
-	go build $(BUILD_FLAGS) -o $(GOPATH)/bin/chlog $(MAIN_SRC_FILE)
+	cd cmd/chlog && go build $(BUILD_FLAGS) -o $(GOPATH)/bin/chlog $(MAIN_SRC_FILE)
 	chmod +x $(GOPATH)/bin/chlog
 
 build-all:linux arm win darwin ## Build for Linux,ARM,OSX,Windows
 
 linux: ## Build for Linux
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o build/$(BIN_NAME)-linux-amd64 $(MAIN_SRC_FILE)
-	chmod +x build/$(BIN_NAME)-linux-amd64
+	cd cmd/chlog && GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-linux-amd64 $(MAIN_SRC_FILE)
+	mv cmd/chlog/chlog-linux-amd64 build/chlog-linux-amd64
+	chmod +x build/chlog-linux-amd64
 
 arm: ## Build for ARM
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm go build $(BUILD_FLAGS) -o build/$(BIN_NAME)-linux-arm $(MAIN_SRC_FILE)
-	chmod +x build/$(BIN_NAME)-linux-arm
-
-win: ## Build for Windows
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o build/$(BIN_NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	cd cmd/chlog && GOOS=linux GOARCH=arm go build $(BUILD_FLAGS) -o chlog-linux-arm $(MAIN_SRC_FILE)
+	mv cmd/chlog/chlog-linux-arm build/chlog-linux-arm
+	chmod +x build/chlog-linux-arm
 
 darwin: ## Build for OSX
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o build/$(BIN_NAME)-darwin-amd64 $(MAIN_SRC_FILE)
-	chmod +x build/$(BIN_NAME)-darwin-amd64
+	cd cmd/chlog && GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-darwin-amd64 $(MAIN_SRC_FILE)
+	mv cmd/chlog/chlog-darwin-amd64 build/chlog-darwin-amd64
+	chmod +x build/chlog-darwin-amd64
+
+win: ## Build for Windows
+	cd cmd/chlog && GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-windows-amd64.exe $(MAIN_SRC_FILE)
+	mv cmd/chlog/chlog-windows-amd64.exe build/chlog-windows-amd64.exe
 
   clean:     ## Clean all created artifacts
 clean:
