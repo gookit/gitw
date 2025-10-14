@@ -37,7 +37,7 @@ jobs:
 
       - name: Generate changelog
         run: |
-          go install ./cmd/chlog
+          cd cmd/chlog && go install .
           chlog -c .github/changelog.yml -o changelog.md prev last 
 
       # https://github.com/softprops/action-gh-release

@@ -67,5 +67,5 @@ jobs:
     - name: Build and run chlog
       if: ${{ matrix.go_version == 'stable' }}
       run: |
-        go install ./cmd/chlog
+        cd cmd/chlog && go install .
         chlog --help
