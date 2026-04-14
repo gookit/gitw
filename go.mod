@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/gookit/color v1.6.0
-	github.com/gookit/goutil v0.7.1
+	github.com/gookit/goutil v0.7.4
 	github.com/gookit/slog v0.6.0
 )
 
