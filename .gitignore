@@ -20,3 +20,4 @@
 /vendor
 /testdata
 /main
+.xenv.toml

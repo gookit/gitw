@@ -1,14 +1,12 @@
 module chlog
 
-go 1.21.0
-
-toolchain go1.21.1
+go 1.22
 
 require (
 	github.com/goccy/go-yaml v1.18.0
 	github.com/gookit/color v1.6.0
 	github.com/gookit/gitw v1.0.0
-	github.com/gookit/goutil v0.7.1
+	github.com/gookit/goutil v0.7.4
 )
 
 require (
