@@ -2,6 +2,7 @@ package chlog
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/gookit/goutil/strutil"
 )
@@ -12,8 +13,7 @@ type ItemFilter interface {
 	Handle(li *LogItem) bool
 }
 
-// ItemFilterFunc define. return false to filter item.
-// type LineFilterFunc func(line string) bool
+// ItemFilterFunc define. return False to filter(discard) item.
 type ItemFilterFunc func(li *LogItem) bool
 
 // Handle filtering
@@ -37,9 +37,36 @@ func MsgLenFilter(minLen int) ItemFilterFunc {
 }
 
 // WordsLenFilter handler
+//  - For English text: counts words separated by whitespace
+//  - For Chinese text: counts characters (runes) since Chinese doesn't use spaces
+//  - For mixed text: counts both English words and Chinese characters
 func WordsLenFilter(minLen int) ItemFilterFunc {
 	return func(li *LogItem) bool {
-		return len(strutil.Split(li.Msg, " ")) > minLen
+		msg := li.Msg
+		wordCount := 0
+		inWord := false
+		hasChinese := false
+
+		for _, r := range msg {
+			if unicode.Is(unicode.Han, r) {
+				hasChinese = true
+				wordCount++
+				inWord = false
+			} else if unicode.IsSpace(r) {
+				inWord = false
+			} else {
+				if !inWord {
+					wordCount++
+					inWord = true
+				}
+			}
+		}
+
+		if !hasChinese {
+			return len(strutil.Split(msg, " ")) > minLen
+		}
+
+		return wordCount > minLen
 	}
 }
 
