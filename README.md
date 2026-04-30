@@ -9,13 +9,13 @@
 
 `gitw` - Git command wrapper, generate git changelog, fetch repo information and some git tools.
 
-- Wrap local `git` commands 
-- Quickly run `git` commands 
-- Quickly query repository information 
+- Wrap local `git` commands
+- Quickly run `git` commands
+- Quickly query repository information
   - Quick fetch status, remote, branch ... details
-- Quickly generate version changelogs via `git log` 
-  - Allow custom build configuration 
-  - Allow custom build filtering , styles, etc 
+- Quickly generate version changelogs via `git log`
+  - Allow custom build configuration
+  - Allow custom build filtering , styles, etc
   - can be used directly in GitHub Actions
 - Support git-emoji code search and replace render
 
@@ -23,7 +23,17 @@
 
 ## Install
 
-> required: go 1.18+, git 2.x
+### Install by Eget(Recommended)
+
+> Install by [inherelab/eget](https://github.com/inherelab/eget)
+
+```bash
+eget install gookit/gitw
+```
+
+### Install by Go
+
+> required: go 1.22+, git 2.x
 
 ```bash
 go get github.com/gookit/gitw
@@ -190,7 +200,7 @@ Example:
         run: |
           curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -L -o /usr/local/bin/chlog
           chmod a+x /usr/local/bin/chlog
-          chlog -c .github/changelog.yml -o changelog.md prev last 
+          chlog -c .github/changelog.yml -o changelog.md prev last
 
 ```
 

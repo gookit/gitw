@@ -25,7 +25,17 @@
 
 ## 安装
 
-> 需要: go 1.18+, git 2.x
+### Install by Eget(Recommended)
+
+> Install by [inherelab/eget](https://github.com/inherelab/eget)
+
+```bash
+eget install gookit/gitw
+```
+
+### Install by Go
+
+> 需要: go 1.22+, git 2.x
 
 ```bash
 go get github.com/gookit/gitw
@@ -191,7 +201,7 @@ chlog -c .github/changelog.yml last head
         run: |
           curl https://github.com/gookit/gitw/releases/latest/download/chlog-linux-amd64 -L -o /usr/local/bin/chlog
           chmod a+x /usr/local/bin/chlog
-          chlog -c .github/changelog.yml -o changelog.md prev last 
+          chlog -c .github/changelog.yml -o changelog.md prev last
 
 ```
 
