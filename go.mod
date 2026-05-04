@@ -3,7 +3,7 @@ module github.com/gookit/gitw
 go 1.22
 
 require (
-	github.com/gookit/color v1.6.0
+	github.com/gookit/color v1.6.1
 	github.com/gookit/goutil v0.7.5
 	github.com/gookit/slog v0.6.0
 )
