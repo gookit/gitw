@@ -23,14 +23,6 @@
 
 ## Install
 
-### Install by Eget(Recommended)
-
-> Install by [inherelab/eget](https://github.com/inherelab/eget)
-
-```bash
-eget install gookit/gitw
-```
-
 ### Install by Go
 
 > required: go 1.22+, git 2.x
@@ -158,6 +150,14 @@ You can quickly generate changelog by `gitw/chlog` package.
 
 ```shell
 go install github.com/gookit/gitw/cmd/chlog@latest
+```
+
+#### Install by Eget(Recommended)
+
+> Install by [inherelab/eget](https://github.com/inherelab/eget)
+
+```bash
+eget install --name chlog gookit/gitw
 ```
 
 ### Usage

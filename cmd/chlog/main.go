@@ -18,8 +18,12 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// Version number
-var Version = "1.0.2"
+// Build-time variables injected via -ldflags
+var (
+	Version   = "dev"
+	GitHash   = "unknown"
+	BuildTime = "unknown"
+)
 
 var opts = struct {
 	verbose bool
@@ -39,10 +43,7 @@ var opts = struct {
 
 var cfg = chlog.NewDefaultConfig()
 var repo = gitw.NewRepo("./")
-var cmd = cflag.New(func(c *cflag.CFlags) {
-	c.Version = Version
-	c.Desc = "Quick generate change log from git logs"
-})
+var cmd *cflag.CFlags
 
 // quick run:
 //
@@ -53,6 +54,11 @@ var cmd = cflag.New(func(c *cflag.CFlags) {
 //
 //	go install ./cmd/chlog
 func main() {
+	cmd = cflag.New(func(c *cflag.CFlags) {
+		c.Version = Version
+		c.Desc = "Quick generate change log from git logs. Build at: " + BuildTime
+	})
+
 	configCmd()
 
 	cmd.MustParse(nil)

@@ -38,7 +38,8 @@ jobs:
       - name: Generate changelog
         run: |
           cd cmd/chlog && go install .
-          chlog -c .github/changelog.yml -o changelog.md prev last 
+          chlog -c .github/changelog.yml -o changelog.md prev last
+          cat changelog.md
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets
@@ -51,7 +52,4 @@ jobs:
           body_path: changelog.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            build/chlog-darwin-amd64
-            build/chlog-linux-amd64
-            build/chlog-linux-arm
-            build/chlog-windows-amd64.exe
+            dist/chlog-*

@@ -25,14 +25,6 @@
 
 ## 安装
 
-### Install by Eget(Recommended)
-
-> Install by [inherelab/eget](https://github.com/inherelab/eget)
-
-```bash
-eget install gookit/gitw
-```
-
 ### Install by Go
 
 > 需要: go 1.22+, git 2.x
@@ -160,6 +152,14 @@ dump.Println(repo.Info())
 
 ```shell
 go install github.com/gookit/gitw/cmd/chlog@latest
+```
+
+#### Install by Eget(Recommended)
+
+> Install by [inherelab/eget](https://github.com/inherelab/eget)
+
+```bash
+eget install --name cllog gookit/gitw
 ```
 
 ### 使用

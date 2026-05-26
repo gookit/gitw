@@ -17,6 +17,7 @@
 *.out
 .DS_Store
 /build
+/dist
 /vendor
 /testdata
 /main

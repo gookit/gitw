@@ -1,68 +1,122 @@
-# link https://github.com/humbug/box/blob/master/Makefile
-#SHELL = /bin/sh
-.DEFAULT_GOAL := help
-# 每行命令之前必须有一个tab键。如果想用其他键，可以用内置变量.RECIPEPREFIX 声明
-# mac 下这条声明 没起作用 !!
-#.RECIPEPREFIX = >
-.PHONY: all usage help clean
+## chlog — Makefile
 
-# 需要注意的是，每行命令在一个单独的shell中执行。这些Shell之间没有继承关系。
-# - 解决办法是将两行命令写在一行，中间用分号分隔。
-# - 或者在换行符前加反斜杠转义 \
+APP     := chlog
+MAIN_DIR := ./cmd/chlog
+GOEXE = $(shell go env GOEXE)
+BINARY  := $(APP)$(GOEXE)
 
-# 接收命令行传入参数 make COMMAND tag=v2.0.4
-# TAG=$(tag)
+# Build metadata
+BUILD_TIME := $(shell date +%Y-%m-%dT%H:%M:%S)
+GIT_HASH  := $(shell git rev-parse --short=8 HEAD 2>/dev/null || echo "unknown")
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v//' || echo "dev-$(GIT_HASH)")
 
-BIN_NAME=chlog
-MAIN_SRC_FILE=main.go
-ROOT_PACKAGE := main
-VERSION=$(shell git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' 1 |  sed 's/^v//')
+LDFLAGS := -s -w \
+	-X main.Version=$(VERSION) \
+	-X main.GitHash=$(GIT_HASH) \
+	-X 'main.BuildTime=$(BUILD_TIME)'
 
-# Full build flags used when building binaries. Not used for test compilation/execution.
-BUILD_FLAGS := -ldflags \
-  " -X $(ROOT_PACKAGE).Version=$(VERSION)"
+.PHONY: all build backend clean help latest
 
-##there some make command for the project
-##
+## all: build (default)
+all: build
 
-help:
-	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//' | sed -e 's/: / /'
+## build: build Go binary (current platform)
+build:
+	@echo "🐹 Building Go binary ($(VERSION) @ $(GIT_HASH))..."
+	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(MAIN_DIR)
+	@echo "📦 Compressing binary..."
+	@upx -6 --no-progress $(BINARY)
+	@echo "✅ Binary: $(BINARY) ($$(du -sh $(BINARY) | cut -f1))"
 
-##Available Commands:
+## install: install Go binary to $GOPATH/bin
+install:
+	go install -ldflags "$(LDFLAGS)" $(MAIN_DIR)
+	upx -6 --no-progress $(GOPATH)/bin/$(BINARY)
+	@echo "✅ Installed to GOPATH/bin"
 
-ins2bin: ## Install to GOPATH/bin
-	cd cmd/chlog && go build $(BUILD_FLAGS) -o $(GOPATH)/bin/chlog $(MAIN_SRC_FILE)
-	chmod +x $(GOPATH)/bin/chlog
+## run: build and run with current directory
+run: build
+	./$(BINARY)
 
-build-all:linux arm win darwin ## Build for Linux,ARM,OSX,Windows
+# ─── Cross Compilation ────────────────────────────────────────────────────────
 
-linux: ## Build for Linux
-	cd cmd/chlog && GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-linux-amd64 $(MAIN_SRC_FILE)
-	mv cmd/chlog/chlog-linux-amd64 build/chlog-linux-amd64
-	chmod +x build/chlog-linux-amd64
+DIST_DIR := dist
 
-arm: ## Build for ARM
-	cd cmd/chlog && GOOS=linux GOARCH=arm go build $(BUILD_FLAGS) -o chlog-linux-arm $(MAIN_SRC_FILE)
-	mv cmd/chlog/chlog-linux-arm build/chlog-linux-arm
-	chmod +x build/chlog-linux-arm
+## build-all: cross-compile for all platforms
+build-all: build-linux build-linux-arm64 build-darwin build-darwin-arm64 build-windows latest-yaml
 
-darwin: ## Build for OSX
-	cd cmd/chlog && GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-darwin-amd64 $(MAIN_SRC_FILE)
-	mv cmd/chlog/chlog-darwin-amd64 build/chlog-darwin-amd64
-	chmod +x build/chlog-darwin-amd64
+## latest-yaml: generate latest.yaml release metadata
+latest-yaml:
+	@mkdir -p $(DIST_DIR)
+	@{ \
+		echo "name: $(APP)"; \
+		echo "version: $(VERSION)"; \
+		echo "released_at: $(BUILD_TIME)"; \
+	} > $(DIST_DIR)/latest.yaml
+	@echo "   → $(DIST_DIR)/latest.yaml"
 
-win: ## Build for Windows
-	cd cmd/chlog && GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o chlog-windows-amd64.exe $(MAIN_SRC_FILE)
-	mv cmd/chlog/chlog-windows-amd64.exe build/chlog-windows-amd64.exe
+## build-linux: compile for Linux amd64
+build-linux:
+	@echo "🐧 linux/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-amd64 $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-amd64
+	chmod +x $(DIST_DIR)/$(APP)-linux-amd64
+	@echo "   → $(DIST_DIR)/$(APP)-linux-amd64"
 
-  clean:     ## Clean all created artifacts
+## build-linux-arm64: compile for Linux arm64
+build-linux-arm64:
+	@echo "🐧 linux/arm64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=linux GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-arm64 $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-arm64
+	chmod +x $(DIST_DIR)/$(APP)-linux-arm64
+	@echo "   → $(DIST_DIR)/$(APP)-linux-arm64"
+
+## build-darwin: compile for macOS amd64
+build-darwin:
+	@echo "🍎 darwin/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-amd64 $(MAIN_DIR)
+	@echo "   → $(DIST_DIR)/$(APP)-darwin-amd64"
+
+## build-darwin-arm64: compile for macOS Apple Silicon
+build-darwin-arm64:
+	@echo "🍎 darwin/arm64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-arm64 $(MAIN_DIR)
+	# upx -6 --no-progress $(DIST_DIR)/$(APP)-darwin-arm64 # 压缩有问题在 macos 12+
+	@echo "   → $(DIST_DIR)/$(APP)-darwin-arm64"
+
+## build-windows: compile for Windows amd64
+build-windows:
+	@echo "🪟 windows/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-windows-amd64.exe $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-windows-amd64.exe
+	@echo "   → $(DIST_DIR)/$(APP)-windows-amd64.exe"
+
+.PHONY: release
+release: build-all ## Create release archives for all platforms TODO 还未启用的
+	@echo "Creating release archives..."
+	@mkdir -p release
+	@cd $(DIST_DIR) && \
+	tar -czf ../release/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64; \
+	tar -czf ../release/$(APP)-linux-arm64.tar.gz $(APP)-linux-arm64; \
+	tar -czf ../release/$(APP)-darwin-amd64.tar.gz $(APP)-darwin-amd64; \
+	tar -czf ../release/$(APP)-darwin-arm64.tar.gz $(APP)-darwin-arm64; \
+	zip -czf ../release/$(APP)-windows-amd64.zip $(APP)-windows-amd64.exe; \
+	# zip ../release/$(APP)-windows-arm64.zip $(APP)-windows-arm64.exe; \
+	@echo "Release archives created in release/"
+
+## clean: remove build artifacts
 clean:
-	git clean --exclude=.idea/ -fdx
+	@rm -f $(BINARY)
+	@rm -rf $(DIST_DIR)
+	@echo "🧹 Cleaned"
 
-  cs-fix:        ## Fix code style for all files
-cs-fix:
-	gofmt -w ./
-
-  cs-diff:        ## Display code style error files
-cs-diff:
-	gofmt -l ./
+## help: show this help
+help:
+	@echo "Skillc Build System"
+	@echo ""
+	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/## /  /'
