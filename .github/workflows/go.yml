@@ -38,7 +38,7 @@ jobs:
         env
 
     - name: Setup Go Faster
-      uses: WillAbides/setup-go-faster@v1.15.0
+      uses: WillAbides/setup-go-faster@v1.19.0
       timeout-minutes: 3
       with:
         go-version: ${{ matrix.go_version }}
