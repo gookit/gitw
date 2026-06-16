@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/chlog"
 	"github.com/gookit/goutil/x/assert"
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 func TestGenerateReturnsErrorOnMissingLastTag(t *testing.T) {
@@ -27,6 +29,36 @@ func TestGenerateReturnsErrorOnMissingLastTag(t *testing.T) {
 		return
 	}
 	assert.Contains(t, err.Error(), "no git tags found")
+}
+
+func TestGeneratePrintsRefsWithShortHash(t *testing.T) {
+	workdir := initGitRepoWithoutTags(t)
+	runGit(t, workdir, "tag", "v0.1.0")
+	runGit(t, workdir, "commit", "--allow-empty", "-m", "fix: second commit")
+	chdir(t, workdir)
+
+	oldRepo, oldOpts, oldCfg := repo, opts, cfg
+	t.Cleanup(func() {
+		repo, opts, cfg = oldRepo, oldOpts, oldCfg
+	})
+
+	repo = gitw.NewRepo(workdir)
+	opts.sha1 = gitw.TagLast
+	opts.sha2 = gitw.TagHead
+	cfg = chlog.NewDefaultConfig()
+
+	var out bytes.Buffer
+	ccolor.SetOutput(&out)
+	t.Cleanup(func() {
+		ccolor.SetOutput(os.Stdout)
+	})
+
+	err := generate(chlog.NewWithConfig(cfg))
+	assert.NoErr(t, err)
+
+	tagHash := shortRev(t, workdir, "v0.1.0")
+	headHash := shortRev(t, workdir, "HEAD")
+	assert.Contains(t, out.String(), "Generate changelog: v0.1.0("+tagHash+") to HEAD("+headHash+")")
 }
 
 func TestGenerateAllIncludesRootCommit(t *testing.T) {
@@ -98,6 +130,16 @@ func runGit(t *testing.T, dir string, args ...string) {
 	if err != nil {
 		t.Fatalf("git %v failed: %v\n%s", args, err, out)
 	}
+}
+
+func shortRev(t *testing.T, dir, rev string) string {
+	t.Helper()
+
+	cmd := exec.Command("git", "rev-parse", "--short", rev)
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	assert.NoErr(t, err)
+	return string(bytes.TrimSpace(out))
 }
 
 func chdir(t *testing.T, dir string) {

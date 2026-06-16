@@ -192,12 +192,24 @@ func generate(cl *chlog.Changelog) error {
 			return err
 		}
 	}
-	cliutil.Infof("Generate changelog: %s to %s\n", sha1, sha2)
+	cliutil.Infof("Generate changelog: %s to %s\n", formatRefForDisplay(sha1), formatRefForDisplay(sha2))
 
 	cl.FetchGitLog(sha1, sha2, gitArgs...)
 
 	// do generate
 	return cl.Generate()
+}
+
+func formatRefForDisplay(ref string) string {
+	if ref == "" {
+		return ref
+	}
+
+	hash := strings.TrimSpace(repo.Git().RevParse("--short", ref+"^{commit}").SafeOutput())
+	if hash == "" {
+		return ref
+	}
+	return ref + "(" + hash + ")"
 }
 
 func ensureResolvedRef(input, resolved string) (string, error) {
