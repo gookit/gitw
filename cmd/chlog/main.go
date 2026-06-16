@@ -45,6 +45,8 @@ var cfg = chlog.NewDefaultConfig()
 var repo = gitw.NewRepo("./")
 var cmd *cflag.CFlags
 
+const tagAll = "all"
+
 // quick run:
 //
 //	go run ./cmd/chlog
@@ -78,12 +80,13 @@ Allowed:
 1 creator date sort
 2 describe command;;t`)
 
-	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id", true, nil)
+	cmd.AddArg("sha1", "The old git sha version. allow: tag name, commit id, all", true, nil)
 	cmd.AddArg("sha2", "The new git sha version. allow: tag name, commit id", false, "HEAD")
 
 	cmd.Func = handle
 	cmd.Example = `
   {{cmd}} v0.1.0 HEAD
+  {{cmd}} all
   {{cmd}} prev last
   {{cmd}} prev...last
   {{cmd}} --exclude 'action tests,script error' prev last
@@ -177,14 +180,17 @@ func generate(cl *chlog.Changelog) error {
 		gitArgs = append(gitArgs, "--no-merges")
 	}
 
-	sha1 := repo.AutoMatchTagByType(opts.sha1, opts.tagType)
-	sha2 := repo.AutoMatchTagByType(opts.sha2, opts.tagType)
+	sha1, sha2 := "", ""
 	var err error
-	if sha1, err = ensureResolvedRef(opts.sha1, sha1); err != nil {
-		return err
-	}
-	if sha2, err = ensureResolvedRef(opts.sha2, sha2); err != nil {
-		return err
+	if !strings.EqualFold(opts.sha1, tagAll) {
+		sha1 = repo.AutoMatchTagByType(opts.sha1, opts.tagType)
+		sha2 = repo.AutoMatchTagByType(opts.sha2, opts.tagType)
+		if sha1, err = ensureResolvedRef(opts.sha1, sha1); err != nil {
+			return err
+		}
+		if sha2, err = ensureResolvedRef(opts.sha2, sha2); err != nil {
+			return err
+		}
 	}
 	cliutil.Infof("Generate changelog: %s to %s\n", sha1, sha2)
 

@@ -29,6 +29,28 @@ func TestGenerateReturnsErrorOnMissingLastTag(t *testing.T) {
 	assert.Contains(t, err.Error(), "no git tags found")
 }
 
+func TestGenerateAllIncludesRootCommit(t *testing.T) {
+	workdir := initGitRepoWithoutTags(t)
+	runGit(t, workdir, "commit", "--allow-empty", "-m", "fix: second commit")
+	chdir(t, workdir)
+
+	oldRepo, oldOpts, oldCfg := repo, opts, cfg
+	t.Cleanup(func() {
+		repo, opts, cfg = oldRepo, oldOpts, oldCfg
+	})
+
+	repo = gitw.NewRepo(workdir)
+	opts.sha1 = "all"
+	opts.sha2 = gitw.TagHead
+	cfg = chlog.NewDefaultConfig()
+
+	cl := chlog.NewWithConfig(cfg)
+	err := generate(cl)
+	assert.NoErr(t, err)
+	assert.Contains(t, cl.Changelog(), "feat: initial commit")
+	assert.Contains(t, cl.Changelog(), "fix: second commit")
+}
+
 func TestLoadConfigSkipsMissingRemote(t *testing.T) {
 	workdir := initGitRepoWithoutTags(t)
 	oldRepo, oldOpts, oldCfg := repo, opts, cfg
@@ -76,4 +98,15 @@ func runGit(t *testing.T, dir string, args ...string) {
 	if err != nil {
 		t.Fatalf("git %v failed: %v\n%s", args, err, out)
 	}
+}
+
+func chdir(t *testing.T, dir string) {
+	t.Helper()
+
+	wd, err := os.Getwd()
+	assert.NoErr(t, err)
+	assert.NoErr(t, os.Chdir(dir))
+	t.Cleanup(func() {
+		assert.NoErr(t, os.Chdir(wd))
+	})
 }
