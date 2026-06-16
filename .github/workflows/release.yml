@@ -33,11 +33,13 @@ jobs:
         run: cd cmd/chlog && go mod tidy
 
       - name: Build bin package
-        run: make build-all
+        run: |
+          make build-all
+          ls -lh ./dist
+          cd cmd/chlog && go install .
 
       - name: Generate changelog
         run: |
-          cd cmd/chlog && go install .
           chlog -c .github/changelog.yml -o changelog.md prev last
           cat changelog.md
 
