@@ -153,7 +153,9 @@ func loadConfig() {
 	}
 
 	if cfg.RepoURL == "" {
-		cfg.RepoURL = repo.DefaultRemoteInfo().URLOfHTTPS()
+		if ri := repo.DefaultRemoteInfo(); ri != nil {
+			cfg.RepoURL = ri.URLOfHTTPS()
+		}
 	}
 
 	if opts.style != "" {
@@ -177,12 +179,34 @@ func generate(cl *chlog.Changelog) error {
 
 	sha1 := repo.AutoMatchTagByType(opts.sha1, opts.tagType)
 	sha2 := repo.AutoMatchTagByType(opts.sha2, opts.tagType)
+	var err error
+	if sha1, err = ensureResolvedRef(opts.sha1, sha1); err != nil {
+		return err
+	}
+	if sha2, err = ensureResolvedRef(opts.sha2, sha2); err != nil {
+		return err
+	}
 	cliutil.Infof("Generate changelog: %s to %s\n", sha1, sha2)
 
 	cl.FetchGitLog(sha1, sha2, gitArgs...)
 
 	// do generate
 	return cl.Generate()
+}
+
+func ensureResolvedRef(input, resolved string) (string, error) {
+	if resolved != "" {
+		return resolved, nil
+	}
+
+	switch strings.ToLower(input) {
+	case gitw.TagLast:
+		return "", errorx.Rawf("no git tags found for %q", input)
+	case gitw.TagPrev:
+		return "", errorx.Rawf("no previous git tag found for %q", input)
+	default:
+		return "", errorx.Rawf("empty git revision from argument %q", input)
+	}
 }
 
 func outputTo(cl *chlog.Changelog, outFile string) {
