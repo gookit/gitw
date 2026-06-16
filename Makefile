@@ -2,6 +2,7 @@
 
 APP     := chlog
 MAIN_DIR := ./cmd/chlog
+ROOT_OUT := ../..
 GOEXE = $(shell go env GOEXE)
 BINARY  := $(APP)$(GOEXE)
 
@@ -23,14 +24,14 @@ all: build
 ## build: build Go binary (current platform)
 build:
 	@echo "🐹 Building Go binary ($(VERSION) @ $(GIT_HASH))..."
-	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(MAIN_DIR)
+	go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(BINARY) .
 	@echo "📦 Compressing binary..."
 	@upx -6 --no-progress $(BINARY)
 	@echo "✅ Binary: $(BINARY) ($$(du -sh $(BINARY) | cut -f1))"
 
 ## install: install Go binary to $GOPATH/bin
 install:
-	go install -ldflags "$(LDFLAGS)" $(MAIN_DIR)
+	go -C $(MAIN_DIR) install -ldflags "$(LDFLAGS)" .
 	upx -6 --no-progress $(GOPATH)/bin/$(BINARY)
 	@echo "✅ Installed to GOPATH/bin"
 
@@ -59,7 +60,7 @@ latest-yaml:
 build-linux:
 	@echo "🐧 linux/amd64..."
 	@mkdir -p $(DIST_DIR)
-	@GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-amd64 $(MAIN_DIR)
+	@GOOS=linux GOARCH=amd64 go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(DIST_DIR)/$(APP)-linux-amd64 .
 	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-amd64
 	chmod +x $(DIST_DIR)/$(APP)-linux-amd64
 	@echo "   → $(DIST_DIR)/$(APP)-linux-amd64"
@@ -68,7 +69,7 @@ build-linux:
 build-linux-arm64:
 	@echo "🐧 linux/arm64..."
 	@mkdir -p $(DIST_DIR)
-	@GOOS=linux GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-arm64 $(MAIN_DIR)
+	@GOOS=linux GOARCH=arm64 go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(DIST_DIR)/$(APP)-linux-arm64 .
 	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-arm64
 	chmod +x $(DIST_DIR)/$(APP)-linux-arm64
 	@echo "   → $(DIST_DIR)/$(APP)-linux-arm64"
@@ -77,14 +78,14 @@ build-linux-arm64:
 build-darwin:
 	@echo "🍎 darwin/amd64..."
 	@mkdir -p $(DIST_DIR)
-	@GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-amd64 $(MAIN_DIR)
+	@GOOS=darwin GOARCH=amd64 go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(DIST_DIR)/$(APP)-darwin-amd64 .
 	@echo "   → $(DIST_DIR)/$(APP)-darwin-amd64"
 
 ## build-darwin-arm64: compile for macOS Apple Silicon
 build-darwin-arm64:
 	@echo "🍎 darwin/arm64..."
 	@mkdir -p $(DIST_DIR)
-	@GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-arm64 $(MAIN_DIR)
+	@GOOS=darwin GOARCH=arm64 go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(DIST_DIR)/$(APP)-darwin-arm64 .
 	# upx -6 --no-progress $(DIST_DIR)/$(APP)-darwin-arm64 # 压缩有问题在 macos 12+
 	@echo "   → $(DIST_DIR)/$(APP)-darwin-arm64"
 
@@ -92,7 +93,7 @@ build-darwin-arm64:
 build-windows:
 	@echo "🪟 windows/amd64..."
 	@mkdir -p $(DIST_DIR)
-	@GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-windows-amd64.exe $(MAIN_DIR)
+	@GOOS=windows GOARCH=amd64 go -C $(MAIN_DIR) build -ldflags "$(LDFLAGS)" -o $(ROOT_OUT)/$(DIST_DIR)/$(APP)-windows-amd64.exe .
 	upx -6 --no-progress $(DIST_DIR)/$(APP)-windows-amd64.exe
 	@echo "   → $(DIST_DIR)/$(APP)-windows-amd64.exe"
 
