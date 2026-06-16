@@ -25,11 +25,27 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	// eg: "git@github.com:gookit/gitw.git"
 	if gitutil.IsSSHProto(URL) {
 		r.Proto = ProtoSSH
-		URL = strings.TrimPrefix(URL, "ssh://")
+		r.Scheme = SchemeGIT
+
+		if strings.HasPrefix(URL, "ssh://") && !isSCPStyleSSHURL(URL) {
+			info, err := url.Parse(URL)
+			if err != nil {
+				return err
+			}
+
+			group, repo, err := splitRemotePath(info.Path)
+			if err != nil {
+				return err
+			}
+
+			r.Host, r.Group, r.Repo = info.Hostname(), group, repo
+			r.Port = mathutil.SafeInt(info.Port())
+			return nil
+		}
+
+		str = strings.TrimPrefix(strings.TrimPrefix(URL, "ssh://"), "git@")
 		if hasSfx {
-			str = URL[4 : len(URL)-4]
-		} else {
-			str = URL[4:]
+			str = str[0 : len(str)-4]
 		}
 
 		host, path, ok := strutil.Cut(str, ":")
@@ -37,27 +53,16 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 			return errorx.Rawf("invalid git URL: %s", URL)
 		}
 
-		var group, repo string
 		nodes := strings.Split(path, "/")
-		if len(nodes) < 2 {
-			return errorx.Rawf("invalid git URL path: %s", path)
+		if len(nodes) > 2 && strutil.IsNumeric(nodes[0]) {
+			r.Port = mathutil.SafeInt(nodes[0])
+			path = strings.Join(nodes[1:], "/")
 		}
 
-		// check first is port
-		if len(nodes) > 2 {
-			if strutil.IsNumeric(nodes[0]) {
-				r.Port = mathutil.SafeInt(nodes[0])
-				group = nodes[1]
-				repo = strings.Join(nodes[2:], "/")
-			}
-		} else {
-			group, repo, ok = strutil.Cut(path, "/")
-			if !ok {
-				return errorx.Rawf("invalid git URL path: %s", path)
-			}
+		group, repo, err := splitRemotePath(path)
+		if err != nil {
+			return err
 		}
-
-		r.Scheme = SchemeGIT
 		r.Host, r.Group, r.Repo = host, group, repo
 		return nil
 	}
@@ -83,6 +88,37 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 	r.Scheme = info.Scheme
 	r.Host, r.Group, r.Repo = info.Host, group, repo
 	return nil
+}
+
+func splitRemotePath(path string) (group, repo string, err error) {
+	path = strings.Trim(path, "/")
+	if strings.HasSuffix(path, ".git") {
+		path = path[0 : len(path)-4]
+	}
+
+	nodes := strings.Split(path, "/")
+	if len(nodes) < 2 {
+		return "", "", errorx.Rawf("invalid git URL path: %s", path)
+	}
+
+	return strings.Join(nodes[:len(nodes)-1], "/"), nodes[len(nodes)-1], nil
+}
+
+func isSCPStyleSSHURL(rawURL string) bool {
+	str := strings.TrimPrefix(rawURL, "ssh://")
+	firstColon := strings.IndexByte(str, ':')
+	if firstColon < 0 {
+		return false
+	}
+
+	firstSlash := strings.IndexByte(str, '/')
+	if firstSlash >= 0 && firstSlash < firstColon {
+		return false
+	}
+
+	pathPart := str[firstColon+1:]
+	port, _, _ := strings.Cut(pathPart, "/")
+	return !strutil.IsNumeric(port)
 }
 
 // ErrInvalidBrLine error

@@ -46,6 +46,34 @@ func TestNewRemoteInfo_sshAndGit(t *testing.T) {
 	assert.Eq(t, "https://github.com/gookit/gitw", rt.RawURLOfHTTP())
 }
 
+func TestNewRemoteInfo_sshURLPath(t *testing.T) {
+	URL := "ssh://git@github.com/gookit/gitw.git"
+	rt, err := gitw.NewRemoteInfo("origin", URL, gitw.RemoteTypePush)
+	if !assert.NoErr(t, err) {
+		return
+	}
+	assert.Eq(t, "github.com", rt.Host)
+	assert.Eq(t, "gookit/gitw", rt.Path())
+	assert.Eq(t, gitw.SchemeGIT, rt.Scheme)
+	assert.Eq(t, gitw.ProtoSSH, rt.Proto)
+	assert.Eq(t, "https://github.com/gookit/gitw", rt.RawURLOfHTTP())
+}
+
+func TestNewRemoteInfo_sshMultiGroupPath(t *testing.T) {
+	URL := "git@gitlab.example.com:group/sub/repo.git"
+	rt, err := gitw.NewRemoteInfo("origin", URL, gitw.RemoteTypePush)
+	if !assert.NoErr(t, err) {
+		return
+	}
+	assert.Eq(t, "gitlab.example.com", rt.Host)
+	assert.Eq(t, "group/sub/repo", rt.Path())
+	assert.Eq(t, "group/sub", rt.Group)
+	assert.Eq(t, "repo", rt.Repo)
+	assert.Eq(t, gitw.SchemeGIT, rt.Scheme)
+	assert.Eq(t, gitw.ProtoSSH, rt.Proto)
+	assert.Eq(t, "https://gitlab.example.com/group/sub/repo", rt.RawURLOfHTTP())
+}
+
 func TestNewRemoteInfo_sshAndGit_port(t *testing.T) {
 	URL := "ssh://git@github.com:3455/gookit/gitw.git"
 	// URL := "git@github.com:3455/gookit/gitw.git"
