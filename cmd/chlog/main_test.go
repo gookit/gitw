@@ -76,9 +76,16 @@ func TestGenerateAllIncludesRootCommit(t *testing.T) {
 	opts.sha2 = gitw.TagHead
 	cfg = chlog.NewDefaultConfig()
 
+	var out bytes.Buffer
+	ccolor.SetOutput(&out)
+	t.Cleanup(func() {
+		ccolor.SetOutput(os.Stdout)
+	})
+
 	cl := chlog.NewWithConfig(cfg)
 	err := generate(cl)
 	assert.NoErr(t, err)
+	assert.Contains(t, out.String(), "Generate changelog: all commits")
 	assert.Contains(t, cl.Changelog(), "feat: initial commit")
 	assert.Contains(t, cl.Changelog(), "fix: second commit")
 }

@@ -182,7 +182,9 @@ func generate(cl *chlog.Changelog) error {
 
 	sha1, sha2 := "", ""
 	var err error
-	if !strings.EqualFold(opts.sha1, tagAll) {
+	if strings.EqualFold(opts.sha1, tagAll) {
+		cliutil.Infof("Generate changelog: all commits\n")
+	} else {
 		sha1 = repo.AutoMatchTagByType(opts.sha1, opts.tagType)
 		sha2 = repo.AutoMatchTagByType(opts.sha2, opts.tagType)
 		if sha1, err = ensureResolvedRef(opts.sha1, sha1); err != nil {
@@ -191,8 +193,8 @@ func generate(cl *chlog.Changelog) error {
 		if sha2, err = ensureResolvedRef(opts.sha2, sha2); err != nil {
 			return err
 		}
+		cliutil.Infof("Generate changelog: %s to %s\n", formatRefForDisplay(sha1), formatRefForDisplay(sha2))
 	}
-	cliutil.Infof("Generate changelog: %s to %s\n", formatRefForDisplay(sha1), formatRefForDisplay(sha2))
 
 	cl.FetchGitLog(sha1, sha2, gitArgs...)
 
