@@ -2,20 +2,19 @@ name: Unit-Tests
 on:
   pull_request:
     paths:
-      - 'go.mod'
-      - '**.go'
-      - '**.yml'
+      - "go.mod"
+      - "**.go"
+      - "**.yml"
   push:
     branches: # Only trigger branch pushes; tag pushes are ignored.
-      - '**'
+      - "**"
     paths:
-      - '**.go'
-      - 'go.mod'
-      - '**.yml'
+      - "**.go"
+      - "go.mod"
+      - "**.yml"
 
 # https://github.com/actions
 jobs:
-
   test:
     name: Test on go ${{ matrix.go_version }}
     runs-on: ubuntu-latest
@@ -24,50 +23,49 @@ jobs:
         go_version: [1.22, 1.23, 1.24, stable]
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v7
-      with:
-        fetch-depth: 0
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-    - run: git fetch --force --tags
+      - run: git fetch --force --tags
 
-    - name: Display Env
-      run: |
-        git remote -v
-        git tag -l
-        env
+      - name: Display Env
+        run: |
+          git remote -v
+          git tag -l
+          env
 
-    - name: Setup Go Faster
-      uses: WillAbides/setup-go-faster@v1.19.0
-      timeout-minutes: 3
-      with:
-        go-version: ${{ matrix.go_version }}
+      - name: Setup Go Faster
+        uses: WillAbides/setup-go-faster@v1.19.0
+        timeout-minutes: 3
+        with:
+          go-version: ${{ matrix.go_version }}
 
-    - name: Revive check
-      uses: docker://morphy/revive-action:v2
-      with:
-        # Exclude patterns, separated by semicolons (optional)
-        exclude: "./internal/..."
+      - name: Revive check
+        uses: docker://morphy/revive-action:v2
+        with:
+          # Exclude patterns, separated by semicolons (optional)
+          exclude: "./internal/..."
 
-    - name: Run static check
-      uses: reviewdog/action-staticcheck@v1
-      if: ${{ github.event_name == 'pull_request'}}
-      with:
-        github_token: ${{ secrets.github_token }}
-        # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
-        reporter: github-pr-check
-        # Report all results. [added,diff_context,file,nofilter].
-        filter_mode: added
-        # Exit with 1 when it find at least one finding.
-        fail_on_error: true
+      - name: Run static check
+        uses: reviewdog/action-staticcheck@v1
+        if: ${{ github.event_name == 'pull_request'}}
+        with:
+          github_token: ${{ secrets.github_token }}
+          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
+          reporter: github-pr-check
+          # Report all results. [added,diff_context,file,nofilter].
+          filter_mode: added
+          # Exit with 1 when it find at least one finding.
+          fail_on_error: true
 
-    - name: Run tests
-      run: |
-        go test -cover ./...
-#        go run ./cmd/chlog last head
-
-    - name: Build and run chlog
-      if: ${{ matrix.go_version == 'stable' }}
-      run: |
-        cd cmd/chlog && go install .
-        chlog --help
+      - name: Run tests
+        run: |
+          go test -cover ./...
+      #        go run ./cmd/chlog last head
+      - name: Build and run chlog
+        if: ${{ matrix.go_version == 'stable' }}
+        run: |
+          cd cmd/chlog && go mode tidy && go install .
+          chlog --help
