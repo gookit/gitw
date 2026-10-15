@@ -2,7 +2,8 @@ name: Unit-Tests
 on:
   pull_request:
     paths:
-      - "go.mod"
+      - "**.mod" # any go.mod: root and nested module (cmd/chlog)
+      - "**.sum"
       - "**.go"
       - "**.yml"
   push:
@@ -10,7 +11,8 @@ on:
       - "**"
     paths:
       - "**.go"
-      - "go.mod"
+      - "**.mod" # any go.mod: root and nested module (cmd/chlog)
+      - "**.sum"
       - "**.yml"
 
 # https://github.com/actions
