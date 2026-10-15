@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/goccy/go-yaml v1.18.0
-	github.com/gookit/color v1.6.1
+	github.com/gookit/color v1.6.2
 	github.com/gookit/gitw v1.0.0
 	github.com/gookit/goutil v0.8.0
 )
