@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gitw/brinfo"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestGlobMatch_Match(t *testing.T) {

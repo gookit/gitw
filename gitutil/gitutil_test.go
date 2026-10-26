@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gitw/gitutil"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestSplitPath(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gitw/gmoji"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestEmojiMap_String(t *testing.T) {

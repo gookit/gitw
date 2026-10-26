@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestTags(t *testing.T) {

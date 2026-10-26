@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/brinfo"
 	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestNewRemoteInfo(t *testing.T) {
@@ -92,13 +92,13 @@ func TestNewRemoteInfo_sshAndGit_port(t *testing.T) {
 }
 
 func TestParseBranchLine_simple(t *testing.T) {
-	info, err := gitw.ParseBranchLine("* ", false)
+	_, err := gitw.ParseBranchLine("* ", false)
 	assert.Err(t, err)
 
-	info, err = gitw.ParseBranchLine("* (HEAD)", false)
+	_, err = gitw.ParseBranchLine("* (HEAD)", false)
 	assert.Err(t, err)
 
-	info, err = gitw.ParseBranchLine("* fea/new_br001", false)
+	info, err := gitw.ParseBranchLine("* fea/new_br001", false)
 	assert.NoErr(t, err)
 
 	assert.True(t, info.Current)
@@ -145,9 +145,9 @@ func TestParseBranchLine_verbose(t *testing.T) {
 	assert.Eq(t, "6fb8dcd", info.Hash)
 	assert.Eq(t, "the message 003", info.HashMsg)
 
-	info, err = gitw.ParseBranchLine("* （头指针在 v0.2.3 分离） 3c08adf chore: update readme add branch info docs", true)
+	_, err = gitw.ParseBranchLine("* （头指针在 v0.2.3 分离） 3c08adf chore: update readme add branch info docs", true)
 	assert.Err(t, err)
-	info, err = gitw.ParseBranchLine("* (HEAD detached at pull/29/merge)                                    62f3455 Merge cfc79b748e176c1c9e266c8bc413c87fe974acef into c9503c2aef993a2cf582d90c137deda53c9bca68", true)
+	_, err = gitw.ParseBranchLine("* (HEAD detached at pull/29/merge)                                    62f3455 Merge cfc79b748e176c1c9e266c8bc413c87fe974acef into c9503c2aef993a2cf582d90c137deda53c9bca68", true)
 	assert.Err(t, err)
 }
 
