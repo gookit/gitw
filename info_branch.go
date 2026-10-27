@@ -338,12 +338,7 @@ func (bs *BranchInfos) Remotes(remote string) []*BranchInfo {
 // All branches list
 func (bs *BranchInfos) All() []*BranchInfo {
 	ls := make([]*BranchInfo, 0, len(bs.locales)+len(bs.remotes))
-	for _, info := range bs.locales {
-		ls = append(ls, info)
-	}
-
-	for _, info := range bs.remotes {
-		ls = append(ls, info)
-	}
+	ls = append(ls, bs.locales...)
+	ls = append(ls, bs.remotes...)
 	return ls
 }

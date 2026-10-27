@@ -2,7 +2,7 @@ package gitw
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -97,7 +97,7 @@ func EditText(data string) string {
 		return data
 	}
 
-	tmpFile, err := ioutil.TempFile("", "go-git-edit-file-*")
+	tmpFile, err := os.CreateTemp("", "go-git-edit-file-*")
 	if err != nil {
 		slog.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func EditText(data string) string {
 		slog.Fatal(err)
 	}
 
-	buf, err := ioutil.ReadAll(f)
+	buf, err := io.ReadAll(f)
 	if err != nil {
 		slog.Fatal(err)
 	}

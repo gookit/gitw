@@ -91,10 +91,7 @@ func ParseRemoteURL(URL string, r *RemoteInfo) (err error) {
 }
 
 func splitRemotePath(path string) (group, repo string, err error) {
-	path = strings.Trim(path, "/")
-	if strings.HasSuffix(path, ".git") {
-		path = path[0 : len(path)-4]
-	}
+	path = strings.TrimSuffix(strings.Trim(path, "/"), ".git")
 
 	nodes := strings.Split(path, "/")
 	if len(nodes) < 2 {
